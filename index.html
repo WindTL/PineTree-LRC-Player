@@ -11,15 +11,15 @@
  <link rel="manifest" href="./manifest.webmanifest">
  <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=321">
  <link rel="icon" href="./icon-192.png?v=321">
- <link rel="stylesheet" href="./styles.css?v=372">
- <title>PineTree 有聲書 · v3.7.2 · 置中字幕與低延遲鎖屏</title>
+ <link rel="stylesheet" href="./styles.css?v=373">
+ <title>PineTree 有聲書 · v3.7.3 · 字幕真正置中 · 低延遲鎖屏</title>
 </head>
 <body>
 <div class="app-shell">
  <header class="topbar">
   <div class="brand">
    <div class="brand-mark" id="brandMonogram" aria-hidden="true"><img src="./apple-touch-icon.png?v=321" alt=""></div>
-   <div class="brand-copy"><strong id="brandTitle">我的小说书库</strong><span>PineTree v3.7.2 · 置中字幕 · iCloud 手動同步</span></div>
+   <div class="brand-copy"><strong id="brandTitle">我的小说书库</strong><span>PineTree v3.7.3 · 置中字幕 · iCloud 手動同步</span></div>
   </div>
   <nav class="header-actions" aria-label="全局操作">
    <span class="status-chip" id="networkBadge">● 准备就绪</span>
@@ -136,9 +136,9 @@
 </dialog>
 <dialog id="bookManager" class="drawer-dialog" aria-label="书库管理">
  <div class="dialog-inner">
-  <div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v3.7.2 · 置中字幕與護眼版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button id="bookManagerClose" class="close-action" type="button" aria-label="关闭">×</button></div>
+  <div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v3.7.3 · 普通／最大化置中修正版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button id="bookManagerClose" class="close-action" type="button" aria-label="关闭">×</button></div>
   <form class="create-book" id="createBookForm"><label for="newBookName">新建小说文件夹</label><div class="form-row"><input id="newBookName" class="field" maxlength="90" type="text" placeholder="输入书名，例如：拙石衍天" required><button class="btn btn-accent" type="submit">＋ 新建</button></div></form>
-  <div class="manager-icloud-shortcut"><button id="releaseOpen" class="btn btn-quiet" type="button">ⓘ 版本與更新內容 · v3.7.2</button><button id="cleanupOpen" class="btn btn-quiet" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button id="syncOpenSecondary" class="btn btn-quiet" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
+  <div class="manager-icloud-shortcut"><button id="releaseOpen" class="btn btn-quiet" type="button">ⓘ 版本與更新內容 · v3.7.3</button><button id="cleanupOpen" class="btn btn-quiet" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button id="syncOpenSecondary" class="btn btn-quiet" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
   <div class="manager-section-head"><strong>全部小说</strong><span class="counter" id="bookCount">0 本</span></div>
   <div class="book-grid" id="bookGrid" aria-label="小说封面书架"></div>
   <div class="book-detail" id="bookDetail">
@@ -220,8 +220,8 @@
  <div class="import-actions"><button id="cleanupPreview" class="btn btn-quiet" type="button">重新計算</button><button id="cleanupRun" class="btn btn-danger" type="button">確認清理已聽 MP3</button></div>
  <p class="dialog-note">如果清理了 MP3，再次播放該章時需重新從 iCloud Drive 匯入對應音訊。清理操作無法在 PineTree 內撤銷。</p>
  </div></dialog>
-<dialog id="releaseDialog" class="drawer-dialog" aria-label="版本更新與說明"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v3.7.2</h2><p>新增播放時自動置中字幕，改善末段字幕貼近底部被控制區干擾的問題。</p></div><button id="releaseClose" class="close-action" type="button" aria-label="關閉">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>增量匯入與 MP3/LRC 配對診斷、清理已聽音訊、睡眠定時、書籤、快速續聽、專注閱讀、螢幕常亮選項、九款護眼主題及同步安全改善；v3.7.1 新增鎖屏 LRC 字幕實驗模式（不保證背景逐句更新）；v3.7.2 新增播放時自動將當前句置中，並可切換為自由滾動。</p><p>仍以 iCloud Drive 手動匯入／匯出同步檔；iOS 系統檔案選取器及鎖屏背景播放限制依然存在。</p></div><button id="releaseDismiss" class="btn btn-accent" type="button">知道了</button></div></dialog>
+<dialog id="releaseDialog" class="drawer-dialog" aria-label="版本更新與說明"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v3.7.3</h2><p>修復普通模式字幕置中計算，所有畫面尺寸都依字幕框實際座標置中。</p></div><button id="releaseClose" class="close-action" type="button" aria-label="關閉">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>增量匯入與 MP3/LRC 配對診斷、清理已聽音訊、睡眠定時、書籤、快速續聽、專注閱讀、螢幕常亮選項、九款護眼主題及同步安全改善；v3.7.1 新增鎖屏 LRC 字幕實驗模式（不保證背景逐句更新）；v3.7.3 修復普通模式的字幕偏下，置中模式在所有尺寸準確定位，自由滾動則不強制跟隨。</p><p>仍以 iCloud Drive 手動匯入／匯出同步檔；iOS 系統檔案選取器及鎖屏背景播放限制依然存在。</p></div><button id="releaseDismiss" class="btn btn-accent" type="button">知道了</button></div></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="./app.js?v=372" defer></script>
+<script src="./app.js?v=373" defer></script>
 </body>
 </html>

@@ -143,3 +143,11 @@ button{transition:background-color .16s,border-color .16s,color .16s}
 
 .tiny-action[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--accent-faint)}
 :root{--lyrics-vertical-pad:24px}
+
+/* v3.7.3: reserve real viewport-relative top/bottom scroll space in both modes.
+   ID selector intentionally wins over mobile/fullscreen padding shorthands. */
+#lyricsWindow{
+  padding-top:var(--lyrics-pad-start,24px);
+  padding-bottom:var(--lyrics-pad-end,24px);
+  scroll-behavior:auto;
+}
