@@ -50,3 +50,7 @@ body.lyrics-maximized .app-shell{padding:0;max-width:none}.lyrics-maximized .top
 
 /* Lyra 3.2: optional iCloud Drive state-file transfer, all colors follow current theme */
 .manager-icloud-shortcut{margin:16px 0 4px;display:grid;gap:6px}.manager-icloud-shortcut small{color:var(--muted);line-height:1.5;font-size:11px}.sync-guide{padding:15px;margin:13px 0;background:var(--panel-alt);border:1px solid var(--border);border-radius:12px;font-size:13px;color:var(--text)}.sync-guide strong{color:var(--accent)}.sync-guide p{line-height:1.7;font-size:12px;margin:9px 0 0;color:var(--soft)}.sync-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.sync-actions .btn{white-space:normal;min-height:46px}#syncStatus{padding:11px 0;border-top:1px solid var(--border)}@media(max-width:540px){.sync-actions{grid-template-columns:1fr}}
+
+/* PineTree v3.2.1 brand mark; respects existing forest-reading theme and saved settings. */
+.brand-mark{padding:0;overflow:hidden;background:#0F2A1F;border:1px solid var(--border)}
+.brand-mark img{width:100%;height:100%;display:block;object-fit:cover}

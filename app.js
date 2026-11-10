@@ -51,9 +51,9 @@ function updateBookBrand(){
   const id=state.selectedBook || state.current?.book;
   const name=id?bookTitle(id):'我的小说书库';
   $('brandTitle').textContent=name;
-  $('brandMonogram').textContent=id?name.slice(0,2):'书库';
+  // Keep the PineTree app icon in the header; novel name stays in the adjacent title.
   $('brandTitle').title=name;
-  document.title=`${name} · Lyra 3.2 有声书`;
+  document.title=`${name} · PineTree 有聲書`;
 }
 function setLyricsMax(value, persist=true){
   state.lyricsMax=!!value;
@@ -202,7 +202,7 @@ function updateLyrics(force=false){if(!state.lines.length)return;const idx=lyric
 async function saveProgress(ended=false){if(!state.db||!state.current)return;const id=state.current.id;const done=ended||audio.ended;const record={id,position:done?(Number(audio.duration)||0):(Number(audio.currentTime)||0),ended:done,updatedAt:Date.now()};state.progresses.set(id,record);try{await putStore('progress',record);}catch(error){console.warn('进度保存失败：',error);}}
 function releaseAudio(){audio.pause();audio.removeAttribute('src');audio.load();if(state.fileUrl)URL.revokeObjectURL(state.fileUrl);state.fileUrl=null;}
 function updateStoryArt(){const cover=$('currentCover'),fallback=$('storyArtFallback');const book=getBook(state.current?.book||state.selectedBook);const title=book?bookTitle(book.id):'选择一本小说';$('storyBookName').textContent=title;$('storyBookName').title=title;$('storyBookName').classList.toggle('long-title',title.length>15);const url=coverUrl(book);if(url){cover.src=url;cover.hidden=false;fallback.hidden=true;}else{cover.hidden=true;cover.removeAttribute('src');fallback.hidden=false;}}
-function updateMediaSession(){if(!('mediaSession' in navigator)||!state.current)return;const book=getBook(state.current.book);const url=coverUrl(book);try{navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,artist:'Lyra 有声书',album:bookTitle(state.current.book),artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png',location.href).href,sizes:'512x512',type:'image/png'}]});}catch(error){console.warn('锁屏媒体信息无法更新',error);}}
+function updateMediaSession(){if(!('mediaSession' in navigator)||!state.current)return;const book=getBook(state.current.book);const url=coverUrl(book);try{navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,artist:'PineTree 有聲書',album:bookTitle(state.current.book),artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=321',location.href).href,sizes:'512x512',type:'image/png'}]});}catch(error){console.warn('锁屏媒体信息无法更新',error);}}
 function updateMediaPosition(){if(!('mediaSession' in navigator)||!navigator.mediaSession.setPositionState)return;if(!Number.isFinite(audio.duration)||audio.duration<=0)return;try{navigator.mediaSession.setPositionState({duration:audio.duration,playbackRate:audio.playbackRate,position:Math.max(0,Math.min(audio.duration,audio.currentTime))});}catch(_) {}}
 function setupMediaSession(){if(!('mediaSession' in navigator))return;const handlers={play:()=>startPlayback(),pause:()=>audio.pause(),previoustrack:()=>adjacentTrack(-1),nexttrack:()=>adjacentTrack(1),seekbackward:({seekOffset}={})=>skipSeconds(-(seekOffset||15)),seekforward:({seekOffset}={})=>skipSeconds(seekOffset||15),seekto:({seekTime})=>{if(Number.isFinite(seekTime))audio.currentTime=seekTime;}};for(const [action,fn]of Object.entries(handlers))try{navigator.mediaSession.setActionHandler(action,fn);}catch(_) {}}
 function clearCurrent(message='请选择章节'){++state.loadingToken;state.current=null;releaseAudio();state.lines=[];state.lineIndex=-1;localStorage.removeItem('lyra-last-id');$('currentBook').textContent=state.selectedBook?bookTitle(state.selectedBook):'READY TO LISTEN';$('currentTitle').textContent=message;$('chapterHint').textContent='从章节目录选择一章';$('playBtn').disabled=true;$('seekBar').disabled=true;$('deleteBtn').disabled=true;$('playBtn').textContent='▶';$('playStatus').textContent='未选章节';$('lrcState').textContent='· 暂无字幕';$('elapsed').textContent='00:00';$('duration').textContent='00:00';displayPlaceholder(message,'MP3 和 LRC 将保存在本机书库');updateStoryArt();updateBookBrand();drawChapterList();}
