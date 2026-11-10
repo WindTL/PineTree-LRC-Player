@@ -1,7 +1,7 @@
 {
   "name": "PineTree 有聲書 · Lyra MP3/LRC 播放器",
   "short_name": "PineTree 有聲書",
-  "description": "PineTree 有聲書 · 森夜閱讀、離線 MP3/LRC、小說書庫與 iCloud Drive 手動續聽同步",
+  "description": "PineTree 有聲書 · 護眼主題、離線 MP3/LRC、智慧書庫、睡眠定時、實驗性鎖屏字幕與 iCloud 手動同步",
   "lang": "zh-Hant",
   "start_url": "./index.html",
   "scope": "./",

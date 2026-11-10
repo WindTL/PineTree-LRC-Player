@@ -75,3 +75,57 @@ body.lyrics-maximized .app-shell{padding:0;max-width:none}.lyrics-maximized .top
 .import-options label{display:flex;align-items:flex-start;gap:8px;padding:7px 3px}
 .import-options input{margin-top:2px;accent-color:var(--accent)}
 .version-line{color:var(--muted);font-size:11px;display:block;margin-top:3px}
+
+
+/* PineTree v3.6 – low-glare reading, accessible touch targets and tidy tools. */
+:root{--lyric-line-height:1.85}
+.lyric-line{line-height:var(--lyric-line-height)!important}
+.listen-extras{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:2px 0 10px}
+.listen-extras>.tiny-action{min-height:33px;min-width:auto;padding:5px 11px;font-size:11px}
+#sleepStatus{font-size:11px;color:var(--muted);margin-left:auto;font-variant-numeric:tabular-nums}
+.resume-action{border-color:var(--accent);background:var(--accent-faint);color:var(--lyric-active)}
+.quick-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:10px 0}
+.quick-choices>.btn{min-height:50px;white-space:normal}
+.bookmarks-list{display:flex;flex-direction:column;gap:9px;padding-top:12px}
+.bookmark-row{display:flex;align-items:center;gap:10px;background:var(--panel-alt);border:1px solid var(--border);border-radius:12px;padding:10px}
+.bookmark-jump{min-width:0;flex:1;background:none;text-align:left;color:var(--text);border:0;padding:3px 0;display:grid;gap:7px}
+.bookmark-jump strong{font-size:12px;white-space:normal;overflow-wrap:anywhere}
+.bookmark-jump small{font-size:11px;color:var(--soft);line-height:1.5}
+.bookmark-row>.tiny-action{flex-shrink:0;color:var(--danger)}
+.range-setting{display:grid;gap:9px;padding:14px 0;font-size:12px;color:var(--soft);font-weight:750}
+.range-setting output{color:var(--accent);font-variant-numeric:tabular-nums}
+.range-setting input{width:100%;accent-color:var(--accent)}
+.color-presets{grid-template-columns:repeat(3,minmax(0,1fr))}
+.theme-preset{white-space:normal;min-height:55px;text-align:left}
+.focus-reading .now-playing p,.focus-reading .story-art,.focus-reading .storage-hint,.focus-reading .lyrics-tools>button:not(#focusToggle):not(#toggleLyricsMax),.focus-reading .offset-label,.focus-reading .listen-extras{display:none!important}
+.focus-reading .lyrics-window{border-color:var(--border)}
+.focus-reading .lyrics-toolbar{margin-top:0}
+.focus-reading .now-playing{padding-bottom:7px}
+.focus-reading .player-bottom{padding-top:5px}
+.focus-reading #focusToggle{border-color:var(--accent);color:var(--lyric-active)}
+#cleanupProgress{margin-top:12px}
+#cleanupProgress[hidden]{display:none!important}
+#cleanupProgressTitle{font-size:14px}
+#cleanupBar{width:100%;accent-color:var(--accent)}
+#cleanupDetail{font-size:11px;color:var(--muted)}
+#releaseOpen{text-align:left}
+#releaseDismiss{margin-top:12px}
+button{transition:background-color .16s,border-color .16s,color .16s}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
+@media(max-width:850px){.resume-action{min-width:38px;padding:6px 9px}.resume-action span{display:none}}
+@media(max-width:540px){.listen-extras{gap:5px;padding:2px 0 6px}.listen-extras>.tiny-action{min-height:30px;font-size:10px;padding:5px 7px}#sleepStatus{font-size:9px;width:100%;text-align:center}.quick-choices{grid-template-columns:repeat(2,minmax(0,1fr))}.color-presets{grid-template-columns:repeat(2,minmax(0,1fr))}.focus-reading .now-playing h1{font-size:14px}.focus-reading .lyrics-heading{font-size:11px}}
+
+/* PineTree v3.7 · small, readable lock-screen metadata mode control. */
+#lockScreenOpen{border-color:var(--border);white-space:nowrap}
+.lockscreen-options{display:grid;gap:11px;margin:16px 0}
+.lockscreen-choice{display:flex;gap:12px;align-items:flex-start;padding:15px;background:var(--panel-alt);border:1px solid var(--border);border-radius:13px;cursor:pointer}
+.lockscreen-choice:has(input:checked){border-color:var(--accent);background:var(--accent-faint)}
+.lockscreen-choice input{accent-color:var(--accent);margin-top:5px;width:18px;height:18px;flex:0 0 18px}
+.lockscreen-choice span{display:grid;gap:7px;min-width:0}
+.lockscreen-choice strong{color:var(--text);font-size:13px}
+.lockscreen-choice small{font-size:12px;color:var(--soft);line-height:1.65}
+.lockscreen-preview{background:var(--field);border:1px solid var(--border);border-radius:14px;padding:18px;display:grid;gap:8px;min-height:108px}
+.lockscreen-preview small{font-size:11px;color:var(--muted)}
+.lockscreen-preview strong{font-size:16px;color:var(--lyric-active);line-height:1.5;overflow-wrap:anywhere}
+.lockscreen-preview span{font-size:12px;color:var(--soft);line-height:1.5;overflow-wrap:anywhere}
+@media(max-width:540px){#lockScreenOpen{font-size:10px;padding:5px 9px}}

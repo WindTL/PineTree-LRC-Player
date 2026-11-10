@@ -1,4 +1,4 @@
-/* PineTree Lyra 3.3 · stable resumable imports and safe iCloud merges.
+/* PineTree Lyra 3.7 · experimental lock-screen LRC metadata, sleep timer, bookmarks, eye-care themes.
  * Works with imported MP3 + timestamped LRC files only; no server uploads.
  * Keeps Lyra 1.x IndexedDB data by upgrading the SAME database to v2.
  */
@@ -29,6 +29,13 @@ const state = {
   accentColor:/^#[0-9a-fA-F]{6}$/.test(localStorage.getItem('lyra-accent-color')||'') ? localStorage.getItem('lyra-accent-color') : DEFAULT_ACCENT,
   chapterQuery:'', mobileTab:'player', listDrawBook:null, listDrawQuery:'',
   importJob:null, suppressProgressWrites:false, importReport:[],
+  focusMode:localStorage.getItem('pinetree-focus-mode')==='1',
+  keepAwake:localStorage.getItem('pinetree-keep-awake')==='1',wakeLock:null,
+  lineSpacing:bounded(storedNumber('pinetree-line-spacing',1.85),1.4,2.6,1.85),
+  sleepDeadline:0,sleepEndChapter:false,sleepInterval:null,cleanupRunning:false,cleanupPreviewToken:0,
+  lockScreenMode:localStorage.getItem('pinetree-lockscreen-mode-v37')==='standard'?'standard':'lyrics',
+  lockScreenMetaKey:'',lockScreenLastAt:0,lockScreenLastText:'',lockScreenMediaError:false,
+
 };
 const normalizeBook = value => (value || '').trim().normalize('NFC').replace(/\u0000/g,'').slice(0,90);
 const stem = name => name.replace(/^.*[\\/]/,'').replace(/\.(mp3|lrc)$/i,'').normalize('NFC').trim().toLocaleLowerCase();
@@ -37,6 +44,11 @@ const trackId = (book, name) => `${book}\u0000${stem(name)}`;
 const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
+const BOOKMARKS_KEY='pinetree-bookmarks-v36';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v37';
+function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
+function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
+
 function loadDeletedBooks(){try{return JSON.parse(localStorage.getItem(DELETED_BOOKS_KEY)||'{}')||{};}catch{return {};}}
 function writeDeletedBooks(records){localStorage.setItem(DELETED_BOOKS_KEY,JSON.stringify(records));}
 function markSettingsChanged(){localStorage.setItem(SETTINGS_UPDATED_KEY,String(Date.now()));}
@@ -48,7 +60,9 @@ function formatTime(time){if(!Number.isFinite(time)||time<0)return '00:00';const
 function openDatabase(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,DB_VERSION);req.onupgradeneeded=()=>{const db=req.result;for(const store of ['tracks','audio','progress','books'])if(!db.objectStoreNames.contains(store))db.createObjectStore(store,{keyPath:'id'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);req.onblocked=()=>toast('旧版 Lyra 仍在运行，请关闭其他标签后刷新');});}
 function getStore(name,id){return new Promise((resolve,reject)=>{const req=state.db.transaction(name).objectStore(name)[id===undefined?'getAll':'get'](...(id===undefined?[]:[id]));req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
 function putStore(name,record){return new Promise((resolve,reject)=>{const tx=state.db.transaction(name,'readwrite');tx.objectStore(name).put(record);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}
+function hasAudioKey(id){return new Promise((resolve,reject)=>{const req=state.db.transaction('audio').objectStore('audio').getKey(id);req.onsuccess=()=>resolve(req.result!==undefined);req.onerror=()=>reject(req.error);});}
 function putTrackAndAudio(meta,file){return new Promise((resolve,reject)=>{const tx=state.db.transaction(['tracks','audio'],'readwrite');tx.objectStore('tracks').put(meta);if(file)tx.objectStore('audio').put({id:meta.id,blob:file});tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}
+function removeAudioOnly(track){return new Promise((resolve,reject)=>{const tx=state.db.transaction(['tracks','audio'],'readwrite');tx.objectStore('audio').delete(track.id);tx.objectStore('tracks').put({...track,audioPresent:false,updatedAt:Date.now()});tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}
 function deleteTrackData(id){return new Promise((resolve,reject)=>{const tx=state.db.transaction(['tracks','audio','progress'],'readwrite');for(const store of ['tracks','audio','progress'])tx.objectStore(store).delete(id);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}
 function deleteBookData(book){return new Promise((resolve,reject)=>{const tx=state.db.transaction(['books','tracks','audio','progress'],'readwrite');tx.objectStore('books').delete(book);const trackStore=tx.objectStore('tracks'),audioStore=tx.objectStore('audio'),progressStore=tx.objectStore('progress');const cursor=trackStore.openCursor();cursor.onsuccess=()=>{const item=cursor.result;if(!item)return;if(item.value.book===book){audioStore.delete(item.primaryKey);progressStore.delete(item.primaryKey);item.delete();}item.continue();};tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}
 async function migrateLegacyBooks(){const [books,tracks]=await Promise.all([getStore('books'),getStore('tracks')]);const known=new Set(books.map(x=>x.id));for(const book of new Set(tracks.map(x=>x.book))){if(!known.has(book)){await putStore('books',{id:book,createdAt:Date.now(),coverBlob:null});known.add(book);}}}
@@ -138,8 +152,8 @@ function drawChapterList(){
     const name=document.createElement('span');name.className='chapter-title';name.textContent=t.name;
     const sub=document.createElement('span');sub.className='chapter-subtitle';
     const p=state.progresses.get(t.id);
-    sub.textContent=(t.hasLrc?'LRC 同步字幕':'仅 MP3')+(p?.ended?' · 已听完':p?.position>1?` · 续听 ${formatTime(p.position)}`:'');
-    const sym=document.createElement('span');sym.className='note-icon';sym.textContent=state.current?.id===t.id?'▶':t.hasLrc?'♫':'♪';
+    sub.textContent=(t.hasLrc?'LRC 同步字幕':'僅 MP3')+(t.audioPresent===false?' · MP3 已清理，需重新匯入':'')+(p?.ended?' · 已聽完':p?.position>1?` · 續聽 ${formatTime(p.position)}`:'');
+    const sym=document.createElement('span');sym.className='note-icon';sym.textContent=t.audioPresent===false?'⇩':state.current?.id===t.id?'▶':t.hasLrc?'♫':'♪';
     info.append(name,sub);btn.append(num,info,sym);
     btn.addEventListener('click',()=>loadTrack(t,{autoplay:true}));fragment.append(btn);
   });
@@ -203,7 +217,7 @@ function reportImportStatus(job,step,detail='',processed){
   $('importDetail').textContent=detail;
   $('importCount').textContent=job.total?`${job.done} / ${job.total} 章（${pct}%）`:'正在分析檔案…';
   $('importBar').value=job.total?pct:0;
-  $('importCounters').textContent=`新增 ${job.added} · 更新 ${job.updated} · 略過 ${job.skipped} · 失敗 ${job.failed}`;
+  $('importCounters').textContent=`新增 ${job.added} · 更新 ${job.updated} · 略過 ${job.skipped} · 失敗 ${job.failed} · 缺 LRC ${job.missingLrc} · 重複 ${job.duplicates}`;
   $('importElapsed').textContent=`已耗時 ${Math.floor((Date.now()-job.startedAt)/1000)} 秒`;
   if(job.total){localStorage.setItem(IMPORT_CHECKPOINT_KEY,JSON.stringify({book:job.book,done:job.done,total:job.total,startedAt:job.startedAt}));}
 }
@@ -211,10 +225,10 @@ function closeImportUI(){if(state.importJob?.running)return;closeDialog('importD
 function cancelImport(){const job=state.importJob;if(!job||!job.running)return;job.cancelled=true;$('cancelImport').disabled=true;reportImportStatus(job,'正在安全停止…','完成當前檔案寫入後停止，已成功匯入的章節不會消失。');}
 function importReportText(job){
   return [
-    `PineTree v3.3 匯入報告 · ${new Date().toLocaleString()}`,
+    `PineTree v3.6 匯入報告 · ${new Date().toLocaleString()}`,
     `小說：${bookTitle(job.book)} · 狀態：${job.cancelled?'使用者取消':'完成'}`,
     `檔案：${job.fileCount} · 章節組：${job.total}`,
-    `新增：${job.added}；更新：${job.updated}；已存在略過：${job.skipped}；孤立字幕：${job.orphans}；跳過 Read：${job.excludedRead}；失敗：${job.failed}`,
+    `新增：${job.added}；更新：${job.updated}；已存在略過：${job.skipped}；缺少 MP3：${job.orphans}；缺少 LRC：${job.missingLrc}；重複：${job.duplicates}；跳過 Read：${job.excludedRead}；失敗：${job.failed}`,
     '',...job.report
   ].join('\n');
 }
@@ -230,7 +244,7 @@ async function importFiles(fileList){
   if(state.importJob?.running){toast('另一批檔案正在匯入中');return;}
   const book=state.selectedBook;
   if(!book){toast('請先選擇一本小說');return;}
-  const job={book,running:true,cancelled:false,total:0,done:0,added:0,updated:0,skipped:0,failed:0,orphans:0,excludedRead:0,report:[],startedAt:Date.now(),fileCount:fileList?.length||0};
+  const job={book,running:true,cancelled:false,total:0,done:0,added:0,updated:0,skipped:0,failed:0,orphans:0,missingLrc:0,duplicates:0,excludedRead:0,report:[],startedAt:Date.now(),fileCount:fileList?.length||0};
   state.importJob=job;
   $('cancelImport').disabled=false;$('closeImport').disabled=true;$('downloadImportReport').disabled=true;
   for(const id of ['importBtn','folderBtn','deleteBookBtn'])$(id).disabled=true;
@@ -250,7 +264,9 @@ async function importFiles(fileList){
       const id=trackId(book,file.name);
       let group=groups.get(id);
       if(!group){group={id,book,name:readableStem(file.name),mp3:null,lrc:null};groups.set(id,group);}
-      if(/\.mp3$/i.test(file.name))group.mp3=file;else group.lrc=file;
+      const kind=/\.mp3$/i.test(file.name)?'mp3':'lrc';
+      if(group[kind]){job.duplicates++;job.report.push(`重複檔名：${file.name}；優先採用最近修改的副本`);if((group[kind].lastModified||0)<=(file.lastModified||0))group[kind]=file;}
+      else group[kind]=file;
       if(i%125===0){reportImportStatus(job,'正在掃描檔名…',`已檢查 ${i+1} / ${files.length} 個檔案`);await nextUIFrame();}
     }
     job.total=groups.size;
@@ -277,8 +293,9 @@ async function importFiles(fileList){
             (!old.mp3Signature || old.mp3Signature===signature);
           // A chapter metadata record may exist without its MP3. Check before skipping,
           // otherwise a failed historical import could never repair that chapter.
-          const hasStoredAudio=signatureMatches?!!(await getStore('audio',group.id)) :false;
+          const hasStoredAudio=signatureMatches?await hasAudioKey(group.id):false;
           const sameAudio=signatureMatches&&hasStoredAudio;
+          if(group.mp3&&!group.lrc&&!old?.hasLrc){job.missingLrc++;job.report.push(`缺少 LRC：${group.name}.mp3`);}
           let writeAudio=!!group.mp3&&(!old||force||!sameAudio);
           let updateMeta=!old||writeAudio||lyricsChanged;
           if(!updateMeta){job.skipped++;processed++;}
@@ -288,11 +305,12 @@ async function importFiles(fileList){
               lrcText:freshLrc!==null?freshLrc:(old?.lrcText||''),
               bytes:writeAudio?group.mp3.size:(old?.bytes||0),
               mp3Signature:writeAudio?signature:(old?.mp3Signature||null),
+              audioPresent:writeAudio?true:(old?.audioPresent!==false),
               updatedAt:Date.now()};
             if(writeAudio)await putTrackAndAudio(meta,group.mp3);
             else await putStore('tracks',meta);
             if(old)job.updated++;else job.added++;
-            if(state.current?.id===group.id){state.current=meta;displayLyrics(meta.lrcText);}
+            if(state.current?.id===group.id){state.current=meta;displayLyrics(meta.lrcText);state.lockScreenMetaKey='';updateMediaSession(true);}
             processed++;
           }
         }
@@ -335,22 +353,104 @@ function displayPlaceholder(title,note){const el=$('lyricsWindow');el.replaceChi
 function displayLyrics(lrc){state.lines=parseLRC(lrc);state.lineIndex=-1;const container=$('lyricsWindow');container.replaceChildren();if(!state.lines.length){$('lrcState').textContent='· 无时间轴';displayPlaceholder('还没有同步文字','导入同名 .lrc 文件即可同步显示');return;}$('lrcState').textContent=`· ${state.lines.length} 行`;const frag=document.createDocumentFragment();state.lines.forEach((line,i)=>{const element=document.createElement('div');element.className='lyric-line';element.dataset.index=i;element.textContent=line.text;element.title=`${formatTime(line.time)} · 点击跳转`;frag.append(element);});container.append(frag);container.scrollTop=0;updateLyrics(true);}
 function lyricIndex(time){let low=0,high=state.lines.length-1,result=-1;while(low<=high){const mid=(low+high)>>1;if(state.lines[mid].time<=time){result=mid;low=mid+1;}else high=mid-1;}return result;}
 function updateLyrics(force=false){if(!state.lines.length)return;const idx=lyricIndex((Number(audio.currentTime)||0)-state.delay);if(idx===state.lineIndex&&!force)return;const lines=$('lyricsWindow').children;if(state.lineIndex>=0&&lines[state.lineIndex])lines[state.lineIndex].classList.remove('active');state.lineIndex=idx;if(idx>=0&&lines[idx]){const el=lines[idx];el.classList.add('active');if(Date.now()>=state.userScrollUntil){const win=$('lyricsWindow');win.scrollTo({top:Math.max(0,el.offsetTop-win.offsetTop-win.clientHeight*.42),behavior:force?'instant':'smooth'});}}}
-async function saveProgress(ended=false){if(!state.db||!state.current||state.suppressProgressWrites)return;const id=state.current.id;const done=ended||audio.ended;const record={id,position:done?(Number(audio.duration)||0):(Number(audio.currentTime)||0),ended:done,updatedAt:Date.now()};state.progresses.set(id,record);try{await putStore('progress',record);}catch(error){console.warn('进度保存失败：',error);}}
+async function saveProgress(ended=false){if(!state.db||!state.current||state.suppressProgressWrites||!state.fileUrl||audio.readyState<1||!Number.isFinite(audio.duration)||audio.duration<=0)return;const id=state.current.id;const done=ended||audio.ended;const record={id,position:done?(Number(audio.duration)||0):(Number(audio.currentTime)||0),ended:done,updatedAt:Date.now()};state.progresses.set(id,record);try{await putStore('progress',record);}catch(error){console.warn('进度保存失败：',error);}}
 function releaseAudio(){audio.pause();audio.removeAttribute('src');audio.load();if(state.fileUrl)URL.revokeObjectURL(state.fileUrl);state.fileUrl=null;}
 function updateStoryArt(){const cover=$('currentCover'),fallback=$('storyArtFallback');const book=getBook(state.current?.book||state.selectedBook);const title=book?bookTitle(book.id):'选择一本小说';$('storyBookName').textContent=title;$('storyBookName').title=title;$('storyBookName').classList.toggle('long-title',title.length>15);const url=coverUrl(book);if(url){cover.src=url;cover.hidden=false;fallback.hidden=true;}else{cover.hidden=true;cover.removeAttribute('src');fallback.hidden=false;}}
-function updateMediaSession(){if(!('mediaSession' in navigator)||!state.current)return;const book=getBook(state.current.book);const url=coverUrl(book);try{navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,artist:'PineTree 有聲書',album:bookTitle(state.current.book),artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=321',location.href).href,sizes:'512x512',type:'image/png'}]});}catch(error){console.warn('锁屏媒体信息无法更新',error);}}
+// Experimental lock-screen subtitles use OS media metadata, not native system karaoke lyrics.
+// iOS may throttle/suspend background JavaScript, timeupdate and metadata rendering.
+// No background polling: react only to actual audio events, and throttle metadata changes.
+const LOCKSCREEN_MODE_KEY='pinetree-lockscreen-mode-v37';
+const LOCKSCREEN_MIN_INTERVAL_MS=3500;
+function safeLyricTitle(text){
+  // Prevent very long/wrapped metadata and control characters in the lock screen.
+  return Array.from(String(text||'').replace(/[\u0000-\u001F\u007F]+/g,' ').replace(/\s+/g,' ').trim()).slice(0,64).join('');
+}
+function lockScreenLineIndex(){
+  if(!state.current||!state.lines.length)return -1;
+  return lyricIndex((Number(audio.currentTime)||0)-state.delay);
+}
+function lockScreenInfo(){
+  const chapter=state.current?.name||'未選擇章節';
+  const book=state.current?bookTitle(state.current.book):'PineTree 有聲書';
+  const index=state.lockScreenMode==='lyrics'?lockScreenLineIndex():-1;
+  const lyric=index>=0?safeLyricTitle(state.lines[index]?.text):'';
+  const active=state.lockScreenMode==='lyrics'&&!!lyric;
+  return {title:active?lyric:chapter,artist:active?chapter:'PineTree 有聲書',album:book,
+    key:`${state.current?.id||''}|${state.lockScreenMode}|${active?index:'chapter'}|${active?lyric:''}`,active};
+}
+function refreshLockScreenControls(){
+  const experimental=state.lockScreenMode==='lyrics';
+  const info=lockScreenInfo();
+  const status=$('lockScreenStatus');
+  const preview=$('lockScreenPreviewTitle');
+  const second=$('lockScreenPreviewArtist');
+  const button=$('lockScreenOpen');
+  if(button){button.textContent=experimental?'🔒 鎖屏字幕 · 實驗':'🔒 鎖屏資訊';button.title=experimental?'目前使用實驗性 LRC 鎖屏字幕；點此調整':'目前顯示標準章節資訊；點此調整';}
+  if(preview)preview.textContent=info.title;
+  if(second)second.textContent=info.artist+' · '+info.album;
+  if(status)status.textContent=!('mediaSession' in navigator)||typeof MediaMetadata!=='function'
+    ?'此瀏覽器沒有提供完整媒體資訊介面，會保留一般播放功能。'
+    :experimental
+      ?info.active?'目前有字幕可嘗試顯示；鎖屏後是否逐句更新取決於 iOS。':'目前章節沒有可用的時間軸字幕，會退回章節標題。'
+      :'目前使用標準模式：顯示章節標題與 PineTree 名稱。';
+  for(const input of document.querySelectorAll('input[name="lockScreenMode"]'))input.checked=input.value===state.lockScreenMode;
+}
+function setLockScreenMode(mode,{persist=true}={}){
+  if(mode!=='standard'&&mode!=='lyrics')return;
+  state.lockScreenMode=mode;
+  state.lockScreenMetaKey='';
+  state.lockScreenLastAt=0;
+  state.lockScreenMediaError=false;
+  if(persist){localStorage.setItem(LOCKSCREEN_MODE_KEY,mode);markSettingsChanged();}
+  refreshLockScreenControls();
+  updateMediaSession(true);
+}
+function updateMediaSession(force=false){
+  if(!state.current||!('mediaSession' in navigator)||typeof MediaMetadata!=='function'||state.lockScreenMediaError)return;
+  const info=lockScreenInfo();
+  if(info.key===state.lockScreenMetaKey&&!force)return;
+  const now=Date.now();
+  // A metadata change can make iOS redraw Now Playing; avoid flashing every few hundred ms.
+  if(!force && state.lockScreenMetaKey && now-state.lockScreenLastAt<LOCKSCREEN_MIN_INTERVAL_MS)return;
+  const book=getBook(state.current.book),url=coverUrl(book);
+  try{
+    navigator.mediaSession.metadata=new MediaMetadata({
+      title:info.title,artist:info.artist,album:info.album,
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=321',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+    });
+    state.lockScreenMetaKey=info.key;
+    state.lockScreenLastText=info.title;
+    state.lockScreenLastAt=now;
+  }catch(error){
+    // If a lyric metadata update fails, attempt to keep the ordinary chapter title.
+    if(info.active){
+      try{
+        navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
+          artist:'PineTree 有聲書',album:info.album,
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=321',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+        state.lockScreenMetaKey=info.key;
+        state.lockScreenLastAt=now;
+        return;
+      }catch(_){}
+    }
+    // Keep playback intact even if iOS rejects all metadata writes.
+    state.lockScreenMediaError=true;
+    console.warn('鎖屏媒體資訊更新失敗；不影響音訊播放',error);
+  }
+}
+
 function updateMediaPosition(){if(!('mediaSession' in navigator)||!navigator.mediaSession.setPositionState)return;if(!Number.isFinite(audio.duration)||audio.duration<=0)return;try{navigator.mediaSession.setPositionState({duration:audio.duration,playbackRate:audio.playbackRate,position:Math.max(0,Math.min(audio.duration,audio.currentTime))});}catch(_) {}}
 function setupMediaSession(){if(!('mediaSession' in navigator))return;const handlers={play:()=>startPlayback(),pause:()=>audio.pause(),previoustrack:()=>adjacentTrack(-1),nexttrack:()=>adjacentTrack(1),seekbackward:({seekOffset}={})=>skipSeconds(-(seekOffset||15)),seekforward:({seekOffset}={})=>skipSeconds(seekOffset||15),seekto:({seekTime})=>{if(Number.isFinite(seekTime))audio.currentTime=seekTime;}};for(const [action,fn]of Object.entries(handlers))try{navigator.mediaSession.setActionHandler(action,fn);}catch(_) {}}
-function clearCurrent(message='请选择章节'){++state.loadingToken;state.current=null;releaseAudio();state.lines=[];state.lineIndex=-1;localStorage.removeItem('lyra-last-id');$('currentBook').textContent=state.selectedBook?bookTitle(state.selectedBook):'READY TO LISTEN';$('currentTitle').textContent=message;$('chapterHint').textContent='从章节目录选择一章';$('playBtn').disabled=true;$('seekBar').disabled=true;$('deleteBtn').disabled=true;$('playBtn').textContent='▶';$('playStatus').textContent='未选章节';$('lrcState').textContent='· 暂无字幕';$('elapsed').textContent='00:00';$('duration').textContent='00:00';displayPlaceholder(message,'MP3 和 LRC 将保存在本机书库');updateStoryArt();updateBookBrand();drawChapterList();}
-async function loadTrack(track,{autoplay=false,restart=false}={}){if(!track)return;const token=++state.loadingToken;if(state.current&&state.current.id!==track.id&&!audio.ended)await saveProgress();if(token!==state.loadingToken)return;releaseAudio();state.current=track;localStorage.setItem('lyra-last-id',track.id);localStorage.setItem('lyra-last-book-track:'+track.book,track.id);$('currentBook').textContent=bookTitle(track.book);$('currentTitle').textContent=track.name;$('chapterHint').textContent='自动保存续听进度 · 点击字幕可跳转';$('deleteBtn').disabled=false;$('playBtn').disabled=true;$('seekBar').disabled=true;$('playStatus').textContent='读取音频中…';displayLyrics(track.lrcText||'');updateStoryArt();updateBookBrand();drawChapterList();if(window.matchMedia('(max-width:850px)').matches)setMobileTab('player',true);else requestAnimationFrame(scrollActiveChapter);
-  try{const [stored,progress]=await Promise.all([getStore('audio',track.id),getStore('progress',track.id)]);if(token!==state.loadingToken)return;if(!stored?.blob)throw new Error('本章 MP3 缺失，请重新导入');const resumeAt=restart||progress?.ended?0:Math.max(0,Number(progress?.position)||0);state.fileUrl=URL.createObjectURL(stored.blob);audio.src=state.fileUrl;audio.defaultPlaybackRate=state.speed;audio.playbackRate=state.speed;audio.load();$('playBtn').disabled=false;$('seekBar').disabled=false;updateMediaSession();let restored=false;const resume=()=>{if(token!==state.loadingToken||restored)return;const d=audio.duration;if(Number.isFinite(d)&&d>0){if(resumeAt>0&&resumeAt<d-1){try{audio.currentTime=resumeAt;}catch(_) {}}restored=true;updateProgressDisplay();updateLyrics(true);updateMediaPosition();}};if(audio.readyState>=1)resume();else{audio.addEventListener('loadedmetadata',resume,{once:true});audio.addEventListener('canplay',resume,{once:true});}$('playStatus').textContent=progress?.ended?'已听完 · 从头开始':resumeAt>1?`续听 ${formatTime(resumeAt)}`:'准备播放';if(autoplay)await startPlayback();}catch(error){if(token!==state.loadingToken)return;console.error(error);$('playBtn').disabled=true;$('seekBar').disabled=true;$('playStatus').textContent='音频读取失败';toast(`播放失败：${error.message||error}`);}}
+function clearCurrent(message='请选择章节'){++state.loadingToken;state.current=null;state.lockScreenMetaKey='';releaseAudio();try{if('mediaSession'in navigator)navigator.mediaSession.metadata=null;}catch(_){}state.lines=[];state.lineIndex=-1;localStorage.removeItem('lyra-last-id');$('currentBook').textContent=state.selectedBook?bookTitle(state.selectedBook):'READY TO LISTEN';$('currentTitle').textContent=message;$('chapterHint').textContent='从章节目录选择一章';$('playBtn').disabled=true;$('seekBar').disabled=true;$('deleteBtn').disabled=true;$('bookmarkAdd').disabled=true;$('playBtn').textContent='▶';$('playStatus').textContent='未选章节';$('lrcState').textContent='· 暂无字幕';$('elapsed').textContent='00:00';$('duration').textContent='00:00';displayPlaceholder(message,'MP3 和 LRC 将保存在本机书库');updateStoryArt();updateBookBrand();drawChapterList();}
+async function loadTrack(track,{autoplay=false,restart=false}={}){if(!track)return;const token=++state.loadingToken;if(state.current&&state.current.id!==track.id&&!audio.ended)await saveProgress();if(token!==state.loadingToken)return;releaseAudio();state.current=track;localStorage.setItem('lyra-last-id',track.id);localStorage.setItem('lyra-last-book-track:'+track.book,track.id);$('currentBook').textContent=bookTitle(track.book);$('currentTitle').textContent=track.name;$('chapterHint').textContent='自动保存续听进度 · 点击字幕可跳转';$('deleteBtn').disabled=false;$('bookmarkAdd').disabled=false;$('playBtn').disabled=true;$('seekBar').disabled=true;$('playStatus').textContent='读取音频中…';state.lockScreenMetaKey='';displayLyrics(track.lrcText||'');updateStoryArt();updateBookBrand();drawChapterList();if(window.matchMedia('(max-width:850px)').matches)setMobileTab('player',true);else requestAnimationFrame(scrollActiveChapter);
+  try{const [stored,progress]=await Promise.all([getStore('audio',track.id),getStore('progress',track.id)]);if(token!==state.loadingToken)return;if(!stored?.blob)throw new Error('本章 MP3 已清理或未匯入；請從 iCloud Drive 重新匯入同名 MP3');const resumeAt=restart||progress?.ended?0:Math.max(0,Number(progress?.position)||0);state.fileUrl=URL.createObjectURL(stored.blob);audio.src=state.fileUrl;audio.defaultPlaybackRate=state.speed;audio.playbackRate=state.speed;audio.load();$('playBtn').disabled=false;$('seekBar').disabled=false;updateMediaSession();let restored=false;const resume=()=>{if(token!==state.loadingToken||restored)return;const d=audio.duration;if(Number.isFinite(d)&&d>0){if(resumeAt>0&&resumeAt<d-1){try{audio.currentTime=resumeAt;}catch(_) {}}restored=true;updateProgressDisplay();updateLyrics(true);updateMediaPosition();}};if(audio.readyState>=1)resume();else{audio.addEventListener('loadedmetadata',resume,{once:true});audio.addEventListener('canplay',resume,{once:true});}$('playStatus').textContent=progress?.ended?'已听完 · 从头开始':resumeAt>1?`续听 ${formatTime(resumeAt)}`:'准备播放';if(autoplay)await startPlayback();}catch(error){if(token!==state.loadingToken)return;console.error(error);$('playBtn').disabled=true;$('seekBar').disabled=true;$('playStatus').textContent='音频读取失败';toast(`播放失败：${error.message||error}`);}}
 async function startPlayback(){if(!state.current){toast('请先选择小说章节');return;}if(!audio.src){await loadTrack(state.current,{autoplay:false});}try{await audio.play();$('playStatus').textContent='正在播放';}catch(error){console.warn('系统阻止自动播放',error);$('playStatus').textContent='点击播放键继续';toast('iPhone 可能需要手动按播放；后台切章受 iOS 限制');}}
 function skipSeconds(n){if(!state.current||!Number.isFinite(audio.duration))return;audio.currentTime=Math.max(0,Math.min(audio.duration,audio.currentTime+n));updateProgressDisplay();updateLyrics();saveProgress();}
 function adjacentTrack(delta){const list=state.current?sortedBookTracks(state.current.book):[];const i=list.findIndex(t=>t.id===state.current?.id);if(i<0||!list[i+delta]){toast(delta>0?'这已是本书最后一章':'这已是本书第一章');return;}return loadTrack(list[i+delta],{autoplay:true});}
 function updateProgressDisplay(){const cur=Number(audio.currentTime)||0,d=Number(audio.duration)||0;$('elapsed').textContent=formatTime(cur);$('duration').textContent=formatTime(d);if(!state.seeking)$('seekBar').value=d>0?String(Math.min(1000,Math.round(cur/d*1000))):'0';}
 async function deleteCurrent(){if(!state.current)return;const track=state.current;if(!confirm(`只删除当前章节？\n\n${track.name}\n\n播放器内的 MP3/LRC 与续听记录会删除，「文件」App 原件不受影响。`))return;clearCurrent('这一章已删除');await deleteTrackData(track.id);if(localStorage.getItem('lyra-last-book-track:'+track.book)===track.id)localStorage.removeItem('lyra-last-book-track:'+track.book);await refreshLibrary(track.book);toast('章节已删除');}
 function changeFont(delta){state.fontSize=bounded(state.fontSize+delta,14,38,21);document.documentElement.style.setProperty('--font-size',`${state.fontSize}px`);localStorage.setItem('lyra-font',state.fontSize);markSettingsChanged();updateLyrics(true);}
-function changeDelay(delta){state.delay=bounded(Math.round((state.delay+delta)*2)/2,-20,20,0);localStorage.setItem('lyra-delay',state.delay);markSettingsChanged();$('offsetLabel').textContent=`${state.delay>0?'+':''}${state.delay.toFixed(1)}s`;updateLyrics(true);}
+function changeDelay(delta){state.delay=bounded(Math.round((state.delay+delta)*2)/2,-20,20,0);localStorage.setItem('lyra-delay',state.delay);markSettingsChanged();$('offsetLabel').textContent=`${state.delay>0?'+':''}${state.delay.toFixed(1)}s`;updateLyrics(true);updateMediaSession(true);}
 function setSpeed(value){state.speed=Math.round(bounded(Number(value),.5,3,1)*20)/20;audio.defaultPlaybackRate=state.speed;audio.playbackRate=state.speed;localStorage.setItem('lyra-speed',state.speed);$('speedRange').value=state.speed;$('speedLabel').textContent=`${state.speed.toFixed(2)}×`;updateMediaPosition();}
 const isHex=x=>/^#[0-9a-f]{6}$/i.test(x);
 function rgb(hex){return [1,3,5].map(p=>parseInt(hex.slice(p,p+2),16));}
@@ -466,12 +566,13 @@ async function makeSyncSnapshot(){
   const positions=progress.filter(p=>typeof p.id==='string'&&p.id.includes('\u0000')).map(p=>({id:p.id,position:Number(p.position)||0,ended:!!p.ended,updatedAt:Number(p.updatedAt)||0}));
   return {format:SYNC_SCHEMA,exportedAt:new Date().toISOString(),books:serialized,progress:positions,
     deletedBooks:Object.entries(loadDeletedBooks()).map(([id,deletedAt])=>({id,deletedAt})),
+    bookmarks:readBookmarks(),
     settingsUpdatedAt:Number(localStorage.getItem(SETTINGS_UPDATED_KEY)||0),
     lastTrackId:localStorage.getItem('lyra-last-id')||'',
     selectedBook:state.selectedBook||'',
     settings:{speed:state.speed,fontSize:state.fontSize,delay:state.delay,
       bg:state.bgColor,panel:state.panelColor,accent:state.accentColor,
-      linked:state.panelLinked,lyricsMax:state.lyricsMax},
+      linked:state.panelLinked,lyricsMax:state.lyricsMax,focusMode:state.focusMode,lineSpacing:state.lineSpacing,keepAwake:state.keepAwake,lockScreenMode:state.lockScreenMode},
     note:'僅書庫名稱、封面、播放進度及介面設定；不包含 MP3/LRC 音訊檔',
     skippedLargeCovers:skipped};
 }
@@ -506,7 +607,8 @@ function validateSyncSnapshot(data){
     positions.push({id:entry.id,position,ended:!!entry.ended,updatedAt:safeTimestamp(entry.updatedAt)});
   }
   const deletedBooks=Array.isArray(data.deletedBooks)?data.deletedBooks.filter(x=>x&&typeof x.id==='string'&&x.id.length<=90&&safeTimestamp(x.deletedAt)).map(x=>({id:x.id,deletedAt:safeTimestamp(x.deletedAt)})):[];
-  return {books,positions,deletedBooks,settings:data.settings,settingsUpdatedAt:safeTimestamp(data.settingsUpdatedAt),selectedBook:data.selectedBook,lastTrackId:data.lastTrackId,exportedAt:data.exportedAt};
+  const bookmarks=Array.isArray(data.bookmarks)?data.bookmarks.slice(0,2000).filter(x=>x && typeof x.id==='string'&&x.id.length<600&&typeof x.trackId==='string'&&x.trackId.length<450&&Number.isFinite(Number(x.position))&&Number(x.position)>=0&&Number(x.position)<1e8).map(x=>({...x,position:Number(x.position),excerpt:String(x.excerpt||'').slice(0,200),updatedAt:safeTimestamp(x.updatedAt),deletedAt:safeTimestamp(x.deletedAt)})):[];
+  return {books,positions,deletedBooks,bookmarks,settings:data.settings,settingsUpdatedAt:safeTimestamp(data.settingsUpdatedAt),selectedBook:data.selectedBook,lastTrackId:data.lastTrackId,exportedAt:data.exportedAt};
 }
 async function importICloudState(file){
   if(!file)return;
@@ -549,6 +651,15 @@ async function importICloudState(file){
           await putStore('progress',item);changed++;
         }else older++;
       }
+      // Merge bookmarks by per-item timestamps, including deletion markers.
+      if(snapshot.bookmarks?.length){
+        const joined=new Map(readBookmarks().map(x=>[x.id,x]));
+        for(const item of snapshot.bookmarks){
+          const local=joined.get(item.id);
+          if(!local || item.updatedAt>safeTimestamp(local.updatedAt))joined.set(item.id,item);
+        }
+        writeBookmarks([...joined.values()]);
+      }
       const cfg=snapshot.settings;
       const localSettingsAt=safeTimestamp(localStorage.getItem(SETTINGS_UPDATED_KEY));
       if(snapshot.settingsUpdatedAt>localSettingsAt || (!snapshot.settingsUpdatedAt && !localSettingsAt)){
@@ -557,6 +668,10 @@ async function importICloudState(file){
         if(Number.isFinite(Number(cfg.delay))){state.delay=bounded(Number(cfg.delay),-20,20,0);localStorage.setItem('lyra-delay',state.delay);$('offsetLabel').textContent=`${state.delay>0?'+':''}${state.delay.toFixed(1)}s`;}
         if([cfg.bg,cfg.panel,cfg.accent].every(isHex))setTheme(cfg.bg,cfg.panel,cfg.accent,{linked:!!cfg.linked});
         if(typeof cfg.lyricsMax==='boolean')setLyricsMax(cfg.lyricsMax,false);
+        if(Number.isFinite(Number(cfg.lineSpacing)))setLineSpacing(cfg.lineSpacing,false);
+        if(typeof cfg.focusMode==='boolean')setFocusMode(cfg.focusMode,false);
+        if(typeof cfg.keepAwake==='boolean')setKeepAwake(cfg.keepAwake,false);
+        if(cfg.lockScreenMode==='standard'||cfg.lockScreenMode==='lyrics')setLockScreenMode(cfg.lockScreenMode,{persist:false});
         if(snapshot.settingsUpdatedAt)localStorage.setItem(SETTINGS_UPDATED_KEY,String(snapshot.settingsUpdatedAt));
       }
       const prefer=typeof snapshot.selectedBook==='string'&&snapshot.books.some(b=>b.id===snapshot.selectedBook)?snapshot.selectedBook:state.selectedBook;
@@ -579,7 +694,194 @@ async function importICloudState(file){
   finally{button.disabled=false;$('syncFile').value='';}
 }
 
+
+// ------------------------------
+// PineTree v3.6: calm listening and local storage tools.
+// Offline data remains under the same IndexedDB name; do not clear on upgrades.
+// ------------------------------
+function setLineSpacing(value,mark=true){
+  state.lineSpacing=bounded(Number(value),1.4,2.6,1.85);
+  document.documentElement.style.setProperty('--lyric-line-height',String(state.lineSpacing));
+  $('lineSpacing').value=String(state.lineSpacing);
+  $('lineSpacingLabel').textContent=state.lineSpacing.toFixed(2);
+  localStorage.setItem('pinetree-line-spacing',String(state.lineSpacing));
+  if(mark)markSettingsChanged();
+}
+async function releaseWakeLock(){try{if(state.wakeLock)await state.wakeLock.release();}catch(_){}state.wakeLock=null;}
+async function requestWakeLock(){
+  if(!state.keepAwake||!state.focusMode||document.hidden||state.wakeLock)return;
+  if(!navigator.wakeLock?.request){toast('這個 iOS 版本暫不支援網頁螢幕常亮；仍可使用專注模式');return;}
+  try{state.wakeLock=await navigator.wakeLock.request('screen');}
+  catch(err){console.warn('Screen Wake Lock 不可用',err);toast('螢幕常亮被系統拒絕，可在 iPhone 設定內調整自動鎖定');}
+}
+function setFocusMode(value,mark=true){
+  state.focusMode=!!value;
+  document.body.classList.toggle('focus-reading',state.focusMode);
+  const btn=$('focusToggle');btn.textContent=state.focusMode?'☘ 退出專注':'☘ 專注';
+  btn.setAttribute('aria-pressed',String(state.focusMode));
+  localStorage.setItem('pinetree-focus-mode',state.focusMode?'1':'0');
+  if(state.focusMode)requestWakeLock();else releaseWakeLock();
+  if(mark)markSettingsChanged();
+  requestAnimationFrame(()=>updateLyrics(true));
+}
+function setKeepAwake(value,mark=true){
+  state.keepAwake=!!value;$('keepAwake').checked=state.keepAwake;
+  localStorage.setItem('pinetree-keep-awake',state.keepAwake?'1':'0');
+  if(state.keepAwake)requestWakeLock();else releaseWakeLock();
+  if(mark)markSettingsChanged();
+}
+function updateSleepUI(){
+  const label=state.sleepEndChapter?'本章結束後停止':state.sleepDeadline?`剩餘 ${formatTime(Math.ceil((state.sleepDeadline-Date.now())/1000))}`:'定時器未開啟';
+  $('sleepStatus').textContent=label;
+  $('sleepDetail').textContent=state.sleepDeadline||state.sleepEndChapter?'已啟用：'+label+'。切換 App 或鎖屏後，iOS 可能延遲執行定時停止。':'目前尚未啟用。睡眠定時不會在重新啟動 App 後意外恢復。';
+}
+function stopSleepTimer(message='已取消睡眠定時'){
+  state.sleepDeadline=0;state.sleepEndChapter=false;
+  if(state.sleepInterval){clearInterval(state.sleepInterval);state.sleepInterval=null;}
+  updateSleepUI();if(message)toast(message);
+}
+function checkSleepTimer(){
+  if(state.sleepDeadline && Date.now()>=state.sleepDeadline){
+    // Guard against paused audio being inadvertently restarted by other events.
+    audio.pause();saveProgress();stopSleepTimer('定時時間已到，已暫停並保存續聽位置');
+  }else if(state.sleepDeadline)updateSleepUI();
+}
+function chooseSleepTimer(value){
+  stopSleepTimer('');
+  if(value==='off'){toast('睡眠定時已取消');}
+  else if(value==='chapter'){state.sleepEndChapter=true;toast('本章結束後自動停止');}
+  else{
+    const minutes=Number(value);
+    if(![15,30,45,60].includes(minutes))return;
+    state.sleepDeadline=Date.now()+minutes*60000;
+    state.sleepInterval=setInterval(checkSleepTimer,1000);
+    localStorage.setItem('pinetree-last-sleep-choice',String(minutes));
+    toast(`已設置 ${minutes} 分鐘睡眠定時`);
+  }
+  updateSleepUI();closeDialog('sleepDialog');
+}
+function addBookmark(){
+  if(!state.current){toast('請先選擇章節');return;}
+  const sec=Math.max(0,Math.floor(audio.currentTime||0));
+  const line=state.lineIndex>=0?state.lines[state.lineIndex]?.text||'':'';
+  const id=state.current.id+'\u0001'+sec;
+  const items=readBookmarks().filter(b=>b.id!==id);
+  items.push({id,trackId:state.current.id,book:state.current.book,position:sec,excerpt:line.slice(0,200),updatedAt:Date.now(),deletedAt:0});
+  if(writeBookmarks(items))toast(`已收藏 ${formatTime(sec)}${line?' · '+line.slice(0,18):''}`);
+}
+function removeBookmark(id){
+  const items=readBookmarks();const entry=items.find(x=>x.id===id);
+  if(!entry)return;
+  entry.deletedAt=Date.now();entry.updatedAt=entry.deletedAt;
+  if(writeBookmarks(items))renderBookmarks();
+}
+async function jumpBookmark(b){
+  const track=state.tracks.find(t=>t.id===b.trackId);
+  if(!track){toast('本機尚無該章節，先從 iCloud 匯入章節再使用書籤');return;}
+  closeDialog('bookmarksDialog');
+  if(state.current?.id!==track.id)await loadTrack(track,{autoplay:false});
+  const position=Math.max(0,Number(b.position)||0);
+  const seek=()=>{if(Number.isFinite(audio.duration)&&audio.duration>0){audio.currentTime=Math.min(position,Math.max(0,audio.duration-0.5));updateProgressDisplay();updateLyrics(true);}};
+  if(audio.readyState>=1)seek();else audio.addEventListener('loadedmetadata',seek,{once:true});
+  toast('已回到收藏位置；點播放開始聆聽');
+}
+function renderBookmarks(){
+  const el=$('bookmarksList');el.replaceChildren();
+  const items=readBookmarks().filter(x=>!x.deletedAt).sort((a,b)=>b.updatedAt-a.updatedAt);
+  if(!items.length){const empty=document.createElement('p');empty.className='dialog-note';empty.textContent='尚未收藏。播放章節時點「☆ 收藏此句」即可新增。';el.append(empty);return;}
+  for(const b of items){
+    const card=document.createElement('div');card.className='bookmark-row';
+    const jump=document.createElement('button');jump.className='bookmark-jump';jump.type='button';
+    const track=state.tracks.find(t=>t.id===b.trackId);
+    const title=document.createElement('strong');title.textContent=(track?.name||String(b.trackId).split('\u0000').pop()||'未匯入章節')+' · '+formatTime(b.position);
+    const desc=document.createElement('small');desc.textContent=bookTitle(b.book)+' · '+(b.excerpt||'書籤位置');
+    jump.append(title,desc);jump.addEventListener('click',()=>jumpBookmark(b));
+    const remove=document.createElement('button');remove.type='button';remove.className='tiny-action';remove.textContent='移除';remove.title='刪除這個書籤';remove.addEventListener('click',()=>removeBookmark(b.id));
+    card.append(jump,remove);el.append(card);
+  }
+}
+async function quickResume(){
+  const last=localStorage.getItem('lyra-last-id');
+  const track=state.tracks.find(t=>t.id===last);
+  if(!track){toast('尚無續聽章節；請先匯入 MP3 並選擇章節');return;}
+  if(track.book!==state.selectedBook)await selectBook(track.book);
+  if(state.current?.id!==track.id)await loadTrack(track,{autoplay:true});
+  else await startPlayback();
+}
+function cleanupCandidates(book,keep){
+  const tracks=sortedBookTracks(book);
+  const protectedIds=new Set(keep>0?tracks.slice(-keep).map(x=>x.id):[]);
+  if(state.current)protectedIds.add(state.current.id);
+  return tracks.filter(t=>!protectedIds.has(t.id)&&state.progresses.get(t.id)?.ended&&t.audioPresent!==false);
+}
+async function previewCleanup(){
+  const token=++state.cleanupPreviewToken;
+  const el=$('cleanupEstimate');const book=state.selectedBook;
+  if(!book){el.textContent='先選擇一本小說';$('cleanupRun').disabled=true;return;}
+  const keep=Number($('cleanupKeep').value)||0;
+  $('cleanupKeepLabel').textContent=String(keep);
+  el.textContent='正在查詢 MP3 副本，請稍候…';$('cleanupRun').disabled=true;
+  const entries=cleanupCandidates(book,keep);let count=0,bytes=0;
+  for(let i=0;i<entries.length;i++){
+    if(await hasAudioKey(entries[i].id)){count++;bytes+=Number(entries[i].bytes)||0;}
+    if(token!==state.cleanupPreviewToken)return;
+    if(i%60===0)await nextUIFrame();
+  }
+  if(token!==state.cleanupPreviewToken)return;
+  el.textContent=`《${bookTitle(book)}》：可清理已聽完 MP3 ${count} 章，估計釋放 ${displayBytes(bytes)}。保護最後 ${keep} 章和目前正在播放章節。LRC／續聽時間／書籤保留。`;
+  $('cleanupRun').disabled=count===0;
+  return {count,bytes};
+}
+async function runCleanup(){
+  if(state.cleanupRunning||state.importJob?.running)return;
+  const book=state.selectedBook;const keep=Number($('cleanupKeep').value)||0;
+  const candidates=cleanupCandidates(book,keep);const confirmed=await previewCleanup();
+  if(!confirmed?.count)return;
+  if(!confirm(`確定清理《${bookTitle(book)}》的 ${confirmed.count} 章已聽完 MP3 副本？\n估計釋放 ${displayBytes(confirmed.bytes)}。\n\n原始 iCloud MP3 不會刪除，但下次播放這些章節需重新匯入 MP3。`))return;
+  state.cleanupRunning=true;for(const id of ['cleanupRun','cleanupPreview','cleanupClose'])$(id).disabled=true;
+  $('cleanupProgress').hidden=false;let done=0,bytes=0,failed=0;
+  try{
+    for(const t of candidates){
+      try{if(await hasAudioKey(t.id)){await removeAudioOnly(t);done++;bytes+=(Number(t.bytes)||0);}}
+      catch(error){failed++;console.warn('清理失敗',t.name,error);}
+      $('cleanupBar').value=candidates.length?Math.round((done+failed)/candidates.length*100):100;
+      $('cleanupProgressTitle').textContent=`已處理 ${done+failed} / ${candidates.length} 章`;
+      $('cleanupDetail').textContent=`已清理 ${done} 章 · 估計釋放 ${displayBytes(bytes)} · 失敗 ${failed}`;
+      if((done+failed)%5===0)await nextUIFrame();
+    }
+    await refreshLibrary(book);
+    toast(`已清理 ${done} 章 MP3；書籤、LRC 與播放記錄仍保留`);
+  }finally{state.cleanupRunning=false;for(const id of ['cleanupPreview','cleanupClose'])$(id).disabled=false;await previewCleanup();}
+}
+function openReleaseNotes(force=false){
+  if(force||localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){
+    openDialog('releaseDialog');localStorage.setItem(RELEASE_SEEN_KEY,'1');
+  }
+}
+
 function setupEvents(){
+  $('quickResume').addEventListener('click',quickResume);
+  $('focusToggle').addEventListener('click',()=>setFocusMode(!state.focusMode));
+  $('lineSpacing').addEventListener('input',e=>setLineSpacing(e.target.value));
+  $('keepAwake').addEventListener('change',e=>setKeepAwake(e.target.checked));
+  $('sleepOpen').addEventListener('click',()=>{updateSleepUI();openDialog('sleepDialog');});
+  $('lockScreenOpen').addEventListener('click',()=>{refreshLockScreenControls();openDialog('lockScreenDialog');});
+  $('lockScreenClose').addEventListener('click',()=>closeDialog('lockScreenDialog'));
+  for(const input of document.querySelectorAll('input[name="lockScreenMode"]'))input.addEventListener('change',event=>setLockScreenMode(event.target.value));
+  $('sleepClose').addEventListener('click',()=>closeDialog('sleepDialog'));
+  for(const b of document.querySelectorAll('[data-sleep]'))b.addEventListener('click',()=>chooseSleepTimer(b.dataset.sleep));
+  $('bookmarkAdd').addEventListener('click',addBookmark);
+  $('bookmarkOpen').addEventListener('click',()=>{renderBookmarks();openDialog('bookmarksDialog');});
+  $('bookmarkClose').addEventListener('click',()=>closeDialog('bookmarksDialog'));
+  $('cleanupOpen').addEventListener('click',()=>{openDialog('cleanupDialog');previewCleanup();});
+  $('cleanupKeep').addEventListener('input',()=>previewCleanup());
+  $('cleanupPreview').addEventListener('click',previewCleanup);
+  $('cleanupRun').addEventListener('click',runCleanup);
+  $('cleanupClose').addEventListener('click',()=>closeDialog('cleanupDialog'));
+  $('cleanupDialog').addEventListener('cancel',event=>{if(state.cleanupRunning)event.preventDefault();});
+  $('releaseOpen').addEventListener('click',()=>openReleaseNotes(true));
+  $('releaseClose').addEventListener('click',()=>closeDialog('releaseDialog'));
+  $('releaseDismiss').addEventListener('click',()=>closeDialog('releaseDialog'));
   $('createBookForm').addEventListener('submit',createBook);
   $('bookSelect').addEventListener('change',e=>selectBook(e.target.value));
   $('chapterSearch').addEventListener('input',e=>{state.chapterQuery=e.target.value;drawChapterList();});
@@ -594,7 +896,7 @@ function setupEvents(){
   $('syncImport').addEventListener('click',()=>$('syncFile').click());
   $('syncFile').addEventListener('change',event=>importICloudState(event.target.files?.[0]));
   $('themeClose').addEventListener('click',()=>closeDialog('themeDialog'));
-  for(const id of ['bookManager','themeDialog','syncDialog'])$(id).addEventListener('click',e=>{if(e.target===$(id))closeDialog(id);});
+  for(const id of ['bookManager','themeDialog','syncDialog','sleepDialog','bookmarksDialog','cleanupDialog','releaseDialog','lockScreenDialog'])$(id).addEventListener('click',e=>{if(e.target===$(id))closeDialog(id);});
   $('mobileTabChapters').addEventListener('click',()=>{if(state.lyricsMax)setLyricsMax(false);setMobileTab('chapters',true);});
   $('mobileTabPlayer').addEventListener('click',()=>setMobileTab('player',true));
   $('importBtn').addEventListener('click',()=>{setImportPickerHint(true);$('filePicker').click();navigator.storage?.persist?.().catch(()=>{});});
@@ -631,22 +933,25 @@ function setupEvents(){
   $('offsetMinus').addEventListener('click',()=>changeDelay(-.5));$('offsetPlus').addEventListener('click',()=>changeDelay(.5));
   $('lyricsWindow').addEventListener('click',event=>{const line=event.target.closest('.lyric-line');if(!line||!state.current)return;const i=Number(line.dataset.index);audio.currentTime=Math.max(0,state.lines[i].time+state.delay);state.userScrollUntil=0;updateLyrics(true);saveProgress();});
   const stopFollow=()=>{state.userScrollUntil=Date.now()+6000;};$('lyricsWindow').addEventListener('touchstart',stopFollow,{passive:true});$('lyricsWindow').addEventListener('wheel',stopFollow,{passive:true});
-  audio.addEventListener('loadedmetadata',()=>{updateProgressDisplay();updateMediaPosition();});
-  audio.addEventListener('timeupdate',()=>{updateProgressDisplay();updateLyrics();if(!audio.paused&&Date.now()-state.lastSave>2000){state.lastSave=Date.now();saveProgress();}updateMediaPosition();});
-  audio.addEventListener('play',()=>{$('playBtn').textContent='Ⅱ';$('playBtn').setAttribute('aria-label','暂停');$('playStatus').textContent='正在播放';if('mediaSession'in navigator)navigator.mediaSession.playbackState='playing';});
+  audio.addEventListener('loadedmetadata',()=>{updateProgressDisplay();updateMediaPosition();updateMediaSession();});
+  audio.addEventListener('seeked',()=>{updateMediaSession(true);updateMediaPosition();});
+  audio.addEventListener('timeupdate',()=>{checkSleepTimer();updateProgressDisplay();updateLyrics();updateMediaSession();if(!audio.paused&&Date.now()-state.lastSave>2000){state.lastSave=Date.now();saveProgress();}updateMediaPosition();});
+  audio.addEventListener('play',()=>{$('playBtn').textContent='Ⅱ';$('playBtn').setAttribute('aria-label','暂停');$('playStatus').textContent='正在播放';updateMediaSession();if('mediaSession'in navigator)navigator.mediaSession.playbackState='playing';});
   audio.addEventListener('pause',()=>{$('playBtn').textContent='▶';$('playBtn').setAttribute('aria-label','播放');if(state.current){$('playStatus').textContent=audio.ended?'本章已结束':'已暂停';saveProgress(audio.ended);}if('mediaSession'in navigator)navigator.mediaSession.playbackState='paused';});
   audio.addEventListener('ratechange',updateMediaPosition);
-  audio.addEventListener('ended',async()=>{if(!state.current)return;await saveProgress(true);const list=sortedBookTracks(state.current.book);const i=list.findIndex(x=>x.id===state.current.id);if(i>=0&&i<list.length-1)await loadTrack(list[i+1],{autoplay:true});else{$('playStatus').textContent='本书已播放完毕';drawChapterList();}});
+  audio.addEventListener('ended',async()=>{if(!state.current)return;await saveProgress(true);if(state.sleepEndChapter){stopSleepTimer('本章播放完成，睡眠定時已停止');return;}const list=sortedBookTracks(state.current.book);const i=list.findIndex(x=>x.id===state.current.id);if(i>=0&&i<list.length-1)await loadTrack(list[i+1],{autoplay:true});else{$('playStatus').textContent='本书已播放完毕';drawChapterList();}});
   audio.addEventListener('error',()=>{if(state.current&&audio.src){$('playStatus').textContent='音频无法播放';toast('MP3 无法播放，请确认音频格式有效');}});
   window.addEventListener('online',updateNetwork);window.addEventListener('offline',updateNetwork);
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)saveProgress();});window.addEventListener('pagehide',()=>saveProgress());
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){updateMediaSession(true);saveProgress();releaseWakeLock();}else{checkSleepTimer();requestWakeLock();updateMediaSession();refreshLockScreenControls();}});window.addEventListener('pagehide',()=>saveProgress());
 }
 
 async function registerSW(){if(!('serviceWorker'in navigator)||!isSecureContext)return;try{navigator.serviceWorker.addEventListener('controllerchange',()=>toast('PineTree 版本已更新；關閉再開啟 App 可使用最新版',5000));await navigator.serviceWorker.register('./sw.js',{scope:'./'});}catch(error){console.warn('离线缓存不可用：',error);}}
 async function start(){
   setupEvents();setupMediaSession();updateNetwork();
   setMobileTab(localStorage.getItem('lyra-mobile-tab')==='chapters'?'chapters':'player');
+  setLineSpacing(state.lineSpacing,false);setKeepAwake(state.keepAwake,false);setFocusMode(state.focusMode,false);updateSleepUI();
   setSpeed(state.speed);
+  setLockScreenMode(state.lockScreenMode,{persist:false});
   migrateForestThemeOnce();
   const legacyBg=localStorage.getItem('lyra-bg-color');
   const savedPanel=localStorage.getItem('lyra-panel-color');
@@ -659,6 +964,7 @@ async function start(){
   registerSW();
   try{
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree 已更新至 v3.7 · 實驗性鎖屏字幕可在播放區設定',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     const last=state.tracks.find(x=>x.id===localStorage.getItem('lyra-last-id'));
