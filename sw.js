@@ -1,6 +1,6 @@
-/* PineTree Lyra v3.7.3 accurate centered lyrics, eye-care, cleanup, timer, bookmarks and safe sync shell cache. Audio/LRC remains in local IndexedDB (unchanged). */
-const CACHE='lyra-shell-v373-fixedcenter-20261110';
-const ASSETS=['./','./index.html','./styles.css?v=373','./app.js?v=373','./manifest.webmanifest','./icon-192.png?v=321','./icon-512.png?v=321','./apple-touch-icon.png?v=321'];
+/* PineTree Lyra v3.7.4 five prismatic themes and accurate centered lyrics, eye-care, cleanup, timer, bookmarks and safe sync shell cache. Audio/LRC remains in local IndexedDB (unchanged). */
+const CACHE='lyra-shell-v374-iridescent-20261110';
+const ASSETS=['./','./index.html','./styles.css?v=374','./app.js?v=374','./manifest.webmanifest','./icon-192.png?v=321','./icon-512.png?v=321','./apple-touch-icon.png?v=321'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('lyra-shell-')&&k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
 self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;const url=new URL(event.request.url);if(url.origin!==self.location.origin)return;event.respondWith((async()=>{

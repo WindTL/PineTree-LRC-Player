@@ -11,15 +11,15 @@
  <link rel="manifest" href="./manifest.webmanifest">
  <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=321">
  <link rel="icon" href="./icon-192.png?v=321">
- <link rel="stylesheet" href="./styles.css?v=373">
- <title>PineTree 有聲書 · v3.7.3 · 字幕真正置中 · 低延遲鎖屏</title>
+ <link rel="stylesheet" href="./styles.css?v=374">
+ <title>PineTree 有聲書 · v3.7.4 · 字幕真正置中 · 低延遲鎖屏</title>
 </head>
 <body>
 <div class="app-shell">
  <header class="topbar">
   <div class="brand">
    <div class="brand-mark" id="brandMonogram" aria-hidden="true"><img src="./apple-touch-icon.png?v=321" alt=""></div>
-   <div class="brand-copy"><strong id="brandTitle">我的小说书库</strong><span>PineTree v3.7.3 · 置中字幕 · iCloud 手動同步</span></div>
+   <div class="brand-copy"><strong id="brandTitle">我的小说书库</strong><span>PineTree v3.7.4 · 幻彩閱讀 · iCloud 手動同步</span></div>
   </div>
   <nav class="header-actions" aria-label="全局操作">
    <span class="status-chip" id="networkBadge">● 准备就绪</span>
@@ -136,9 +136,9 @@
 </dialog>
 <dialog id="bookManager" class="drawer-dialog" aria-label="书库管理">
  <div class="dialog-inner">
-  <div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v3.7.3 · 普通／最大化置中修正版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button id="bookManagerClose" class="close-action" type="button" aria-label="关闭">×</button></div>
+  <div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v3.7.4 · 五款幻彩護眼主題</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button id="bookManagerClose" class="close-action" type="button" aria-label="关闭">×</button></div>
   <form class="create-book" id="createBookForm"><label for="newBookName">新建小说文件夹</label><div class="form-row"><input id="newBookName" class="field" maxlength="90" type="text" placeholder="输入书名，例如：拙石衍天" required><button class="btn btn-accent" type="submit">＋ 新建</button></div></form>
-  <div class="manager-icloud-shortcut"><button id="releaseOpen" class="btn btn-quiet" type="button">ⓘ 版本與更新內容 · v3.7.3</button><button id="cleanupOpen" class="btn btn-quiet" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button id="syncOpenSecondary" class="btn btn-quiet" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
+  <div class="manager-icloud-shortcut"><button id="releaseOpen" class="btn btn-quiet" type="button">ⓘ 版本與更新內容 · v3.7.4</button><button id="cleanupOpen" class="btn btn-quiet" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button id="syncOpenSecondary" class="btn btn-quiet" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
   <div class="manager-section-head"><strong>全部小说</strong><span class="counter" id="bookCount">0 本</span></div>
   <div class="book-grid" id="bookGrid" aria-label="小说封面书架"></div>
   <div class="book-detail" id="bookDetail">
@@ -163,8 +163,16 @@
 </dialog>
 <dialog id="themeDialog" class="drawer-dialog theme-dialog" aria-label="外观与配色">
  <div class="dialog-inner">
-  <div class="dialog-head"><div><span class="dialog-kicker">FOREST READING · 森夜閱讀</span><h2>護眼閱讀主題</h2><p>新增多款低飽和配色：森林綠為主、柔紅提醒、暖黃高亮。可自由挑選背景、面板與強調色。</p></div><button id="themeClose" class="close-action" type="button" aria-label="关闭">×</button></div>
+  <div class="dialog-head"><div><span class="dialog-kicker">FOREST READING · 森夜閱讀</span><h2>護眼閱讀主題</h2><p>新增五款多彩微光主題（幻彩黑／綠／紅／金／木火土一體）。多彩集中在邊緣和面板，字幕保持清楚耐讀。</p></div><button id="themeClose" class="close-action" type="button" aria-label="关闭">×</button></div>
   <div class="color-presets" aria-label="一鍵切換配色">
+   <div class="theme-group-label">✨ 五彩幻光系列 · 全新五款</div>
+   <!-- PineTree 3.7.4: gentle iridescence for long listening/reading; Wood+Fire+Earth is ONE unified theme. -->
+   <button type="button" class="theme-preset art-preset" data-art-theme="prism-black" data-page="#0C101A" data-panel="#1A202B" data-accent="#DFC5FA"><i class="prism-swatch prism-swatch-black" aria-hidden="true"></i><span><strong>🌌 五彩斑斕的黑</strong><small>虹曜黑 · 深黑底微光折射</small></span></button>
+   <button type="button" class="theme-preset art-preset" data-art-theme="prism-green" data-page="#0B241E" data-panel="#173B32" data-accent="#DBE17D"><i class="prism-swatch prism-swatch-green" aria-hidden="true"></i><span><strong>🌈 五彩斑斕的綠</strong><small>幻森綠 · 森林綠與彩霧</small></span></button>
+   <button type="button" class="theme-preset art-preset" data-art-theme="prism-red" data-page="#270F1A" data-panel="#3B1D29" data-accent="#F2B58C"><i class="prism-swatch prism-swatch-red" aria-hidden="true"></i><span><strong>🌹 五彩斑斕的紅</strong><small>琉璃紅 · 柔紅與紫金光</small></span></button>
+   <button type="button" class="theme-preset art-preset" data-art-theme="prism-gold" data-page="#272015" data-panel="#3B3020" data-accent="#F0D27B"><i class="prism-swatch prism-swatch-gold" aria-hidden="true"></i><span><strong>✨ 五彩斑斕的金</strong><small>流光金 · 古金與虹彩寶光</small></span></button>
+   <button type="button" class="theme-preset art-preset" data-art-theme="wood-fire-earth" data-page="#18271D" data-panel="#302C23" data-accent="#EBC17B"><i class="prism-swatch prism-swatch-elements" aria-hidden="true"></i><span><strong>🌳🔥 木火土 · 三相共生</strong><small>一體融合 · 木青、火赤、土金</small></span></button>
+   <div class="theme-group-label">🌿 經典護眼系列</div>
    <button type="button" class="theme-preset" data-page="#0F2A1F" data-panel="#163427" data-accent="#E0B84F"><i style="background:#163427;border-color:#E0B84F"></i>🌿 森夜閱讀</button>
    <button type="button" class="theme-preset" data-page="#0B1220" data-panel="#182438" data-accent="#F4C678"><i style="background:#0B1220;border-color:#F4C678"></i>深夜金</button>
    <button type="button" class="theme-preset" data-page="#0C3222" data-panel="#15513A" data-accent="#EFD58F"><i style="background:#15513A;border-color:#EFD58F"></i>森林绿</button>
@@ -186,7 +194,7 @@
   <label class="range-setting" for="lineSpacing">字幕行距 <output id="lineSpacingLabel">1.85</output><input id="lineSpacing" type="range" min="1.4" max="2.6" step="0.05" value="1.85"></label>
   <label class="check-row"><input type="checkbox" id="keepAwake"> 專注閱讀時嘗試保持螢幕常亮（iOS 可能不支援）</label>
   <p class="theme-legend"><span><i class="theme-legend-dot green"></i>綠色 · 主要閱讀區</span><span><i class="theme-legend-dot red"></i>柔紅 · 刪除與警告</span><span><i class="theme-legend-dot yellow"></i>暖黃 · 當前字幕</span></p>
-  <div class="theme-bottom"><span>配色自動保存在本機，不影響任何小說資料</span><div class="theme-bottom-actions"><button id="restorePreviousTheme" type="button" class="btn btn-quiet" hidden>還原升級前配色</button><button id="resetColor" type="button" class="btn btn-accent">恢復森夜預設配色</button></div></div>
+  <div class="theme-bottom"><span>主題及配色保存在本機；自訂顏色會切換至純色模式，不影響小說資料</span><div class="theme-bottom-actions"><button id="restorePreviousTheme" type="button" class="btn btn-quiet" hidden>還原升級前配色</button><button id="resetColor" type="button" class="btn btn-accent">恢復森夜預設配色</button></div></div>
  </div>
 </dialog>
 <dialog id="lockScreenDialog" class="drawer-dialog" aria-labelledby="lockScreenTitle"><div class="dialog-inner">
@@ -220,8 +228,8 @@
  <div class="import-actions"><button id="cleanupPreview" class="btn btn-quiet" type="button">重新計算</button><button id="cleanupRun" class="btn btn-danger" type="button">確認清理已聽 MP3</button></div>
  <p class="dialog-note">如果清理了 MP3，再次播放該章時需重新從 iCloud Drive 匯入對應音訊。清理操作無法在 PineTree 內撤銷。</p>
  </div></dialog>
-<dialog id="releaseDialog" class="drawer-dialog" aria-label="版本更新與說明"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v3.7.3</h2><p>修復普通模式字幕置中計算，所有畫面尺寸都依字幕框實際座標置中。</p></div><button id="releaseClose" class="close-action" type="button" aria-label="關閉">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>增量匯入與 MP3/LRC 配對診斷、清理已聽音訊、睡眠定時、書籤、快速續聽、專注閱讀、螢幕常亮選項、九款護眼主題及同步安全改善；v3.7.1 新增鎖屏 LRC 字幕實驗模式（不保證背景逐句更新）；v3.7.3 修復普通模式的字幕偏下，置中模式在所有尺寸準確定位，自由滾動則不強制跟隨。</p><p>仍以 iCloud Drive 手動匯入／匯出同步檔；iOS 系統檔案選取器及鎖屏背景播放限制依然存在。</p></div><button id="releaseDismiss" class="btn btn-accent" type="button">知道了</button></div></dialog>
+<dialog id="releaseDialog" class="drawer-dialog" aria-label="版本更新與說明"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v3.7.4</h2><p>新增幻彩黑、幻彩綠、幻彩紅、幻彩金，以及木火土融合主題。</p></div><button id="releaseClose" class="close-action" type="button" aria-label="關閉">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>增量匯入與 MP3/LRC 配對診斷、清理已聽音訊、睡眠定時、書籤、快速續聽、專注閱讀、螢幕常亮選項、九款護眼主題及同步安全改善；v3.7.1 新增鎖屏 LRC 字幕實驗模式（不保證背景逐句更新）；v3.7.3 修復普通與最大化模式置中；v3.7.4 新增五款柔和多色漸層主題，木火土為一款一體融合主題。</p><p>仍以 iCloud Drive 手動匯入／匯出同步檔；iOS 系統檔案選取器及鎖屏背景播放限制依然存在。</p></div><button id="releaseDismiss" class="btn btn-accent" type="button">知道了</button></div></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="./app.js?v=373" defer></script>
+<script src="./app.js?v=374" defer></script>
 </body>
 </html>

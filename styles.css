@@ -151,3 +151,58 @@ button{transition:background-color .16s,border-color .16s,color .16s}
   padding-bottom:var(--lyrics-pad-end,24px);
   scroll-behavior:auto;
 }
+
+
+/* PineTree v3.7.4 — restrained prismatic reading themes.  Decorative tint
+   stays mostly around the corners; the LRC focal area remains calm/legible.
+   Wood + Fire + Earth is deliberately ONE integrated visual language. */
+.art-preset{align-items:center;min-height:66px;gap:11px}
+.art-preset span{display:flex;flex-direction:column;gap:4px;min-width:0}
+.art-preset strong{font-size:12px;letter-spacing:.01em}
+.art-preset small{font-size:10px;font-weight:500;color:var(--muted);line-height:1.25}
+.theme-preset .prism-swatch{flex:0 0 37px;width:37px;height:38px;border:1px solid #ffffff55!important;border-radius:10px;box-shadow:inset 0 1px 3px #ffffff22,0 2px 5px #0003}
+.prism-swatch-black{background:conic-gradient(from 45deg,#221c37,#456b80,#171e2c,#784d76,#211a2b,#221c37)!important}
+.prism-swatch-green{background:conic-gradient(from 25deg,#1a5b44,#84ba77,#213e5e,#475a8d,#185f54,#1a5b44)!important}
+.prism-swatch-red{background:conic-gradient(from 25deg,#722e45,#d08471,#915778,#6c315f,#ac5049,#722e45)!important}
+.prism-swatch-gold{background:conic-gradient(from 0deg,#624626,#e7c468,#a47d51,#548b7c,#b78767,#624626)!important}
+.prism-swatch-elements{background:conic-gradient(from 25deg,#235b3e 0 35%,#ae4b32 36% 68%,#a98548 69% 100%)!important}
+body[data-art-theme]{background-image:var(--art-page);background-repeat:no-repeat}
+body[data-art-theme] .card{background-image:var(--art-panel);background-repeat:no-repeat;box-shadow:0 13px 31px #00000020,inset 0 1px 0 #ffffff10}
+body[data-art-theme] .lyrics-window{background-image:var(--art-lyrics);background-repeat:no-repeat}
+body[data-art-theme] .topbar{border-bottom-color:var(--art-edge,var(--border))}
+body[data-art-theme] .btn-accent,body[data-art-theme] .control.play{background-image:linear-gradient(135deg,#ffffff26,transparent 54%,#00000013)}
+body[data-art-theme] .chapter-item.active{background-image:linear-gradient(95deg,var(--accent-faint),transparent 65%)}
+body[data-art-theme] .theme-preset[aria-pressed=true]{box-shadow:inset 0 0 0 1px var(--accent),0 0 0 2px var(--art-edge,var(--border))}
+body[data-art-theme="prism-black"]{
+ --art-edge:#8775b047;
+ --art-page:radial-gradient(ellipse 65% 55% at 5% 0%,#5f509b28,transparent 68%),radial-gradient(ellipse 55% 65% at 100% 85%,#268e9140,transparent 72%),radial-gradient(ellipse 40% 40% at 45% 105%,#8a387822,transparent 73%);
+ --art-panel:radial-gradient(ellipse 60% 45% at 3% 0%,#6c629d2c,transparent 66%),radial-gradient(ellipse 45% 65% at 100% 100%,#2d879027,transparent 70%),linear-gradient(145deg,#ffffff05,transparent 58%,#a74c8610);
+ --art-lyrics:radial-gradient(ellipse 90% 70% at 1% 0%,#5d549013,transparent 68%),radial-gradient(ellipse 85% 60% at 100% 100%,#27949510,transparent 65%);
+}
+body[data-art-theme="prism-green"]{
+ --art-edge:#82b89d52;
+ --art-page:radial-gradient(ellipse 68% 56% at 4% 0%,#35b98633,transparent 68%),radial-gradient(ellipse 50% 60% at 100% 88%,#4e5eb035,transparent 75%),radial-gradient(ellipse 42% 38% at 55% 110%,#d4bb5025,transparent 68%);
+ --art-panel:radial-gradient(ellipse 62% 50% at 5% 0%,#51bd852a,transparent 73%),radial-gradient(ellipse 42% 54% at 100% 100%,#6774c52b,transparent 72%),linear-gradient(150deg,#d7f7a708,transparent 62%,#b1b9730b);
+ --art-lyrics:radial-gradient(ellipse 90% 70% at 0% 0%,#47b78d12,transparent 72%),radial-gradient(ellipse 80% 60% at 100% 100%,#6067a40d,transparent 73%);
+}
+body[data-art-theme="prism-red"]{
+ --art-edge:#e08d9c55;
+ --art-page:radial-gradient(ellipse 65% 60% at 0% 0%,#cf4e7040,transparent 66%),radial-gradient(ellipse 55% 72% at 100% 92%,#8454bb31,transparent 72%),radial-gradient(ellipse 35% 35% at 52% 110%,#edab4630,transparent 69%);
+ --art-panel:radial-gradient(ellipse 60% 50% at 3% 0%,#bd49632c,transparent 69%),radial-gradient(ellipse 48% 66% at 100% 98%,#8759a332,transparent 73%),linear-gradient(160deg,#f7b58b09,transparent 62%,#efbb4f0c);
+ --art-lyrics:radial-gradient(ellipse 75% 60% at 0% 0%,#ab476416,transparent 75%),radial-gradient(ellipse 75% 60% at 100% 100%,#81579710,transparent 78%);
+}
+body[data-art-theme="prism-gold"]{
+ --art-edge:#edc76a77;
+ --art-page:radial-gradient(ellipse 68% 58% at 2% 2%,#dcad4a3b,transparent 72%),radial-gradient(ellipse 62% 62% at 102% 100%,#3f9d8740,transparent 73%),radial-gradient(ellipse 40% 34% at 54% 100%,#a071b22b,transparent 75%);
+ --art-panel:radial-gradient(ellipse 68% 50% at 2% 0%,#caa45732,transparent 74%),radial-gradient(ellipse 50% 70% at 100% 100%,#4d917b25,transparent 75%),linear-gradient(145deg,#ffe6a709,transparent 62%,#9b71a316);
+ --art-lyrics:radial-gradient(ellipse 82% 65% at 3% 0%,#cba35813,transparent 77%),radial-gradient(ellipse 88% 65% at 100% 100%,#458b7b0e,transparent 75%);
+}
+body[data-art-theme="wood-fire-earth"]{
+ --art-edge:#b98f556a;
+ --art-page:radial-gradient(ellipse 55% 63% at 0% 0%,#247b5440,transparent 70%),radial-gradient(ellipse 48% 57% at 100% 10%,#be513339,transparent 70%),radial-gradient(ellipse 69% 64% at 50% 110%,#a17a3a42,transparent 75%);
+ --art-panel:radial-gradient(ellipse 53% 53% at 2% 0%,#3b855626,transparent 72%),radial-gradient(ellipse 50% 62% at 100% 0%,#aa513026,transparent 75%),radial-gradient(ellipse 72% 55% at 50% 105%,#b4984830,transparent 76%),linear-gradient(145deg,#fff4dc07,transparent 64%,#0000000b);
+ --art-lyrics:radial-gradient(ellipse 70% 60% at 0% 0%,#37734e10,transparent 76%),radial-gradient(ellipse 70% 65% at 100% 0%,#af583111,transparent 77%),radial-gradient(ellipse 65% 60% at 50% 110%,#a6823d12,transparent 75%);
+}
+@media (prefers-reduced-motion:reduce){body[data-art-theme] .card,body[data-art-theme] .lyrics-window{animation:none}}
+
+.theme-group-label{grid-column:1/-1;margin:8px 1px 1px;color:var(--soft);font-size:11px;font-weight:800;letter-spacing:.06em;padding-bottom:7px;border-bottom:1px solid var(--border)}
