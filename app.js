@@ -1,4 +1,4 @@
-/* PineTree Lyra 3.7.4 · accurate viewport-relative centered lyrics follow mode + faster experimental lock-screen LRC metadata, sleep timer, bookmarks, eye-care themes.
+/* PineTree Lyra 3.8 · seasonal themes + flagship themed buttons on top of centered lyrics, experimental lock-screen LRC metadata, sleep timer, bookmarks and eye-care themes.
  * Works with imported MP3 + timestamped LRC files only; no server uploads.
  * Keeps Lyra 1.x IndexedDB data by upgrading the SAME database to v2.
  */
@@ -27,7 +27,8 @@ const state = {
   panelLinked:localStorage.getItem('lyra-panel-linked')!=='0',
   panelColor:/^#[0-9a-fA-F]{6}$/.test(localStorage.getItem('lyra-panel-color')||'') ? localStorage.getItem('lyra-panel-color') : DEFAULT_PANEL,
   accentColor:/^#[0-9a-fA-F]{6}$/.test(localStorage.getItem('lyra-accent-color')||'') ? localStorage.getItem('lyra-accent-color') : DEFAULT_ACCENT,
-  artTheme:['prism-black','prism-green','prism-red','prism-gold','wood-fire-earth'].includes(localStorage.getItem('pinetree-art-theme-v374'))?localStorage.getItem('pinetree-art-theme-v374'):'',
+  artTheme:['prism-black','prism-green','prism-red','prism-gold','wood-fire-earth','christmas-season','new-year-festival'].includes(localStorage.getItem('pinetree-art-theme-v380')||localStorage.getItem('pinetree-art-theme-v374'))?(localStorage.getItem('pinetree-art-theme-v380')||localStorage.getItem('pinetree-art-theme-v374')):'',
+  uiTheme:['forest-reading','jade-night','pine-morning','warm-tea','christmas-season','new-year-festival','prism-black','prism-green','prism-red','prism-gold','wood-fire-earth'].includes(localStorage.getItem('pinetree-ui-theme-v380')||'')?localStorage.getItem('pinetree-ui-theme-v380'):'',
   chapterQuery:'', mobileTab:'player', listDrawBook:null, listDrawQuery:'',
   importJob:null, suppressProgressWrites:false, importReport:[],
   focusMode:localStorage.getItem('pinetree-focus-mode')==='1',
@@ -48,7 +49,7 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v374';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v380';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -565,19 +566,30 @@ function luminance(hex){
 function autoPanel(hex){
   return mixColor(hex,luminance(hex)>.46?'#000000':'#ffffff',luminance(hex)>.46?.045:.105);
 }
-const ART_THEME_IDS=new Set(['prism-black','prism-green','prism-red','prism-gold','wood-fire-earth']);
+const ART_THEME_IDS=new Set(['prism-black','prism-green','prism-red','prism-gold','wood-fire-earth','christmas-season','new-year-festival']);
+const UI_THEME_IDS=new Set(['forest-reading','jade-night','pine-morning','warm-tea','christmas-season','new-year-festival','prism-black','prism-green','prism-red','prism-gold','wood-fire-earth']);
 function refreshThemePresetButtons(){
   for(const button of document.querySelectorAll('.theme-preset')){
     const colorMatch=[['page',state.bgColor],['panel',state.panelColor],['accent',state.accentColor]].every(([key,value])=>button.dataset[key]?.toLowerCase()===value.toLowerCase());
     const artMatch=(button.dataset.artTheme||'')===state.artTheme;
-    button.setAttribute('aria-pressed',String(colorMatch&&artMatch));
+    const uiMatch=(button.dataset.uiTheme||'')===state.uiTheme;
+    const requireArt=Object.prototype.hasOwnProperty.call(button.dataset,'artTheme');
+    const requireUi=Object.prototype.hasOwnProperty.call(button.dataset,'uiTheme');
+    button.setAttribute('aria-pressed',String(colorMatch && (!requireArt || artMatch) && (!requireUi || uiMatch)));
   }
 }
 function setArtTheme(id,persist=true){
   state.artTheme=ART_THEME_IDS.has(id)?id:'';
   if(state.artTheme)document.body.dataset.artTheme=state.artTheme;
   else delete document.body.dataset.artTheme;
-  if(persist)localStorage.setItem('pinetree-art-theme-v374',state.artTheme);
+  if(persist)localStorage.setItem('pinetree-art-theme-v380',state.artTheme);
+  refreshThemePresetButtons();
+}
+function setUITheme(id,persist=true){
+  state.uiTheme=UI_THEME_IDS.has(id)?id:'';
+  if(state.uiTheme)document.body.dataset.uiTheme=state.uiTheme;
+  else delete document.body.dataset.uiTheme;
+  if(persist)localStorage.setItem('pinetree-ui-theme-v380',state.uiTheme);
   refreshThemePresetButtons();
 }
 function setTheme(page,panel,accent,{linked=state.panelLinked}={}){
@@ -631,10 +643,11 @@ function migrateForestThemeOnce(){
     localStorage.setItem(PRE_FOREST_BACKUP_KEY,JSON.stringify({bg:oldBg,panel:oldPanel,accent:oldAccent,linked:previous.linked}));
   }
   localStorage.setItem(FOREST_MIGRATION_KEY,'1');
-  state.bgColor=DEFAULT_BG;state.panelColor=DEFAULT_PANEL;state.accentColor=DEFAULT_ACCENT;state.panelLinked=true;
+  state.bgColor=DEFAULT_BG;state.panelColor=DEFAULT_PANEL;state.accentColor=DEFAULT_ACCENT;state.panelLinked=true;state.uiTheme='forest-reading';
   // Persist the new panel now, or start() could reload an old navy panel
   // from v3 localStorage and combine it with the new green page background.
   setTheme(DEFAULT_BG,DEFAULT_PANEL,DEFAULT_ACCENT,{linked:true});
+  setUITheme('forest-reading');
 }
 function updateRestoreOption(){
   $('restorePreviousTheme').hidden=!localStorage.getItem(PRE_FOREST_BACKUP_KEY);
@@ -643,13 +656,13 @@ function restorePreviousTheme(){
   try{
     const previous=JSON.parse(localStorage.getItem(PRE_FOREST_BACKUP_KEY)||'null');
     if(!previous || !isHex(previous.bg||'') || !isHex(previous.panel||'') || !isHex(previous.accent||''))throw new Error('missing previous theme');
-    setArtTheme('');setTheme(previous.bg,previous.panel,previous.accent,{linked:previous.linked!=='0'});
+    setArtTheme('');setUITheme('');setTheme(previous.bg,previous.panel,previous.accent,{linked:previous.linked!=='0'});
     toast('已還原升級前的配色，其他設定保持不變');
   }catch{toast('沒有可用的舊配色，仍保留目前主題');}
 }
-function setBackground(hex){if(isHex(hex)){setArtTheme('');setTheme(hex,state.panelLinked?autoPanel(hex):state.panelColor,state.accentColor);}}
-function setPanelColor(hex){if(isHex(hex)){setArtTheme('');setTheme(state.bgColor,hex,state.accentColor,{linked:false});}}
-function setAccentColor(hex){if(isHex(hex)){setArtTheme('');setTheme(state.bgColor,state.panelColor,hex);}}
+function setBackground(hex){if(isHex(hex)){setArtTheme('');setUITheme('');setTheme(hex,state.panelLinked?autoPanel(hex):state.panelColor,state.accentColor);}}
+function setPanelColor(hex){if(isHex(hex)){setArtTheme('');setUITheme('');setTheme(state.bgColor,hex,state.accentColor,{linked:false});}}
+function setAccentColor(hex){if(isHex(hex)){setArtTheme('');setUITheme('');setTheme(state.bgColor,state.panelColor,hex);}}
 function openDialog(id){const dlg=$(id);if(!dlg.open)dlg.showModal();}
 function closeDialog(id){const dlg=$(id);if(dlg.open)dlg.close();}
 
@@ -686,7 +699,7 @@ async function makeSyncSnapshot(){
     lastTrackId:localStorage.getItem('lyra-last-id')||'',
     selectedBook:state.selectedBook||'',
     settings:{speed:state.speed,fontSize:state.fontSize,delay:state.delay,
-      bg:state.bgColor,panel:state.panelColor,accent:state.accentColor,artTheme:state.artTheme,
+      bg:state.bgColor,panel:state.panelColor,accent:state.accentColor,artTheme:state.artTheme,uiTheme:state.uiTheme,
       linked:state.panelLinked,lyricsMax:state.lyricsMax,lyricsCentered:state.lyricsCentered,focusMode:state.focusMode,lineSpacing:state.lineSpacing,keepAwake:state.keepAwake,lockScreenMode:state.lockScreenMode,lockScreenSpeed:state.lockScreenSpeed},
     note:'僅書庫名稱、封面、播放進度及介面設定；不包含 MP3/LRC 音訊檔',
     skippedLargeCovers:skipped};
@@ -781,7 +794,7 @@ async function importICloudState(file){
         if(Number.isFinite(Number(cfg.speed)))setSpeed(cfg.speed);
         if(Number.isFinite(Number(cfg.fontSize))){state.fontSize=bounded(Number(cfg.fontSize),14,38,21);localStorage.setItem('lyra-font',state.fontSize);document.documentElement.style.setProperty('--font-size',`${state.fontSize}px`);}
         if(Number.isFinite(Number(cfg.delay))){state.delay=bounded(Number(cfg.delay),-20,20,0);localStorage.setItem('lyra-delay',state.delay);$('offsetLabel').textContent=`${state.delay>0?'+':''}${state.delay.toFixed(1)}s`;}
-        if([cfg.bg,cfg.panel,cfg.accent].every(isHex)){setTheme(cfg.bg,cfg.panel,cfg.accent,{linked:!!cfg.linked});setArtTheme(cfg.artTheme||'');}
+        if([cfg.bg,cfg.panel,cfg.accent].every(isHex)){setTheme(cfg.bg,cfg.panel,cfg.accent,{linked:!!cfg.linked});setArtTheme(cfg.artTheme||'');setUITheme(cfg.uiTheme||'');}
         if(typeof cfg.lyricsMax==='boolean')setLyricsMax(cfg.lyricsMax,false);
         if(typeof cfg.lyricsCentered==='boolean')setLyricsCentered(cfg.lyricsCentered,false);
         if(Number.isFinite(Number(cfg.lineSpacing)))setLineSpacing(cfg.lineSpacing,false);
@@ -1045,10 +1058,11 @@ function setupEvents(){
   $('bgColor').addEventListener('input',event=>{setBackground(event.target.value);markSettingsChanged();});
   $('panelColor').addEventListener('input',event=>{setPanelColor(event.target.value);markSettingsChanged();});
   $('accentColor').addEventListener('input',event=>{setAccentColor(event.target.value);markSettingsChanged();});
-  $('linkPanels').addEventListener('change',event=>{setArtTheme('');state.panelLinked=event.target.checked;setTheme(state.bgColor,state.panelLinked?autoPanel(state.bgColor):state.panelColor,state.accentColor,{linked:state.panelLinked});markSettingsChanged();});
-  $('resetColor').addEventListener('click',()=>{setArtTheme('');setTheme(DEFAULT_BG,DEFAULT_PANEL,DEFAULT_ACCENT,{linked:true});markSettingsChanged();});
+  $('linkPanels').addEventListener('change',event=>{setArtTheme('');setUITheme('');state.panelLinked=event.target.checked;setTheme(state.bgColor,state.panelLinked?autoPanel(state.bgColor):state.panelColor,state.accentColor,{linked:state.panelLinked});markSettingsChanged();});
+  $('resetColor').addEventListener('click',()=>{setArtTheme('');setTheme(DEFAULT_BG,DEFAULT_PANEL,DEFAULT_ACCENT,{linked:true});
+  setUITheme('forest-reading');markSettingsChanged();});
   $('restorePreviousTheme').addEventListener('click',()=>{restorePreviousTheme();markSettingsChanged();});
-  for(const btn of document.querySelectorAll('.theme-preset'))btn.addEventListener('click',()=>{setTheme(btn.dataset.page,btn.dataset.panel,btn.dataset.accent,{linked:true});setArtTheme(btn.dataset.artTheme||'');markSettingsChanged();});
+  for(const btn of document.querySelectorAll('.theme-preset'))btn.addEventListener('click',()=>{setTheme(btn.dataset.page,btn.dataset.panel,btn.dataset.accent,{linked:true});setArtTheme(btn.dataset.artTheme||'');setUITheme(btn.dataset.uiTheme||'');markSettingsChanged();});
   $('fontMinus').addEventListener('click',()=>changeFont(-2));$('fontPlus').addEventListener('click',()=>changeFont(2));
   $('offsetMinus').addEventListener('click',()=>changeDelay(-.5));$('offsetPlus').addEventListener('click',()=>changeDelay(.5));
   $('lyricsWindow').addEventListener('click',event=>{const line=event.target.closest('.lyric-line');if(!line||!state.current)return;const i=Number(line.dataset.index);audio.currentTime=Math.max(0,state.lines[i].time+state.delay);state.userScrollUntil=0;updateLyrics(true);saveProgress();});
@@ -1098,6 +1112,7 @@ async function start(){
   const panel=savedPanel||((legacyBg&&legacyBg.toLowerCase()!==DEFAULT_BG.toLowerCase())?autoPanel(state.bgColor):DEFAULT_PANEL);
   setTheme(state.bgColor,panel,state.accentColor,{linked:state.panelLinked});
   setArtTheme(state.artTheme,false);
+  setUITheme(state.uiTheme,false);
   updateRestoreOption();
   setLyricsMax(state.lyricsMax,false);
   document.documentElement.style.setProperty('--font-size',`${state.fontSize}px`);

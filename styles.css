@@ -153,7 +153,7 @@ button{transition:background-color .16s,border-color .16s,color .16s}
 }
 
 
-/* PineTree v3.7.4 — restrained prismatic reading themes.  Decorative tint
+/* PineTree v3.8 — restrained prismatic + seasonal reading themes, plus flagship themed buttons. Decorative tint
    stays mostly around the corners; the LRC focal area remains calm/legible.
    Wood + Fire + Earth is deliberately ONE integrated visual language. */
 .art-preset{align-items:center;min-height:66px;gap:11px}
@@ -166,6 +166,8 @@ button{transition:background-color .16s,border-color .16s,color .16s}
 .prism-swatch-red{background:conic-gradient(from 25deg,#722e45,#d08471,#915778,#6c315f,#ac5049,#722e45)!important}
 .prism-swatch-gold{background:conic-gradient(from 0deg,#624626,#e7c468,#a47d51,#548b7c,#b78767,#624626)!important}
 .prism-swatch-elements{background:conic-gradient(from 25deg,#235b3e 0 35%,#ae4b32 36% 68%,#a98548 69% 100%)!important}
+.prism-swatch-christmas{background:conic-gradient(from 20deg,#1f6b44,#c63f43,#f1d37a,#346f52,#9e2633,#1f6b44)!important}
+.prism-swatch-newyear{background:conic-gradient(from 10deg,#8f1f2d,#e45a3c,#f4d376,#9f324a,#f08b48,#8f1f2d)!important}
 body[data-art-theme]{background-image:var(--art-page);background-repeat:no-repeat}
 body[data-art-theme] .card{background-image:var(--art-panel);background-repeat:no-repeat;box-shadow:0 13px 31px #00000020,inset 0 1px 0 #ffffff10}
 body[data-art-theme] .lyrics-window{background-image:var(--art-lyrics);background-repeat:no-repeat}
@@ -203,6 +205,44 @@ body[data-art-theme="wood-fire-earth"]{
  --art-panel:radial-gradient(ellipse 53% 53% at 2% 0%,#3b855626,transparent 72%),radial-gradient(ellipse 50% 62% at 100% 0%,#aa513026,transparent 75%),radial-gradient(ellipse 72% 55% at 50% 105%,#b4984830,transparent 76%),linear-gradient(145deg,#fff4dc07,transparent 64%,#0000000b);
  --art-lyrics:radial-gradient(ellipse 70% 60% at 0% 0%,#37734e10,transparent 76%),radial-gradient(ellipse 70% 65% at 100% 0%,#af583111,transparent 77%),radial-gradient(ellipse 65% 60% at 50% 110%,#a6823d12,transparent 75%);
 }
+body[data-art-theme="christmas-season"]{
+ --art-edge:#d8b15a6d;
+ --art-page:radial-gradient(ellipse 60% 58% at 0% 0%,#2d9a6540,transparent 72%),radial-gradient(ellipse 56% 62% at 100% 6%,#c7484b35,transparent 72%),radial-gradient(ellipse 62% 58% at 50% 110%,#e0bd5b32,transparent 76%);
+ --art-panel:radial-gradient(ellipse 55% 48% at 3% 0%,#3fa36e26,transparent 74%),radial-gradient(ellipse 42% 50% at 100% 0%,#bd43472a,transparent 73%),radial-gradient(ellipse 72% 48% at 50% 105%,#d7c07224,transparent 77%),linear-gradient(145deg,#fff7dd0a,transparent 62%,#ffffff07);
+ --art-lyrics:radial-gradient(ellipse 80% 60% at 0% 0%,#3e936012,transparent 77%),radial-gradient(ellipse 80% 60% at 100% 0%,#b63f4410,transparent 78%),radial-gradient(ellipse 72% 62% at 50% 110%,#e2be6511,transparent 78%);
+}
+body[data-art-theme="new-year-festival"]{
+ --art-edge:#ebb86674;
+ --art-page:radial-gradient(ellipse 60% 60% at 0% 0%,#b4384c3f,transparent 72%),radial-gradient(ellipse 58% 66% at 100% 10%,#ff9d4730,transparent 74%),radial-gradient(ellipse 62% 58% at 50% 110%,#f0cb6439,transparent 75%);
+ --art-panel:radial-gradient(ellipse 52% 46% at 4% 0%,#b83a4d2a,transparent 73%),radial-gradient(ellipse 42% 48% at 100% 0%,#f08a3f21,transparent 76%),radial-gradient(ellipse 72% 50% at 50% 105%,#f0cb6430,transparent 78%),linear-gradient(145deg,#fff0d107,transparent 62%,#ffffff07);
+ --art-lyrics:radial-gradient(ellipse 78% 58% at 0% 0%,#b23b4d13,transparent 78%),radial-gradient(ellipse 78% 58% at 100% 0%,#ea894010,transparent 79%),radial-gradient(ellipse 70% 60% at 50% 110%,#efc55f12,transparent 80%);
+}
 @media (prefers-reduced-motion:reduce){body[data-art-theme] .card,body[data-art-theme] .lyrics-window{animation:none}}
 
 .theme-group-label{grid-column:1/-1;margin:8px 1px 1px;color:var(--soft);font-size:11px;font-weight:800;letter-spacing:.06em;padding-bottom:7px;border-bottom:1px solid var(--border)}
+
+
+/* PineTree v3.8 — flagship button skins that follow selected theme. */
+body[data-ui-theme]{--flag-btn-text:var(--text);--flag-btn-border:var(--border);--flag-btn-shadow:0 8px 18px #00000018, inset 0 1px 0 #ffffff12;--flag-btn-bg:linear-gradient(180deg,var(--panel-alt),var(--field));--flag-btn-hover:linear-gradient(180deg,var(--field),color-mix(in srgb,var(--field),#ffffff 10%));--flag-accent-bg:linear-gradient(180deg,color-mix(in srgb,var(--accent),#ffffff 10%),color-mix(in srgb,var(--accent),#000000 8%));--flag-accent-text:var(--accent-text);--flag-ring:0 0 0 1px #ffffff0f inset;--flag-glow:none;}
+body[data-ui-theme] .top-action,
+body[data-ui-theme] .mini-icon,
+body[data-ui-theme] .tiny-action,
+body[data-ui-theme] .btn-quiet,
+body[data-ui-theme] .search-jump,
+body[data-ui-theme] .mobile-tab.active{background:var(--flag-btn-bg);color:var(--flag-btn-text);border-color:var(--flag-btn-border);box-shadow:var(--flag-btn-shadow),var(--flag-ring),var(--flag-glow);}
+body[data-ui-theme] .top-action:hover,body[data-ui-theme] .mini-icon:hover,body[data-ui-theme] .tiny-action:hover,body[data-ui-theme] .btn-quiet:hover,body[data-ui-theme] .search-jump:hover{background:var(--flag-btn-hover);}
+body[data-ui-theme] .btn-accent,body[data-ui-theme] .control.play{background:var(--flag-accent-bg);color:var(--flag-accent-text);border:1px solid color-mix(in srgb,var(--flag-btn-border),#ffffff 18%);box-shadow:0 10px 22px #00000022,var(--flag-ring),var(--flag-glow);}
+body[data-ui-theme] .top-action,body[data-ui-theme] .btn,body[data-ui-theme] .tiny-action,body[data-ui-theme] .mini-icon,body[data-ui-theme] .search-jump{border-radius:12px;}
+body[data-ui-theme] .control.play{position:relative;overflow:hidden;}
+body[data-ui-theme] .control.play::after,body[data-ui-theme] .btn-accent::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,#ffffff25,transparent 45%,#00000015 100%);pointer-events:none;}
+body[data-ui-theme="forest-reading"]{--flag-btn-text:#F5F2E8;--flag-btn-border:#55725d;--flag-btn-bg:linear-gradient(180deg,#264B39,#1A3629);--flag-btn-hover:linear-gradient(180deg,#2b5842,#1d3c2d);--flag-accent-bg:linear-gradient(180deg,#E9C86C,#C79C34);--flag-accent-text:#1A2B1E;--flag-glow:0 0 22px #d3b35a18;}
+body[data-ui-theme="jade-night"]{--flag-btn-text:#EEF5EF;--flag-btn-border:#4B6A65;--flag-btn-bg:linear-gradient(180deg,#20403B,#152B28);--flag-btn-hover:linear-gradient(180deg,#26504A,#183330);--flag-accent-bg:linear-gradient(180deg,#E6C979,#C8A452);--flag-accent-text:#152321;--flag-glow:0 0 22px #7ad0b81a;}
+body[data-ui-theme="pine-morning"]{--flag-btn-text:#F6F7F2;--flag-btn-border:#5B7F6E;--flag-btn-bg:linear-gradient(180deg,#3A5C4E,#274036);--flag-btn-hover:linear-gradient(180deg,#456A59,#2b473c);--flag-accent-bg:linear-gradient(180deg,#F2D981,#D0AE52);--flag-accent-text:#203128;--flag-glow:0 0 24px #d9c57b18;}
+body[data-ui-theme="warm-tea"]{--flag-btn-text:#F9F2E8;--flag-btn-border:#7B6250;--flag-btn-bg:linear-gradient(180deg,#4A393A,#322728);--flag-btn-hover:linear-gradient(180deg,#584445,#392d2f);--flag-accent-bg:linear-gradient(180deg,#F0CD83,#D2A45A);--flag-accent-text:#2A1D1A;--flag-glow:0 0 24px #e3c37a16;}
+body[data-ui-theme="christmas-season"]{--flag-btn-text:#FFF8EE;--flag-btn-border:#7C9B79;--flag-btn-bg:linear-gradient(180deg,#315C42,#244232);--flag-btn-hover:linear-gradient(180deg,#376B49,#294A38);--flag-accent-bg:linear-gradient(180deg,#D94E55,#A92F39);--flag-accent-text:#FFF7F1;--flag-glow:0 0 24px #d74a5121;}
+body[data-ui-theme="new-year-festival"]{--flag-btn-text:#FFF5EC;--flag-btn-border:#9C6660;--flag-btn-bg:linear-gradient(180deg,#5B2B33,#431F26);--flag-btn-hover:linear-gradient(180deg,#67313B,#4c232b);--flag-accent-bg:linear-gradient(180deg,#F3CE73,#D9A93F);--flag-accent-text:#451E1E;--flag-glow:0 0 26px #f3c65a1f;}
+body[data-ui-theme="prism-black"]{--flag-btn-text:#F4F3FA;--flag-btn-border:#655C86;--flag-btn-bg:linear-gradient(180deg,#2A2F47,#1B2031);--flag-btn-hover:linear-gradient(180deg,#343957,#22273b);--flag-accent-bg:linear-gradient(180deg,#D5C2F1,#AF96D6);--flag-accent-text:#1E2030;--flag-glow:0 0 24px #8871cd1a;}
+body[data-ui-theme="prism-green"]{--flag-btn-text:#F2F6F0;--flag-btn-border:#5E846D;--flag-btn-bg:linear-gradient(180deg,#24473F,#1A312C);--flag-btn-hover:linear-gradient(180deg,#2D564A,#1f3831);--flag-accent-bg:linear-gradient(180deg,#E1DE7D,#BAC865);--flag-accent-text:#21312B;--flag-glow:0 0 24px #94c78416;}
+body[data-ui-theme="prism-red"]{--flag-btn-text:#FFF2F2;--flag-btn-border:#8C6170;--flag-btn-bg:linear-gradient(180deg,#472735,#321C27);--flag-btn-hover:linear-gradient(180deg,#573042,#39202d);--flag-accent-bg:linear-gradient(180deg,#F2BA92,#D99071);--flag-accent-text:#301A22;--flag-glow:0 0 24px #d06f8318;}
+body[data-ui-theme="prism-gold"]{--flag-btn-text:#FFF7ED;--flag-btn-border:#8A7959;--flag-btn-bg:linear-gradient(180deg,#4A3D2A,#32291D);--flag-btn-hover:linear-gradient(180deg,#564631,#3b3021);--flag-accent-bg:linear-gradient(180deg,#F2D279,#D5AF4B);--flag-accent-text:#352816;--flag-glow:0 0 24px #e0bf5d16;}
+body[data-ui-theme="wood-fire-earth"]{--flag-btn-text:#FBF7EF;--flag-btn-border:#847056;--flag-btn-bg:linear-gradient(180deg,#4B4536,#2E2B22);--flag-btn-hover:linear-gradient(180deg,#59513f,#353025);--flag-accent-bg:linear-gradient(180deg,#E4C27A,#CDA058);--flag-accent-text:#2F261A;--flag-glow:0 0 24px #debc6a14;}
