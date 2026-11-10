@@ -49,7 +49,7 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v380';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v390';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 

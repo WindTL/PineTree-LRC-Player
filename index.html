@@ -11,15 +11,15 @@
  <link rel="manifest" href="./manifest.webmanifest">
  <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=321">
  <link rel="icon" href="./icon-192.png?v=321">
- <link rel="stylesheet" href="./styles.css?v=380">
- <title>PineTree 有聲書 · v3.8 · 節日主題 · 旗艦按鍵</title>
+ <link rel="stylesheet" href="./styles.css?v=390">
+ <title>PineTree 有聲書 · v3.9 · 旗艦主題圖標版</title>
 </head>
 <body>
 <div class="app-shell">
  <header class="topbar">
   <div class="brand">
    <div class="brand-mark" id="brandMonogram" aria-hidden="true"><img src="./apple-touch-icon.png?v=321" alt=""></div>
-   <div class="brand-copy"><strong id="brandTitle">我的小说书库</strong><span>PineTree v3.8 · 節日主題 / 旗艦按鍵 · iCloud 手動同步</span></div>
+   <div class="brand-copy"><strong id="brandTitle">我的小说书库</strong><span>PineTree v3.9 · 旗艦主題圖標版 · iCloud 手動同步</span></div>
   </div>
   <nav class="header-actions" aria-label="全局操作">
    <span class="status-chip" id="networkBadge">● 准备就绪</span>
@@ -136,7 +136,7 @@
 </dialog>
 <dialog id="bookManager" class="drawer-dialog" aria-label="书库管理">
  <div class="dialog-inner">
-  <div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v3.8 · 節日限定 + 旗艦按鍵款式</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button id="bookManagerClose" class="close-action" type="button" aria-label="关闭">×</button></div>
+  <div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v3.9 · 旗艦主題圖標版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button id="bookManagerClose" class="close-action" type="button" aria-label="关闭">×</button></div>
   <form class="create-book" id="createBookForm"><label for="newBookName">新建小说文件夹</label><div class="form-row"><input id="newBookName" class="field" maxlength="90" type="text" placeholder="输入书名，例如：拙石衍天" required><button class="btn btn-accent" type="submit">＋ 新建</button></div></form>
   <div class="manager-icloud-shortcut"><button id="releaseOpen" class="btn btn-quiet" type="button">ⓘ 版本與更新內容 · v3.7.4</button><button id="cleanupOpen" class="btn btn-quiet" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button id="syncOpenSecondary" class="btn btn-quiet" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
   <div class="manager-section-head"><strong>全部小说</strong><span class="counter" id="bookCount">0 本</span></div>
@@ -231,8 +231,8 @@
  <div class="import-actions"><button id="cleanupPreview" class="btn btn-quiet" type="button">重新計算</button><button id="cleanupRun" class="btn btn-danger" type="button">確認清理已聽 MP3</button></div>
  <p class="dialog-note">如果清理了 MP3，再次播放該章時需重新從 iCloud Drive 匯入對應音訊。清理操作無法在 PineTree 內撤銷。</p>
  </div></dialog>
-<dialog id="releaseDialog" class="drawer-dialog" aria-label="版本更新與說明"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v3.8</h2><p>新增聖誕季、新年華彩主題，以及主題對應的旗艦版按鍵外觀。</p></div><button id="releaseClose" class="close-action" type="button" aria-label="關閉">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>延續增量匯入、匯入檢查、睡眠定時、書籤、快速續聽、專注閱讀、鎖屏 LRC 實驗模式與置中字幕修復；v3.8 進一步新增聖誕季與新年主題，並讓森夜閱讀、墨玉夜讀、松針晨露、暖茶夜燈以及節日主題，套用專屬旗艦版按鍵。</p><p>仍以 iCloud Drive 手動匯入／匯出同步檔；iOS 系統檔案選取器及鎖屏背景播放限制依然存在。</p></div><button id="releaseDismiss" class="btn btn-accent" type="button">知道了</button></div></dialog>
+<dialog id="releaseDialog" class="drawer-dialog" aria-label="版本更新與說明"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v3.9</h2><p>升級為旗艦主題圖標版：不同主題套用不同按鍵造型與圖標語言。</p></div><button id="releaseClose" class="close-action" type="button" aria-label="關閉">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>延續增量匯入、匯入檢查、睡眠定時、書籤、快速續聽、專注閱讀、鎖屏 LRC 實驗模式與置中字幕修復；v3.9 進一步把森夜閱讀、墨玉夜讀、松針晨露、暖茶夜燈、聖誕季與新年華彩升級為旗艦版控制按鍵，讓不同主題擁有各自的按鍵輪廓、玻璃質感與圖標風格。</p><p>仍以 iCloud Drive 手動匯入／匯出同步檔；iOS 系統檔案選取器及鎖屏背景播放限制依然存在。</p></div><button id="releaseDismiss" class="btn btn-accent" type="button">知道了</button></div></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="./app.js?v=380" defer></script>
+<script src="./app.js?v=390" defer></script>
 </body>
 </html>
