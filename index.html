@@ -11,15 +11,15 @@
  <link rel="manifest" href="./manifest.webmanifest">
  <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=321">
  <link rel="icon" href="./icon-192.png?v=321">
- <link rel="stylesheet" href="./styles.css?v=370">
- <title>PineTree 有聲書 · v3.7 · 護眼閱讀與智慧書庫</title>
+ <link rel="stylesheet" href="./styles.css?v=372">
+ <title>PineTree 有聲書 · v3.7.2 · 置中字幕與低延遲鎖屏</title>
 </head>
 <body>
 <div class="app-shell">
  <header class="topbar">
   <div class="brand">
    <div class="brand-mark" id="brandMonogram" aria-hidden="true"><img src="./apple-touch-icon.png?v=321" alt=""></div>
-   <div class="brand-copy"><strong id="brandTitle">我的小说书库</strong><span>PineTree v3.7 · 護眼閱讀 · iCloud 手動同步</span></div>
+   <div class="brand-copy"><strong id="brandTitle">我的小说书库</strong><span>PineTree v3.7.2 · 置中字幕 · iCloud 手動同步</span></div>
   </div>
   <nav class="header-actions" aria-label="全局操作">
    <span class="status-chip" id="networkBadge">● 准备就绪</span>
@@ -89,6 +89,7 @@
       <button id="offsetMinus" type="button" class="tiny-action" title="字幕提前半秒">−0.5s</button>
       <span id="offsetLabel" class="offset-label">0.0s</span>
       <button id="offsetPlus" type="button" class="tiny-action" title="字幕延后半秒">+0.5s</button>
+      <button id="lyricsCenterToggle" type="button" class="tiny-action" aria-pressed="true" title="播放時自動將當前字幕置中">◎ 置中</button>
       <button id="toggleLyricsMax" type="button" class="tiny-action full-lyrics" aria-pressed="false" title="字幕最大化">⛶ 最大化</button>
     </div>
    </div>
@@ -135,9 +136,9 @@
 </dialog>
 <dialog id="bookManager" class="drawer-dialog" aria-label="书库管理">
  <div class="dialog-inner">
-  <div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v3.7 · 智慧書庫與護眼版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button id="bookManagerClose" class="close-action" type="button" aria-label="关闭">×</button></div>
+  <div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v3.7.2 · 置中字幕與護眼版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button id="bookManagerClose" class="close-action" type="button" aria-label="关闭">×</button></div>
   <form class="create-book" id="createBookForm"><label for="newBookName">新建小说文件夹</label><div class="form-row"><input id="newBookName" class="field" maxlength="90" type="text" placeholder="输入书名，例如：拙石衍天" required><button class="btn btn-accent" type="submit">＋ 新建</button></div></form>
-  <div class="manager-icloud-shortcut"><button id="releaseOpen" class="btn btn-quiet" type="button">ⓘ 版本與更新內容 · v3.7</button><button id="cleanupOpen" class="btn btn-quiet" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button id="syncOpenSecondary" class="btn btn-quiet" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
+  <div class="manager-icloud-shortcut"><button id="releaseOpen" class="btn btn-quiet" type="button">ⓘ 版本與更新內容 · v3.7.2</button><button id="cleanupOpen" class="btn btn-quiet" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button id="syncOpenSecondary" class="btn btn-quiet" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
   <div class="manager-section-head"><strong>全部小说</strong><span class="counter" id="bookCount">0 本</span></div>
   <div class="book-grid" id="bookGrid" aria-label="小说封面书架"></div>
   <div class="book-detail" id="bookDetail">
@@ -194,9 +195,17 @@
   <label class="lockscreen-choice"><input type="radio" name="lockScreenMode" value="lyrics" checked><span><strong>實驗性 LRC 鎖屏字幕</strong><small>有時間軸字幕時，嘗試將目前句子放在鎖屏播放器標題；第二行顯示章節。iOS 可能停更或不顯示。</small></span></label>
   <label class="lockscreen-choice"><input type="radio" name="lockScreenMode" value="standard"><span><strong>標準章節資訊（穩定備用）</strong><small>固定顯示章節名稱、PineTree 有聲書與封面，不逐句更新。</small></span></label>
  </div>
+ <div class="lockscreen-speed" role="radiogroup" aria-label="鎖屏字幕更新速度">
+  <strong>字幕反應速度</strong>
+  <div class="lockscreen-speed-options">
+   <label><input type="radio" name="lockScreenSpeed" value="fast" checked><span>⚡ 快速 <small>至少間隔 0.65 秒 · 推薦</small></span></label>
+   <label><input type="radio" name="lockScreenSpeed" value="balanced"><span>平衡 <small>至少間隔 1.5 秒</small></span></label>
+   <label><input type="radio" name="lockScreenSpeed" value="quiet"><span>省電 <small>至少間隔 3.5 秒</small></span></label>
+  </div>
+ </div>
  <div class="lockscreen-preview" aria-label="預覽目前鎖屏資訊"><small>鎖屏文字預覽（不代表 iOS 一定如此呈現）</small><strong id="lockScreenPreviewTitle">尚未選擇章節</strong><span id="lockScreenPreviewArtist">PineTree 有聲書</span></div>
  <p id="lockScreenStatus" class="dialog-note" role="status">準備鎖屏資訊…</p>
- <p class="dialog-note">更新依賴音訊的 timeupdate 事件，為減少閃爍最多約每 3.5 秒更新一次；<strong>iPhone 鎖定後可能停止執行網頁 JavaScript</strong>。鎖屏文字可能停留在舊句子，但不會刻意中斷 MP3。鎖屏上顯示的小說句子可能被旁人看見。</p>
+ <p class="dialog-note">字幕變換時才嘗試更新媒體資訊；上方數字是最短更新間隔，不代表 iOS 一定在該時間內顯示；<strong>iPhone 鎖定後可能停止執行網頁 JavaScript</strong>。鎖屏文字可能停留在舊句子，但不會刻意中斷 MP3。鎖屏上顯示的小說句子可能被旁人看見。</p>
  </div></dialog>
 <dialog id="sleepDialog" class="drawer-dialog" aria-label="睡眠定時器"><div class="dialog-inner">
  <div class="dialog-head"><div><span class="dialog-kicker">SLEEP TIMER</span><h2>☾ 睡眠定時器</h2><p>睡前聽書更安心。定時器到點將暫停播放並儲存進度。</p></div><button id="sleepClose" class="close-action" type="button" aria-label="關閉">×</button></div>
@@ -211,8 +220,8 @@
  <div class="import-actions"><button id="cleanupPreview" class="btn btn-quiet" type="button">重新計算</button><button id="cleanupRun" class="btn btn-danger" type="button">確認清理已聽 MP3</button></div>
  <p class="dialog-note">如果清理了 MP3，再次播放該章時需重新從 iCloud Drive 匯入對應音訊。清理操作無法在 PineTree 內撤銷。</p>
  </div></dialog>
-<dialog id="releaseDialog" class="drawer-dialog" aria-label="版本更新與說明"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v3.7</h2><p>新增可切換的實驗性 LRC 鎖屏資訊模式。</p></div><button id="releaseClose" class="close-action" type="button" aria-label="關閉">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>增量匯入與 MP3/LRC 配對診斷、清理已聽音訊、睡眠定時、書籤、快速續聽、專注閱讀、螢幕常亮選項、九款護眼主題及同步安全改善；v3.7 新增鎖屏 LRC 字幕實驗模式（不保證背景逐句更新），可隨時改回標準章節資訊。</p><p>仍以 iCloud Drive 手動匯入／匯出同步檔；iOS 系統檔案選取器及鎖屏背景播放限制依然存在。</p></div><button id="releaseDismiss" class="btn btn-accent" type="button">知道了</button></div></dialog>
+<dialog id="releaseDialog" class="drawer-dialog" aria-label="版本更新與說明"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v3.7.2</h2><p>新增播放時自動置中字幕，改善末段字幕貼近底部被控制區干擾的問題。</p></div><button id="releaseClose" class="close-action" type="button" aria-label="關閉">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>增量匯入與 MP3/LRC 配對診斷、清理已聽音訊、睡眠定時、書籤、快速續聽、專注閱讀、螢幕常亮選項、九款護眼主題及同步安全改善；v3.7.1 新增鎖屏 LRC 字幕實驗模式（不保證背景逐句更新）；v3.7.2 新增播放時自動將當前句置中，並可切換為自由滾動。</p><p>仍以 iCloud Drive 手動匯入／匯出同步檔；iOS 系統檔案選取器及鎖屏背景播放限制依然存在。</p></div><button id="releaseDismiss" class="btn btn-accent" type="button">知道了</button></div></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="./app.js?v=370" defer></script>
+<script src="./app.js?v=372" defer></script>
 </body>
 </html>
