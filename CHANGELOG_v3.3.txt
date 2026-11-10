@@ -1,0 +1,14 @@
+PineTree 有聲書 v3.3 — 2026-11-09
+基於 v3.2.2；保留原本 indexedDB schema、PineTree icon 與森夜閱讀配色。
+
++ 匯入進度監控（已完成章數、百分比、狀態、時長）
++ 安全取消與可下載診斷報告
++ 逐章持久化、意外中斷提示、重新選取可增量匯入
++ Read 子目錄排除（使用 webkitRelativePath 時）
++ 同大小 MP3 自動略過／按需強制替換
++ 匯入後瀏覽器儲存空間估計
+* 修正 iCloud 匯入前 saveProgress 導致舊進度被誤判為最新
+* 新版 JSON 包含書名及設定更新時間；本機刪除書目設防舊快照恢復
+* Service worker shell cache 升到 v330，保留原有 IndexedDB
+
+限制：無法讀取 iOS Files picker 在回傳文件之前的 iCloud 系統下載進度；不提供真正自動 iCloud 雙向同步。

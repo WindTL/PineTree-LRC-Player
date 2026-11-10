@@ -57,3 +57,21 @@ body.lyrics-maximized .app-shell{padding:0;max-width:none}.lyrics-maximized .top
 
 /* v3.2.2: compact iPhone file-import hint */
 .import-row{flex-wrap:wrap}.import-help{display:block;flex:0 0 100%;color:var(--muted,#A7B2AA);font-size:11px;line-height:1.5;margin-top:2px;}
+
+/* PineTree v3.3 — import status must stay visible on iPhone, without locking the main thread. */
+.import-dialog{z-index:150}.import-monitor{padding:18px;background:var(--panel-alt);border:1px solid var(--border);border-radius:15px;display:grid;gap:10px}
+.import-phase{font-size:12px;color:var(--accent);font-weight:800}.import-count{font-size:23px;font-variant-numeric:tabular-nums;color:var(--text)}
+#importBar,.import-monitor progress{width:100%;height:17px;border:0;accent-color:var(--accent);border-radius:10px;overflow:hidden;background:var(--field)}
+.import-monitor progress::-webkit-progress-bar{background:var(--field);border-radius:10px}.import-monitor progress::-webkit-progress-value{background:var(--accent);border-radius:10px}
+.import-detail{font-size:12px;color:var(--soft);word-break:break-all;line-height:1.6;min-height:36px}
+.import-stats{font-size:12px;font-weight:700;color:var(--text)}#importElapsed{color:var(--muted);font-size:11px}
+.import-actions{margin-top:15px;display:flex;flex-wrap:wrap;gap:8px}.import-actions>.btn{flex:1;white-space:normal;min-width:105px}
+.import-dialog .check-row{padding:14px 0 8px;align-items:start;line-height:1.55}
+@media(max-width:850px){.import-dialog{height:min(92dvh,780px);max-height:92dvh}}
+@media(max-width:540px){.import-count{font-size:21px}.import-actions{display:grid;grid-template-columns:1fr 1fr}.import-actions #closeImport{grid-column:1/-1}}
+
+.import-options{margin-top:6px;font-size:11px;color:var(--muted);line-height:1.6}
+.import-options summary{cursor:pointer;color:var(--soft);padding:5px 2px;user-select:none}
+.import-options label{display:flex;align-items:flex-start;gap:8px;padding:7px 3px}
+.import-options input{margin-top:2px;accent-color:var(--accent)}
+.version-line{color:var(--muted);font-size:11px;display:block;margin-top:3px}

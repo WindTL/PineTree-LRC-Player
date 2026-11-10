@@ -11,15 +11,15 @@
  <link rel="manifest" href="./manifest.webmanifest">
  <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=321">
  <link rel="icon" href="./icon-192.png?v=321">
- <link rel="stylesheet" href="./styles.css?v=322">
- <title>PineTree 有聲書 · Lyra v3.2.2 · iPhone LRC 匯入修復</title>
+ <link rel="stylesheet" href="./styles.css?v=330">
+ <title>PineTree 有聲書 · Lyra v3.3 · 穩定匯入與 iCloud 同步修復</title>
 </head>
 <body>
 <div class="app-shell">
  <header class="topbar">
   <div class="brand">
    <div class="brand-mark" id="brandMonogram" aria-hidden="true"><img src="./apple-touch-icon.png?v=321" alt=""></div>
-   <div class="brand-copy"><strong id="brandTitle">我的小说书库</strong><span>PineTree 有聲書 · 森夜閱讀 · iCloud 手動同步</span></div>
+   <div class="brand-copy"><strong id="brandTitle">我的小说书库</strong><span>PineTree v3.3 · 森夜閱讀 · iCloud 手動同步</span></div>
   </div>
   <nav class="header-actions" aria-label="全局操作">
    <span class="status-chip" id="networkBadge">● 准备就绪</span>
@@ -49,8 +49,9 @@
      <button id="folderBtn" class="btn btn-quiet desktop-folder" type="button" disabled title="Windows：选择完整小说目录">📁 文件夹</button>
      <input id="filePicker" type="file" multiple hidden aria-describedby="importHelp">
      <input id="folderPicker" type="file" webkitdirectory multiple hidden>
-     <small id="importHelp" class="import-help">📱 iPhone：可同時選取 MP3 與 LRC；程式只會匯入這兩種副檔名。</small>
+     <small id="importHelp" class="import-help">📱 iPhone：建議一次 20–50 章。從 iCloud 選檔時，系統下載階段無百分比；返回後會顯示匯入進度。</small>
     </div>
+    <details class="import-options"><summary>進階匯入選項</summary><label><input id="forceImportReplace" type="checkbox"> 強制覆蓋同名 MP3（預設關閉；同大小但內容有修改時才勾）</label></details>
    </div>
    <div class="chapter-tools">
     <div class="chapter-tools-top"><h2>章节目录</h2><span id="libraryInfo">0 章</span></div>
@@ -113,9 +114,25 @@
 <audio id="audio" preload="metadata" playsinline></audio>
 
 <!-- Management actions are intentionally kept outside of the daily listening layout. -->
+<dialog id="importDialog" class="drawer-dialog import-dialog" aria-labelledby="importTitle">
+ <div class="dialog-inner">
+  <div class="dialog-head"><div><span class="dialog-kicker">PINETREE · IMPORT MONITOR</span><h2 id="importTitle">匯入進度監控</h2><p>正在逐章保存到本機，原始 iCloud Drive 檔案不會被改動。</p></div></div>
+  <div class="import-monitor" role="status" aria-live="polite" aria-atomic="true">
+   <div class="import-phase" id="importPhase">準備匯入…</div>
+   <strong class="import-count" id="importCount">等待檔案清單…</strong>
+   <progress id="importBar" max="100" value="0" aria-label="已完成的章節比例"></progress>
+   <div class="import-detail" id="importDetail">正在準備</div>
+   <div class="import-stats" id="importCounters">新增 0 · 更新 0 · 略過 0 · 失敗 0</div>
+   <small id="importElapsed">已耗時 0 秒</small>
+  </div>
+  <p class="dialog-note">本次操作可取消，已完成章節保留。若 iOS 在「檔案」選擇器內下載大量 iCloud 檔案，PineTree 無法顯示該系統下載百分比；返回播放器後才開始統計。</p>
+  <div class="import-actions"><button id="cancelImport" class="btn btn-danger" type="button">停止匯入</button><button id="downloadImportReport" class="btn btn-quiet" type="button" disabled>匯出診斷報告</button><button id="closeImport" class="btn btn-accent" type="button" disabled>完成 / 關閉</button></div>
+  <div id="importStorage" class="dialog-note">可用空間依 iPhone 系統設定而定。</div>
+ </div>
+</dialog>
 <dialog id="bookManager" class="drawer-dialog" aria-label="书库管理">
  <div class="dialog-inner">
-  <div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><p>新建、切换、改名、换封面，或删除整本小说</p></div><button id="bookManagerClose" class="close-action" type="button" aria-label="关闭">×</button></div>
+  <div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v3.3 · 穩定匯入版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button id="bookManagerClose" class="close-action" type="button" aria-label="关闭">×</button></div>
   <form class="create-book" id="createBookForm"><label for="newBookName">新建小说文件夹</label><div class="form-row"><input id="newBookName" class="field" maxlength="90" type="text" placeholder="输入书名，例如：拙石衍天" required><button class="btn btn-accent" type="submit">＋ 新建</button></div></form>
   <div class="manager-icloud-shortcut"><button id="syncOpenSecondary" class="btn btn-quiet" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
   <div class="manager-section-head"><strong>全部小说</strong><span class="counter" id="bookCount">0 本</span></div>
@@ -133,7 +150,7 @@
 </dialog>
 <dialog id="syncDialog" class="drawer-dialog" aria-label="iCloud Drive 同步與備份">
  <div class="dialog-inner">
-  <div class="dialog-head"><div><span class="dialog-kicker">LYRA 3.2.2 · ICLOUD DRIVE</span><h2>iCloud 同步檔</h2><p>Windows 與 iPhone 以相同 Apple Account 的 iCloud Drive 交換書架和播放位置。<strong>此版採手動同步</strong>，不是背景自動同步。</p></div><button id="syncClose" class="close-action" type="button" aria-label="關閉">×</button></div>
+  <div class="dialog-head"><div><span class="dialog-kicker">PineTree 3.3 · ICLOUD DRIVE</span><h2>iCloud 同步檔</h2><p>Windows 與 iPhone 以相同 Apple Account 的 iCloud Drive 交換書架和播放位置。<strong>此版採手動同步</strong>，不是背景自動同步。</p></div><button id="syncClose" class="close-action" type="button" aria-label="關閉">×</button></div>
   <div class="sync-guide"><strong>☁ 同步包含</strong><p>小說名稱、封面（每張不超過 2 MB）、各章續聽位置、上次播放章節、0.5–3× 倍速、字幕字體與時間偏移、森夜外觀配色。</p><p><strong>不包含：</strong>MP3/LRC 音訊檔。請在兩台裝置各自從「檔案」App 匯入同名章節。</p></div>
   <div class="sync-actions"><button class="btn btn-accent" id="syncExport" type="button">⬇ 匯出 Lyra_Sync.json</button><button class="btn btn-quiet" id="syncImport" type="button">⬆ 從 iCloud Drive 匯入</button><input type="file" id="syncFile" accept=".json,application/json" hidden></div>
   <div class="sync-guide"><strong>📱 iPhone 上怎樣用？</strong><p>在 Safari 設定「下載項目」保存至 iCloud Drive（或下載後用「檔案」App 移動）。先按匯出，在另一台裝置按匯入並選同一個 JSON 文件。每次換機前後都需要再次操作。</p><p>Safari 無法替網頁持續自動覆寫 iCloud 檔案；多次匯出可能會產生 Lyra_Sync (1).json，請選擇日期最新的檔案。</p></div>
@@ -161,6 +178,6 @@
  </div>
 </dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="./app.js?v=322" defer></script>
+<script src="./app.js?v=330" defer></script>
 </body>
 </html>
