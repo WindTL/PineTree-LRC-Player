@@ -11,8 +11,8 @@
  <link rel="manifest" href="./manifest.webmanifest">
  <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=321">
  <link rel="icon" href="./icon-192.png?v=321">
- <link rel="stylesheet" href="./styles.css">
- <title>PineTree 有聲書 · Lyra v3.2.1 · iCloud 手動同步</title>
+ <link rel="stylesheet" href="./styles.css?v=322">
+ <title>PineTree 有聲書 · Lyra v3.2.2 · iPhone LRC 匯入修復</title>
 </head>
 <body>
 <div class="app-shell">
@@ -47,8 +47,9 @@
     <div class="import-row">
      <button id="importBtn" class="btn btn-accent" type="button" disabled>＋ 导入 MP3 / LRC</button>
      <button id="folderBtn" class="btn btn-quiet desktop-folder" type="button" disabled title="Windows：选择完整小说目录">📁 文件夹</button>
-     <input id="filePicker" type="file" accept=".mp3,.lrc,audio/mpeg,text/plain" multiple hidden>
+     <input id="filePicker" type="file" multiple hidden aria-describedby="importHelp">
      <input id="folderPicker" type="file" webkitdirectory multiple hidden>
+     <small id="importHelp" class="import-help">📱 iPhone：可同時選取 MP3 與 LRC；程式只會匯入這兩種副檔名。</small>
     </div>
    </div>
    <div class="chapter-tools">
@@ -132,7 +133,7 @@
 </dialog>
 <dialog id="syncDialog" class="drawer-dialog" aria-label="iCloud Drive 同步與備份">
  <div class="dialog-inner">
-  <div class="dialog-head"><div><span class="dialog-kicker">LYRA 3.2 · ICLOUD DRIVE</span><h2>iCloud 同步檔</h2><p>Windows 與 iPhone 以相同 Apple Account 的 iCloud Drive 交換書架和播放位置。<strong>此版採手動同步</strong>，不是背景自動同步。</p></div><button id="syncClose" class="close-action" type="button" aria-label="關閉">×</button></div>
+  <div class="dialog-head"><div><span class="dialog-kicker">LYRA 3.2.2 · ICLOUD DRIVE</span><h2>iCloud 同步檔</h2><p>Windows 與 iPhone 以相同 Apple Account 的 iCloud Drive 交換書架和播放位置。<strong>此版採手動同步</strong>，不是背景自動同步。</p></div><button id="syncClose" class="close-action" type="button" aria-label="關閉">×</button></div>
   <div class="sync-guide"><strong>☁ 同步包含</strong><p>小說名稱、封面（每張不超過 2 MB）、各章續聽位置、上次播放章節、0.5–3× 倍速、字幕字體與時間偏移、森夜外觀配色。</p><p><strong>不包含：</strong>MP3/LRC 音訊檔。請在兩台裝置各自從「檔案」App 匯入同名章節。</p></div>
   <div class="sync-actions"><button class="btn btn-accent" id="syncExport" type="button">⬇ 匯出 Lyra_Sync.json</button><button class="btn btn-quiet" id="syncImport" type="button">⬆ 從 iCloud Drive 匯入</button><input type="file" id="syncFile" accept=".json,application/json" hidden></div>
   <div class="sync-guide"><strong>📱 iPhone 上怎樣用？</strong><p>在 Safari 設定「下載項目」保存至 iCloud Drive（或下載後用「檔案」App 移動）。先按匯出，在另一台裝置按匯入並選同一個 JSON 文件。每次換機前後都需要再次操作。</p><p>Safari 無法替網頁持續自動覆寫 iCloud 檔案；多次匯出可能會產生 Lyra_Sync (1).json，請選擇日期最新的檔案。</p></div>
@@ -160,6 +161,6 @@
  </div>
 </dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="./app.js" defer></script>
+<script src="./app.js?v=322" defer></script>
 </body>
 </html>
