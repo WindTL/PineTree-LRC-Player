@@ -50,11 +50,14 @@ const normalizeBook = value => (value || '').trim().normalize('NFC').replace(/\u
 const stem = name => name.replace(/^.*[\\/]/,'').replace(/\.(mp3|lrc)$/i,'').normalize('NFC').trim().toLocaleLowerCase();
 const readableStem = name => name.replace(/^.*[\\/]/,'').replace(/\.(mp3|lrc)$/i,'').trim();
 const trackId = (book, name) => `${book}\u0000${stem(name)}`;
+// Presentation only: clean a sortable filename prefix without modifying track IDs, files or imports.
+function chapterDisplayName(name){return String(name||'').replace(/^\d{4,7}[_-](?=第\s*\d+\s*章)/u,'').replace(/^(第\s*\d+\s*章)[_\s-]+/u,'$1　');}
+
 const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4101';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4202';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -261,7 +264,7 @@ function drawChapterList(){
     if(state.episodeSelectionMode)btn.setAttribute('aria-pressed',String(chosen));
     const num=document.createElement('span');num.className='chapter-no';num.textContent=String(indices.get(t.id)).padStart(3,'0');
     const info=document.createElement('span');info.className='chapter-info';
-    const name=document.createElement('span');name.className='chapter-title';name.textContent=t.name;
+    const name=document.createElement('span');name.className='chapter-title';name.textContent=chapterDisplayName(t.name);
     const sub=document.createElement('span');sub.className='chapter-subtitle';
     const p=state.progresses.get(t.id);
     sub.textContent=(t.hasLrc?'LRC 同步字幕':'僅 MP3')+(t.audioPresent===false?' · MP3 已清理，需重新匯入':'')+(p?.ended?' · 已聽完':p?.position>1?` · 續聽 ${formatTime(p.position)}`:'');
@@ -275,8 +278,12 @@ function drawChapterList(){
   list.scrollTop=previousScroll;
 }
 function scrollActiveChapter(){
-  const node=Array.from($('chapterList').children).find(el=>el.dataset.trackId===state.current?.id);
-  if(node)node.scrollIntoView({behavior:'instant',block:'nearest'});
+  const list=$('chapterList');
+  const node=Array.from(list.children).find(el=>el.dataset.trackId===state.current?.id);
+  if(!node||list.clientHeight<1)return;
+  const viewport=list.getBoundingClientRect(), target=node.getBoundingClientRect();
+  const desired=list.scrollTop+(target.top+target.height/2)-(viewport.top+viewport.height/2);
+  list.scrollTop=Math.max(0,Math.min(list.scrollHeight-list.clientHeight,desired));
 }
 function jumpToCurrent(){
   if(!state.current){toast('请先选择一个章节');return;}
@@ -661,6 +668,7 @@ function requestPlaybackAudioSession(){
 function setPlayButtonVisual(playing){
   const button=$('playBtn');if(!button)return;
   button.dataset.playing=playing?'true':'false';
+  document.body.dataset.playing=playing?'true':'false';
   button.setAttribute('aria-label',playing?'暫停':'播放');
   button.title=playing?'暫停':'播放';
 }
@@ -689,7 +697,7 @@ function installThemeParticles(){
 }
 function setupMediaSession(){if(!('mediaSession' in navigator))return;const handlers={play:()=>{requestPlaybackAudioSession();return startPlayback({fromLockScreen:true});},pause:()=>{audio.pause();updateMediaPosition();},previoustrack:()=>adjacentTrack(-1),nexttrack:()=>adjacentTrack(1),seekbackward:({seekOffset}={})=>skipSeconds(-(seekOffset||15)),seekforward:({seekOffset}={})=>skipSeconds(seekOffset||15),seekto:({seekTime})=>{if(Number.isFinite(seekTime))audio.currentTime=seekTime;}};for(const [action,fn]of Object.entries(handlers))try{navigator.mediaSession.setActionHandler(action,fn);}catch(_) {}}
 function clearCurrent(message='请选择章节'){++state.loadingToken;state.current=null;state.lockScreenMetaKey='';releaseAudio();try{if('mediaSession'in navigator)navigator.mediaSession.metadata=null;}catch(_){}state.lines=[];state.lineIndex=-1;localStorage.removeItem('lyra-last-id');$('currentBook').textContent=state.selectedBook?bookTitle(state.selectedBook):'READY TO LISTEN';$('currentTitle').textContent=message;$('chapterHint').textContent='从章节目录选择一章';$('playBtn').disabled=true;$('seekBar').disabled=true;$('deleteBtn').disabled=true;$('bookmarkAdd').disabled=true;setPlayButtonVisual(false);$('playStatus').textContent='未选章节';$('lrcState').textContent='· 暂无字幕';$('elapsed').textContent='00:00';$('duration').textContent='00:00';displayPlaceholder(message,'MP3 和 LRC 将保存在本机书库');updateStoryArt();updateBookBrand();drawChapterList();}
-async function loadTrack(track,{autoplay=false,restart=false}={}){if(!track)return;const token=++state.loadingToken;if(state.current&&state.current.id!==track.id&&!audio.ended)await saveProgress();if(token!==state.loadingToken)return;releaseAudio();state.current=track;localStorage.setItem('lyra-last-id',track.id);localStorage.setItem('lyra-last-book-track:'+track.book,track.id);$('currentBook').textContent=bookTitle(track.book);$('currentTitle').textContent=track.name;$('chapterHint').textContent='自动保存续听进度 · 点击字幕可跳转';$('deleteBtn').disabled=false;$('bookmarkAdd').disabled=false;$('playBtn').disabled=true;$('seekBar').disabled=true;$('playStatus').textContent='读取音频中…';state.lockScreenMetaKey='';displayLyrics(track.lrcText||'');updateStoryArt();updateBookBrand();drawChapterList();if(window.matchMedia('(max-width:850px)').matches)setMobileTab('player',true);else requestAnimationFrame(scrollActiveChapter);
+async function loadTrack(track,{autoplay=false,restart=false}={}){if(!track)return;const token=++state.loadingToken;if(state.current&&state.current.id!==track.id&&!audio.ended)await saveProgress();if(token!==state.loadingToken)return;releaseAudio();state.current=track;localStorage.setItem('lyra-last-id',track.id);localStorage.setItem('lyra-last-book-track:'+track.book,track.id);$('currentBook').textContent=bookTitle(track.book);$('currentTitle').textContent=chapterDisplayName(track.name);$('chapterHint').textContent='自动保存续听进度 · 点击字幕可跳转';$('deleteBtn').disabled=false;$('bookmarkAdd').disabled=false;$('playBtn').disabled=true;$('seekBar').disabled=true;$('playStatus').textContent='读取音频中…';state.lockScreenMetaKey='';displayLyrics(track.lrcText||'');updateStoryArt();updateBookBrand();drawChapterList();if(window.matchMedia('(max-width:850px)').matches)setMobileTab('player',true);else requestAnimationFrame(scrollActiveChapter);
   try{const [stored,progress]=await Promise.all([getStore('audio',track.id),getStore('progress',track.id)]);if(token!==state.loadingToken)return;if(!stored?.blob)throw new Error('本章 MP3 已清理或未匯入；請從 iCloud Drive 重新匯入同名 MP3');const resumeAt=restart||progress?.ended?0:Math.max(0,Number(progress?.position)||0);state.fileUrl=URL.createObjectURL(stored.blob);audio.src=state.fileUrl;audio.defaultPlaybackRate=state.speed;audio.playbackRate=state.speed;audio.load();$('playBtn').disabled=false;$('seekBar').disabled=false;updateMediaSession();let restored=false;const resume=()=>{if(token!==state.loadingToken||restored)return;const d=audio.duration;if(Number.isFinite(d)&&d>0){if(resumeAt>0&&resumeAt<d-1){try{audio.currentTime=resumeAt;}catch(_) {}}restored=true;updateProgressDisplay();updateLyrics(true);updateMediaPosition();}};if(audio.readyState>=1)resume();else{audio.addEventListener('loadedmetadata',resume,{once:true});audio.addEventListener('canplay',resume,{once:true});}$('playStatus').textContent=progress?.ended?'已听完 · 从头开始':resumeAt>1?`续听 ${formatTime(resumeAt)}`:'准备播放';if(autoplay)await startPlayback();}catch(error){if(token!==state.loadingToken)return;console.error(error);$('playBtn').disabled=true;$('seekBar').disabled=true;$('playStatus').textContent='音频读取失败';toast(`播放失败：${error.message||error}`);}}
 async function startPlayback({fromLockScreen=false}={}){
   if(!state.current){if(!fromLockScreen)toast('請先選擇小說章節');return false;}
@@ -715,7 +723,7 @@ function updateProgressDisplay(){const cur=Number(audio.currentTime)||0,d=Number
 async function deleteCurrent(){if(!state.current)return;await deleteEpisodes([state.current.id]);}
 function changeFont(delta){state.fontSize=bounded(state.fontSize+delta,14,38,21);document.documentElement.style.setProperty('--font-size',`${state.fontSize}px`);localStorage.setItem('lyra-font',state.fontSize);markSettingsChanged();requestAnimationFrame(()=>{syncLyricsViewportPadding();updateLyrics(true);});}
 function changeDelay(delta){state.delay=bounded(Math.round((state.delay+delta)*2)/2,-20,20,0);localStorage.setItem('lyra-delay',state.delay);markSettingsChanged();$('offsetLabel').textContent=`${state.delay>0?'+':''}${state.delay.toFixed(1)}s`;updateLyrics(true);updateMediaSession(true);}
-function setSpeed(value){state.speed=Math.round(bounded(Number(value),.5,3,1)*20)/20;audio.defaultPlaybackRate=state.speed;audio.playbackRate=state.speed;localStorage.setItem('lyra-speed',state.speed);$('speedRange').value=state.speed;$('speedLabel').textContent=`${state.speed.toFixed(2)}×`;updateMediaPosition();}
+function setSpeed(value){state.speed=Math.round(bounded(Number(value),.5,3,1)*20)/20;audio.defaultPlaybackRate=state.speed;audio.playbackRate=state.speed;localStorage.setItem('lyra-speed',state.speed);$('speedRange').value=state.speed;$('speedLabel').textContent=`${state.speed.toFixed(2)}×`;for(const p of document.querySelectorAll('[data-speed-preset]'))p.setAttribute('aria-pressed',String(Math.abs(Number(p.dataset.speedPreset)-state.speed)<.026));updateMediaPosition();}
 const isHex=x=>/^#[0-9a-f]{6}$/i.test(x);
 function rgb(hex){return [1,3,5].map(p=>parseInt(hex.slice(p,p+2),16));}
 function mixColor(a,b,weight){const x=rgb(a),y=rgb(b);return '#'+x.map((v,i)=>Math.round(v*(1-weight)+y[i]*weight).toString(16).padStart(2,'0')).join('');}
@@ -1221,6 +1229,7 @@ function setupEvents(){
   $('seekBar').addEventListener('input',()=>{state.seeking=true;$('elapsed').textContent=formatTime((audio.duration||0)*Number($('seekBar').value)/1000);});
   $('seekBar').addEventListener('change',()=>{if(Number.isFinite(audio.duration)&&audio.duration>0)audio.currentTime=audio.duration*Number($('seekBar').value)/1000;state.seeking=false;updateProgressDisplay();updateLyrics();saveProgress();});
   $('speedRange').addEventListener('input',event=>{setSpeed(event.target.value);markSettingsChanged();});
+  for(const preset of document.querySelectorAll('[data-speed-preset]'))preset.addEventListener('click',()=>{setSpeed(preset.dataset.speedPreset);markSettingsChanged();});
   $('bgColor').addEventListener('input',event=>{setBackground(event.target.value);markSettingsChanged();});
   $('panelColor').addEventListener('input',event=>{setPanelColor(event.target.value);markSettingsChanged();});
   $('accentColor').addEventListener('input',event=>{setAccentColor(event.target.value);markSettingsChanged();});
@@ -1252,7 +1261,7 @@ function setupEvents(){
   audio.addEventListener('error',()=>{if(state.current&&audio.src){$('playStatus').textContent='音频无法播放';toast('MP3 无法播放，请确认音频格式有效');}});
   window.addEventListener('online',updateNetwork);window.addEventListener('offline',updateNetwork);
   document.addEventListener('visibilitychange',()=>{document.body.dataset.pageVisible=document.hidden?'false':'true';if(document.hidden){if(!audio.paused)updateMediaSession(true);saveProgress();releaseWakeLock();}else{checkSleepTimer();requestPlaybackAudioSession();requestWakeLock();updateMediaSession();refreshLockScreenControls();syncLyricsViewportPadding();updateLyrics(true);}});window.addEventListener('pagehide',()=>saveProgress());
-  window.addEventListener('resize',()=>requestAnimationFrame(()=>{syncLyricsViewportPadding();updateLyrics(true);}));
+  window.addEventListener('resize',()=>requestAnimationFrame(()=>{syncLyricsViewportPadding();updateLyrics(true);if(window.innerWidth>850&&!document.body.classList.contains('lyrics-maximized'))scrollActiveChapter();}));
   if(typeof ResizeObserver!=='undefined'){
     let lastHeight=0;
     const lyricResizeObserver=new ResizeObserver(()=>{
@@ -1283,7 +1292,7 @@ function setImmersiveMode(enabled,{persist=true}={}){
 function updateImmersiveInfo(){
   const book=state.current?.book||state.selectedBook;
   $('imBookTitle').textContent=book?bookTitle(book):'請先從書庫匯入或選擇小說';
-  $('imChapterTitle').textContent=state.current?.name||'在月光與松林之間，聽見故事';
+  $('imChapterTitle').textContent=state.current?chapterDisplayName(state.current.name):'在月光與松林之間，聽見故事';
   const ready=!!state.current&&!!state.fileUrl&&!!audio.src;
   for(const id of ['imPlay','imPrev','imNext','imBack','imAhead','imSeek'])$(id).disabled=!ready;
 }
@@ -1385,7 +1394,7 @@ async function start(){
   registerSW();
   try{
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.1 森夜閱讀融合旗艦版已更新；原書庫、LRC 與播放進度保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.2 森夜閱讀極致旗艦版已更新；原書庫、LRC 與播放進度保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     const last=state.tracks.find(x=>x.id===localStorage.getItem('lyra-last-id'));

@@ -1,310 +1,309 @@
 <!doctype html>
 <html lang="zh-Hant">
 <head>
- <meta charset="utf-8">
- <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
- <meta name="theme-color" content="#0F2A1F">
- <meta name="apple-mobile-web-app-capable" content="yes">
- <meta name="apple-mobile-web-app-status-bar-style" content="default">
- <meta name="apple-mobile-web-app-title" content="PineTree 有聲書">
- <meta name="description" content="PineTree 有聲書 · 森夜閱讀、離線 MP3/LRC、iCloud Drive 手動同步">
- <link rel="manifest" href="./manifest.webmanifest">
- <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=4101">
- <link rel="icon" href="./icon-192.png?v=4101">
- <link rel="stylesheet" href="./styles.css?v=4101">
- <title>PineTree 有聲書 · v4.1 森夜閱讀融合旗艦版</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
+<meta content="#061810" name="theme-color"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="default" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="PineTree 有聲書" name="apple-mobile-web-app-title"/>
+<meta content="PineTree 有聲書 · 森夜閱讀、離線 MP3/LRC、iCloud Drive 手動同步" name="description"/>
+<link href="./manifest.webmanifest" rel="manifest"/>
+<link href="./apple-touch-icon.png?v=4202" rel="apple-touch-icon"/>
+<link href="./icon-192.png?v=4202" rel="icon"/>
+<link href="./styles.css?v=4202" rel="stylesheet"/>
+<title>PineTree 有聲書 · v4.2 森夜閱讀極致旗艦版</title>
 </head>
 <body>
 <div class="app-shell">
- <header class="topbar">
-  <div class="brand">
-   <div class="brand-mark" id="brandMonogram" aria-hidden="true"><img src="./apple-touch-icon.png?v=4101" alt=""></div>
-   <div class="brand-copy"><strong id="brandTitle">我的小说书库</strong><span>PineTree v4.1 森夜閱讀融合旗艦版 · iCloud 手動同步</span></div>
-  </div>
-  <nav class="header-actions" aria-label="全局操作">
-   <span class="status-chip" id="networkBadge">● 准备就绪</span>
-   <button class="top-action im-enter-action" type="button" id="immersiveEnter" aria-label="開啟森夜沉浸播放器" title="切換至森夜閱讀旗艦沉浸播放模式">✦ <span>森夜沉浸</span></button>
-   <button class="top-action resume-action" type="button" id="quickResume" title="跳回最近聆聽的章節">▶ <span>快速續聽</span></button>
-   <button class="top-action" type="button" id="cloudOpen" title="手動同步 iCloud Drive 播放記錄與書架"><span aria-hidden="true">☁</span><span>iCloud 同步</span></button>
-   <button class="top-action" type="button" id="themeOpen" title="更换整个界面配色"><span aria-hidden="true">◐</span><span>外觀</span></button>
-   <button class="top-action" type="button" id="bookManagerOpen" title="管理小说和封面"><span aria-hidden="true">▣</span><span>书库管理</span></button>
-  </nav>
- </header>
- <nav class="mobile-switch" aria-label="移动端页面切换">
-  <button id="mobileTabPlayer" type="button" class="mobile-tab active" aria-pressed="true">♫ 播放 / 字幕</button>
-  <button id="mobileTabChapters" type="button" class="mobile-tab" aria-pressed="false">☷ 章节目录</button>
- </nav>
- <main class="layout">
-  <aside id="libraryPanel" class="library card" aria-label="章节目录">
-   <div class="sidebar-top">
-    <div class="sidebar-kicker">当前小说 <span id="totalChapters">0 章</span></div>
-    <div class="book-switcher">
-     <div class="book-avatar" id="activeBookThumb" aria-hidden="true">书</div>
-     <div class="book-switch-body">
-      <label for="bookSelect">切换小说</label>
-      <select id="bookSelect" aria-label="选择小说"><option value="">暂未添加小说</option></select>
-     </div>
-     <button id="bookManagerOpenSecondary" class="mini-icon" type="button" title="新增、改名、更换封面或删除小说" aria-label="管理小说">⚙</button>
-    </div>
-    <div class="import-row">
-     <button id="importBtn" class="btn btn-accent" type="button" disabled>＋ 导入 MP3 / LRC</button>
-     <button id="folderBtn" class="btn btn-quiet desktop-folder" type="button" disabled title="Windows：选择完整小说目录">📁 文件夹</button>
-     <input id="filePicker" type="file" multiple hidden aria-describedby="importHelp">
-     <input id="folderPicker" type="file" webkitdirectory multiple hidden>
-     <small id="importHelp" class="import-help">📱 iPhone：建議一次 20–50 章。從 iCloud 選檔時，系統下載階段無百分比；返回後會顯示匯入進度。</small>
-    </div>
-    <details class="import-options"><summary>進階匯入選項</summary><label><input id="forceImportReplace" type="checkbox"> 強制覆蓋同名 MP3（預設關閉；同大小但內容有修改時才勾）</label></details>
-   </div>
-   <div class="chapter-tools">
-    <div class="chapter-tools-top"><h2>章节目录</h2><span id="libraryInfo">0 章</span></div>
-    <div class="search-wrap">
-     <span aria-hidden="true">⌕</span><input id="chapterSearch" type="search" placeholder="搜索章节号或标题，例如 432" autocomplete="off" aria-label="搜索本书章节">
-     <button id="jumpCurrentBtn" type="button" class="search-jump" title="定位正在播放的章节">定位</button>
-    </div>
-    <div class="episode-action-row">
-     <button id="episodeSelectMode" class="episode-select-toggle" type="button" aria-pressed="false" title="選取一章或多章後刪除 PineTree 本機副本">☑ 選取章節</button>
-     <span id="episodeSelectHint" class="episode-select-hint">可刪除個別或多個章節</span>
-    </div>
-    <div class="episode-select-actions" id="episodeSelectActions" hidden>
-     <button id="episodeSelectVisible" type="button" class="episode-action">全選目前結果</button>
-     <button id="episodeClearSelection" type="button" class="episode-action">清除選取</button>
-     <button id="episodeDeleteSelected" type="button" class="episode-action episode-danger" disabled>刪除所選 (0)</button>
-    </div>
-    <div id="episodeDeleteProgress" class="episode-delete-progress" role="status" aria-live="polite" hidden></div>
-   </div>
-   <div class="chapter-list" id="chapterList" aria-label="可滚动章节目录"></div>
-   <div class="sidebar-foot"><span id="chapterCounter">先导入小说，开始播放</span><span class="autosave-dot" title="自动保存"></span></div>
-  </aside>
-  <section id="readerPanel" class="reader card" aria-label="小说播放器">
-   <div class="now-playing">
-    <div class="now-playing-text">
-     <div class="now-kicker"><span class="pulse-dot"></span><span id="currentBook">请选择小说</span></div>
-     <h1 id="currentTitle">选一章，开始聆听故事</h1>
-     <p id="chapterHint">同步字幕 · 点击文字跳转播放 · 自动保存续听位置</p>
-    </div>
-    <div class="now-playing-actions">
-     <div id="storyArt" class="story-art">
-      <div id="storyArtFallback" class="story-fallback"><span id="storyBookName">书</span></div>
-      <img id="currentCover" alt="当前小说封面" hidden>
-     </div>
-     <button id="immersiveEnterSecondary" type="button" class="tiny-action im-entry-secondary" title="開啟森夜沉浸播放器" aria-label="開啟森夜沉浸播放">✧ 沉浸</button>
-     <button id="libraryJumpBtn" type="button" class="tiny-action mobile-only" title="打开章节目录">☷</button>
-     <button id="deleteBtn" type="button" class="tiny-action" disabled title="仅删除当前章节">⌫</button>
-    </div>
-   </div>
-   <div class="lyrics-toolbar">
-    <div class="lyrics-heading"><strong>同步字幕</strong><small id="lrcState">· 尚无字幕</small></div>
-    <div class="lyrics-tools">
-      <button id="focusToggle" type="button" class="tiny-action" aria-pressed="false" title="隱藏次要操作，專注閱讀">☘ 專注</button>
-      <button id="fontMinus" type="button" class="tiny-action" title="缩小字体">A−</button>
-      <button id="fontPlus" type="button" class="tiny-action" title="放大字体">A＋</button>
-      <button id="offsetMinus" type="button" class="tiny-action" title="字幕提前半秒">−0.5s</button>
-      <span id="offsetLabel" class="offset-label">0.0s</span>
-      <button id="offsetPlus" type="button" class="tiny-action" title="字幕延后半秒">+0.5s</button>
-      <button id="lyricsCenterToggle" type="button" class="tiny-action" aria-pressed="true" title="播放時自動將當前字幕置中">◎ 置中</button>
-      <button id="toggleLyricsMax" type="button" class="tiny-action full-lyrics" aria-pressed="false" title="字幕最大化">⛶ 最大化</button>
-    </div>
-   </div>
-   <div class="lyrics-window" id="lyricsWindow" tabindex="0" aria-label="同步滚动字幕">
-    <div class="lyrics-placeholder"><span>“</span><p>每一个故事，都值得被听见。</p><small>请从左侧章节目录选择一章</small></div>
-   </div>
-   <div class="player-bottom">
-    <div class="theme-particles" id="themeParticles" aria-hidden="true"></div>
-    <div class="listen-extras"><button id="bookmarkAdd" class="tiny-action" type="button" disabled title="收藏目前時間及文字">☆ 收藏此句</button><button id="bookmarkOpen" class="tiny-action" type="button" title="檢視已收藏書籤">▤ 書籤</button><button id="sleepOpen" class="tiny-action" type="button" title="設定睡眠定時器">☾ 睡眠定時</button><button id="lockScreenOpen" class="tiny-action" type="button" title="設定鎖屏顯示資訊">🔒 鎖屏字幕 · 實驗</button><span id="sleepStatus" aria-live="polite">定時器未開啟</span></div>
-    <div class="time-line"><time id="elapsed">00:00</time><span id="playStatus">等待播放</span><time id="duration">00:00</time></div>
-    <input id="seekBar" class="seek-bar" type="range" min="0" max="1000" step="1" value="0" aria-label="播放进度" disabled>
-    <div class="playbar">
-     <div class="transport">
-      <button id="prevBtn" class="control minor" title="上一章" aria-label="上一章" type="button">⏮</button>
-      <button id="backBtn" class="control minor skip-control" title="后退15秒" aria-label="后退15秒" type="button">↶<small>15</small></button>
-      <button id="playBtn" class="control play" title="播放 / 暂停" aria-label="播放" type="button" data-playing="false" disabled><span class="play-emblem" aria-hidden="true"></span><span class="play-symbol" aria-hidden="true"></span></button>
-      <button id="aheadBtn" class="control minor skip-control" title="快进15秒" aria-label="快进15秒" type="button">↷<small>15</small></button>
-      <button id="nextBtn" class="control minor" title="下一章" aria-label="下一章" type="button">⏭</button>
-     </div>
-     <div class="speed-settings"><label for="speedRange">播放速度 <output id="speedLabel">1.00×</output></label><input id="speedRange" type="range" min="0.5" max="3" value="1" step="0.05" aria-label="播放速度 0.5 至 3 倍"><div class="speed-ends"><span>0.5×</span><span>3×</span></div></div>
-    </div>
-    <div id="storageHint" class="storage-hint">✓ 上次播放的章节、位置、倍速和界面颜色自动保存在本机</div>
-   </div>
-  </section>
- </main>
+<header class="topbar">
+<div class="brand">
+<div aria-hidden="true" class="brand-mark" id="brandMonogram"><img alt="" src="./apple-touch-icon.png?v=4202"/></div>
+<div class="brand-copy"><strong class="forest-brandname">PineTree <small>v4.2</small></strong><span>A U D I O B O O K <b>·</b> 森夜閱讀</span><strong class="visually-hidden" id="brandTitle">我的小说书库</strong></div>
 </div>
-
-<!-- v4.0 stage 1: the same audio, library and settings, with a separate immersive presentation. -->
-<section id="immersiveMode" class="im-mode" aria-label="森夜閱讀沉浸播放器" hidden>
-  <div class="im-background" aria-hidden="true"></div>
-  <div class="im-atmosphere" aria-hidden="true"><i class="im-moonbeam"></i><i class="im-mist im-mist-one"></i><i class="im-mist im-mist-two"></i><i class="im-water-shimmer"></i></div>
-  <div class="im-fireflies" aria-hidden="true">
-    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-  </div>
-  <div class="im-screen">
-   <header class="im-topbar">
-    <div class="im-brand"><img class="im-brand-icon" src="./icon-192.png?v=4101" alt="" aria-hidden="true"><span class="im-brand-type"><b>PineTree</b><small>A U D I O B O O K</small></span></div>
-    <nav class="im-top-actions" aria-label="沉浸頁操作">
-      <button type="button" id="imChapters" class="im-glass im-top-button" title="返回章節目錄">☷ <span>章節</span></button>
-      <button type="button" id="imTheme" class="im-glass im-top-button" title="開啟外觀設定">◐ <span>外觀</span></button>
-      <button type="button" id="imExit" class="im-glass im-top-button" title="退出沉浸播放並返回書庫">▦ <span>返回書庫</span></button>
-    </nav>
-   </header>
-   <main class="im-main">
-    <div class="im-heading">
-      <p class="im-eyebrow">P I N E T R E E · F L A G S H I P  R E A D I N G</p>
-      <h1><span class="im-title-sprig" aria-hidden="true">✦</span>森夜閱讀<span class="im-title-sprig" aria-hidden="true">✦</span></h1>
-      <p class="im-eng">F O R E S T &nbsp; R E A D I N G</p>
-      <div class="im-chapter">
-       <p id="imBookTitle">選擇一部小說，開始聆聽</p>
-       <h2 id="imChapterTitle">在月光與松林之間，聽見故事</h2>
-      </div>
-    </div>
-    <section class="im-audio" aria-label="播放控制">
-      <div class="im-progress-labels"><span id="imElapsed">00:00</span><span class="im-save-text" id="imProgressCaption">✧ 播放進度會自動儲存</span><span id="imDuration">00:00</span></div>
-      <div class="im-progress-wrap"><span class="im-progress-shimmer" aria-hidden="true"></span><input id="imSeek" type="range" min="0" max="1000" step="1" value="0" aria-label="沉浸播放進度" disabled></div>
-      <div class="im-transport-card">
-       <div class="im-transport" role="group" aria-label="章節及音訊控制">
-        <button type="button" id="imPrev" class="im-small im-chapter-control" aria-label="上一章" title="上一章" disabled><svg class="im-control-art" viewBox="0 0 82 70" aria-hidden="true" focusable="false"><path class="im-icon-fill" d="M39 14 20 32l19 18V14Zm19 0L39 32l19 18V14Z"/><path class="im-leaf-stroke" d="M15 54c13-8 28-8 49-6M25 49l-4-8m4 8-11-1m22-1-3-8m3 8 9-9m1 8 3-9m-3 9 10-6"/><path class="im-cone" d="M59 52c4 2 5 7 1 11-4 5-11 4-14 0-3-5-2-9 2-11 4-2 8-2 11 0Z"/><path class="im-cone-line" d="m49 55 8 2m-9 3 11 1m-7-9 2 12m5-10-4 11"/></svg></button>
-        <button type="button" id="imBack" class="im-small im-skip-control" aria-label="後退15秒" title="後退15秒" disabled><svg class="im-vine-arrow" viewBox="0 0 64 48" aria-hidden="true" focusable="false"><path d="M51 34C47 15 25 10 12 22"/><path d="m16 9-8 14 15 2"/><path class="vine-leaf" d="M26 13c0-8-6-9-10-8 0 6 4 9 10 8Zm11 3c2-7 8-8 12-5-1 5-5 7-12 5Z"/></svg><small>15</small></button>
-        <button type="button" id="imPlay" class="im-play" aria-label="播放" title="播放 / 暫停" disabled data-playing="false"><span class="im-gem-inner"><span class="im-gem-facets" aria-hidden="true"></span><span class="im-gem-filigree" aria-hidden="true"></span><svg class="im-play-symbol" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path class="im-play-triangle" d="M22 15c0-2.5 2.6-4.1 4.8-2.8L50 27.7c3.1 1.9 3.1 6.7 0 8.6L26.8 51.8C24.6 53.1 22 51.5 22 49V15Z"/><g class="im-pause-bars"><rect x="19" y="16" width="10" height="32" rx="2.6"/><rect x="35" y="16" width="10" height="32" rx="2.6"/></g></svg><span class="im-gem-leaves" aria-hidden="true">❧</span></span></button>
-        <button type="button" id="imAhead" class="im-small im-skip-control" aria-label="快進15秒" title="快進15秒" disabled><svg class="im-vine-arrow" viewBox="0 0 64 48" aria-hidden="true" focusable="false"><path d="M13 34c4-19 26-24 39-12"/><path d="m48 9 8 14-15 2"/><path class="vine-leaf" d="M38 13c0-8 6-9 10-8 0 6-4 9-10 8Zm-11 3c-2-7-8-8-12-5 1 5 5 7 12 5Z"/></svg><small>15</small></button>
-        <button type="button" id="imNext" class="im-small im-chapter-control" aria-label="下一章" title="下一章" disabled><svg class="im-control-art" viewBox="0 0 82 70" aria-hidden="true" focusable="false"><path class="im-icon-fill" d="m43 14 19 18-19 18V14Zm-19 0 19 18-19 18V14Z"/><path class="im-leaf-stroke" d="M67 54c-13-8-28-8-49-6M57 49l4-8m-4 8 11-1m-22-1 3-8m-3 8-9-9m-1 8-3-9m3 9-10-6"/><path class="im-cone" d="M23 52c-4 2-5 7-1 11 4 5 11 4 14 0 3-5 2-9-2-11-4-2-8-2-11 0Z"/><path class="im-cone-line" d="m33 55-8 2m9 3-11 1m7-9-2 12m-5-10 4 11"/></svg></button>
-       </div>
-       <div class="im-speed"><label for="imSpeed">✧ 播放速度 <output id="imSpeedLabel">1.00×</output></label><input id="imSpeed" type="range" min="0.5" max="3" step="0.05" value="1" aria-label="調整播放倍速"><div class="im-speed-presets"><button type="button" data-im-speed="0.75">0.75×</button><button type="button" data-im-speed="1">1.0×</button><button type="button" data-im-speed="1.5">1.5×</button><button type="button" data-im-speed="2">2.0×</button><button type="button" data-im-speed="3">3.0×</button></div></div>
-      </div>
-    </section>
-    <section class="im-lyrics" aria-label="沉浸同步字幕" aria-live="off">
-      <div id="imLyrics" class="im-lyrics-lines"><p class="im-lyric-empty">將 MP3 與 LRC 匯入書庫後，字幕會在這裡同步顯示。</p></div>
-      <p class="im-lyrics-tip">點擊文字可跳轉到對應時間 · 鎖屏顯示沿用你的原本設定</p>
-    </section>
-   </main>
-   <footer class="im-footer" aria-label="聆聽工具">
-     <button id="imSleep" type="button" class="im-glass" title="設定睡眠定時器">☾ <span>睡眠定時</span></button>
-     <button id="imBookmark" type="button" class="im-glass" title="收藏目前句子">☆ <span>收藏此句</span></button>
-     <button id="imBookmarkList" type="button" class="im-glass" title="查看書籤">▤ <span>我的書籤</span></button>
-     <button id="imCloud" type="button" class="im-glass" title="打開 iCloud 手動同步">☁ <span>同步 iCloud</span></button>
-     <button id="imText" type="button" class="im-glass" title="返回完整字幕閱讀頁">☷ <span>完整字幕</span></button>
-   </footer>
-  </div>
+<nav aria-label="全局操作" class="header-actions">
+<span class="status-chip" id="networkBadge">● 准备就绪</span>
+<button aria-label="開啟森夜沉浸播放器" class="top-action im-enter-action" id="immersiveEnter" title="切換至森夜閱讀旗艦沉浸播放模式" type="button">✦ <span>森夜沉浸</span></button>
+<button class="top-action resume-action" id="quickResume" title="跳回最近聆聽的章節" type="button">▶ <span>快速續聽</span></button>
+<button class="top-action" id="cloudOpen" title="手動同步 iCloud Drive 播放記錄與書架" type="button"><span aria-hidden="true">☁</span><span>iCloud 同步</span></button>
+<button class="top-action" id="themeOpen" title="更换整个界面配色" type="button"><span aria-hidden="true">◐</span><span>外觀</span></button>
+<button class="top-action" id="bookManagerOpen" title="管理小说和封面" type="button"><span aria-hidden="true">▣</span><span>书库管理</span></button>
+</nav>
+</header>
+<nav aria-label="移动端页面切换" class="mobile-switch">
+<button aria-pressed="true" class="mobile-tab active" id="mobileTabPlayer" type="button">♫ 播放 / 字幕</button>
+<button aria-pressed="false" class="mobile-tab" id="mobileTabChapters" type="button">☷ 章节目录</button>
+</nav>
+<main class="layout">
+<aside aria-label="章节目录" class="library card" id="libraryPanel">
+<div class="sidebar-top">
+<div class="sidebar-kicker">当前小说 <span id="totalChapters">0 章</span></div>
+<div class="book-switcher">
+<div aria-hidden="true" class="book-avatar" id="activeBookThumb">书</div>
+<div class="book-switch-body">
+<label for="bookSelect">切换小说</label>
+<select aria-label="选择小说" id="bookSelect"><option value="">暂未添加小说</option></select>
+</div>
+<button aria-label="管理小说" class="mini-icon" id="bookManagerOpenSecondary" title="新增、改名、更换封面或删除小说" type="button">⚙</button>
+</div>
+<div class="import-row">
+<button class="btn btn-accent" disabled="" id="importBtn" type="button">＋ 导入 MP3 / LRC</button>
+<button class="btn btn-quiet desktop-folder" disabled="" id="folderBtn" title="Windows：选择完整小说目录" type="button">📁 文件夹</button>
+<input aria-describedby="importHelp" hidden="" id="filePicker" multiple="" type="file"/>
+<input hidden="" id="folderPicker" multiple="" type="file" webkitdirectory=""/>
+<small class="import-help" id="importHelp">📱 iPhone：建議一次 20–50 章。從 iCloud 選檔時，系統下載階段無百分比；返回後會顯示匯入進度。</small>
+</div>
+<details class="import-options"><summary>進階匯入選項</summary><label><input id="forceImportReplace" type="checkbox"/> 強制覆蓋同名 MP3（預設關閉；同大小但內容有修改時才勾）</label></details>
+</div>
+<div class="chapter-tools">
+<div class="chapter-tools-top"><h2>章节目录</h2><span id="libraryInfo">0 章</span></div>
+<div class="search-wrap">
+<span aria-hidden="true">⌕</span><input aria-label="搜索本书章节" autocomplete="off" id="chapterSearch" placeholder="搜索章节号或标题，例如 432" type="search"/>
+<button class="search-jump" id="jumpCurrentBtn" title="定位正在播放的章节" type="button">定位</button>
+</div>
+<div class="episode-action-row">
+<button aria-pressed="false" class="episode-select-toggle" id="episodeSelectMode" title="選取一章或多章後刪除 PineTree 本機副本" type="button">☑ 選取章節</button>
+<span class="episode-select-hint" id="episodeSelectHint">可刪除個別或多個章節</span>
+</div>
+<div class="episode-select-actions" hidden="" id="episodeSelectActions">
+<button class="episode-action" id="episodeSelectVisible" type="button">全選目前結果</button>
+<button class="episode-action" id="episodeClearSelection" type="button">清除選取</button>
+<button class="episode-action episode-danger" disabled="" id="episodeDeleteSelected" type="button">刪除所選 (0)</button>
+</div>
+<div aria-live="polite" class="episode-delete-progress" hidden="" id="episodeDeleteProgress" role="status"></div>
+</div>
+<div aria-label="可滚动章节目录" class="chapter-list" id="chapterList"></div>
+<div class="sidebar-foot"><span id="chapterCounter">先导入小说，开始播放</span><span class="autosave-dot" title="自动保存"></span></div>
+</aside>
+<section aria-label="小说播放器" class="reader card" id="readerPanel">
+<div aria-hidden="true" class="forest-atmosphere"><i class="forest-moon-rays"></i><i class="forest-mist"></i><i class="forest-reflection"></i><i class="forest-orb orb-one"></i><i class="forest-orb orb-two"></i><i class="forest-orb orb-three"></i><i class="forest-orb orb-four"></i><i class="forest-orb orb-five"></i><i class="forest-orb orb-six"></i><i class="forest-orb orb-seven"></i><i class="forest-orb orb-eight"></i><i class="forest-orb orb-nine"></i></div>
+<div class="now-playing">
+<div class="now-playing-text">
+<div aria-label="PineTree 森夜閱讀" class="forest-signature"><div class="signature-top">✦ P I N E T R E E · F L A G S H I P ✦</div><div class="signature-title"><span aria-hidden="true" class="signature-leaf">❧</span> 森 夜 閱 讀 <span aria-hidden="true" class="signature-leaf">❧</span></div><div class="signature-sub">F O R E S T   R E A D I N G</div></div>
+<div class="now-kicker"><span class="pulse-dot"></span><span id="currentBook">请选择小说</span></div>
+<h1 id="currentTitle">选一章，开始聆听故事</h1>
+<p id="chapterHint">同步字幕 · 点击文字跳转播放 · 自动保存续听位置</p>
+</div>
+<div class="now-playing-actions">
+<div class="story-art" id="storyArt">
+<div class="story-fallback" id="storyArtFallback"><span id="storyBookName">书</span></div>
+<img alt="当前小说封面" hidden="" id="currentCover"/>
+</div>
+<button aria-label="開啟森夜沉浸播放" class="tiny-action im-entry-secondary" id="immersiveEnterSecondary" title="開啟森夜沉浸播放器" type="button">✧ 沉浸</button>
+<button class="tiny-action mobile-only" id="libraryJumpBtn" title="打开章节目录" type="button">☷</button>
+<button class="tiny-action" disabled="" id="deleteBtn" title="仅删除当前章节" type="button">⌫</button>
+</div>
+</div>
+<div class="lyrics-toolbar">
+<div class="lyrics-heading"><strong>同步字幕</strong><small id="lrcState">· 尚无字幕</small></div>
+<div class="lyrics-tools">
+<button aria-pressed="false" class="tiny-action" id="focusToggle" title="隱藏次要操作，專注閱讀" type="button">☘ 專注</button>
+<button class="tiny-action" id="fontMinus" title="缩小字体" type="button">A−</button>
+<button class="tiny-action" id="fontPlus" title="放大字体" type="button">A＋</button>
+<button class="tiny-action" id="offsetMinus" title="字幕提前半秒" type="button">−0.5s</button>
+<span class="offset-label" id="offsetLabel">0.0s</span>
+<button class="tiny-action" id="offsetPlus" title="字幕延后半秒" type="button">+0.5s</button>
+<button aria-pressed="true" class="tiny-action" id="lyricsCenterToggle" title="播放時自動將當前字幕置中" type="button">◎ 置中</button>
+<button aria-pressed="false" class="tiny-action full-lyrics" id="toggleLyricsMax" title="字幕最大化" type="button">⛶ 最大化</button>
+</div>
+</div>
+<div aria-label="同步滚动字幕" class="lyrics-window" id="lyricsWindow" tabindex="0">
+<div class="lyrics-placeholder"><span>“</span><p>每一个故事，都值得被听见。</p><small>请从左侧章节目录选择一章</small></div>
+</div>
+<div class="player-bottom">
+<div aria-hidden="true" class="theme-particles" id="themeParticles"></div>
+<div class="listen-extras"><button class="tiny-action" disabled="" id="bookmarkAdd" title="收藏目前時間及文字" type="button">☆ 收藏此句</button><button class="tiny-action" id="bookmarkOpen" title="檢視已收藏書籤" type="button">▤ 書籤</button><button class="tiny-action" id="sleepOpen" title="設定睡眠定時器" type="button">☾ 睡眠定時</button><button class="tiny-action" id="lockScreenOpen" title="設定鎖屏顯示資訊" type="button">🔒 鎖屏字幕 · 實驗</button><span aria-live="polite" id="sleepStatus">定時器未開啟</span></div>
+<div class="time-line"><time id="elapsed">00:00</time><span id="playStatus">等待播放</span><time id="duration">00:00</time></div>
+<input aria-label="播放进度" class="seek-bar" disabled="" id="seekBar" max="1000" min="0" step="1" type="range" value="0"/>
+<div class="playbar">
+<div class="transport">
+<button aria-label="上一章" class="control minor gem-chapter" id="prevBtn" title="上一章" type="button"><svg aria-hidden="true" class="im-control-art" focusable="false" viewbox="0 0 82 70"><path class="im-icon-fill" d="M39 14 20 32l19 18V14Zm19 0L39 32l19 18V14Z"></path><path class="im-leaf-stroke" d="M15 54c13-8 28-8 49-6M25 49l-4-8m4 8-11-1m22-1-3-8m3 8 9-9m1 8 3-9m-3 9 10-6"></path><path class="im-cone" d="M59 52c4 2 5 7 1 11-4 5-11 4-14 0-3-5-2-9 2-11 4-2 8-2 11 0Z"></path><path class="im-cone-line" d="m49 55 8 2m-9 3 11 1m-7-9 2 12m5-10-4 11"></path></svg></button>
+<button aria-label="后退15秒" class="control minor skip-control gem-skip" id="backBtn" title="后退15秒" type="button"><svg aria-hidden="true" class="im-vine-arrow" focusable="false" viewbox="0 0 64 48"><path d="M51 34C47 15 25 10 12 22"></path><path d="m16 9-8 14 15 2"></path><path class="vine-leaf" d="M26 13c0-8-6-9-10-8 0 6 4 9 10 8Zm11 3c2-7 8-8 12-5-1 5-5 7-12 5Z"></path></svg><small>15</small></button>
+<button aria-label="播放" class="control play forest-crystal" data-playing="false" disabled="" id="playBtn" title="播放 / 暂停" type="button"><span class="im-gem-inner"><span aria-hidden="true" class="im-gem-facets"></span><span aria-hidden="true" class="im-gem-filigree"></span><svg aria-hidden="true" class="im-play-symbol" focusable="false" viewbox="0 0 64 64"><path class="im-play-triangle" d="M22 15c0-2.5 2.6-4.1 4.8-2.8L50 27.7c3.1 1.9 3.1 6.7 0 8.6L26.8 51.8C24.6 53.1 22 51.5 22 49V15Z"></path><g class="im-pause-bars"><rect height="32" rx="2.6" width="10" x="19" y="16"></rect><rect height="32" rx="2.6" width="10" x="35" y="16"></rect></g></svg><span aria-hidden="true" class="im-gem-leaves">❧</span></span></button>
+<button aria-label="快进15秒" class="control minor skip-control gem-skip" id="aheadBtn" title="快进15秒" type="button"><svg aria-hidden="true" class="im-vine-arrow" focusable="false" viewbox="0 0 64 48"><path d="M13 34c4-19 26-24 39-12"></path><path d="m48 9 8 14-15 2"></path><path class="vine-leaf" d="M38 13c0-8 6-9 10-8 0 6-4 9-10 8Zm-11 3c-2-7-8-8-12-5 1 5 5 7 12 5Z"></path></svg><small>15</small></button>
+<button aria-label="下一章" class="control minor gem-chapter" id="nextBtn" title="下一章" type="button"><svg aria-hidden="true" class="im-control-art" focusable="false" viewbox="0 0 82 70"><path class="im-icon-fill" d="m43 14 19 18-19 18V14Zm-19 0 19 18-19 18V14Z"></path><path class="im-leaf-stroke" d="M67 54c-13-8-28-8-49-6M57 49l4-8m-4 8 11-1m-22-1 3-8m-3 8-9-9m-1 8-3-9m3 9-10-6"></path><path class="im-cone" d="M23 52c-4 2-5 7-1 11 4 5 11 4 14 0 3-5 2-9-2-11-4-2-8-2-11 0Z"></path><path class="im-cone-line" d="m33 55-8 2m9 3-11 1m7-9-2 12m-5-10 4 11"></path></svg></button>
+</div>
+<div class="speed-settings"><label for="speedRange">播放速度 <output id="speedLabel">1.00×</output></label><input aria-label="播放速度 0.5 至 3 倍" id="speedRange" max="3" min="0.5" step="0.05" type="range" value="1"/><div class="speed-ends"><span>0.5×</span><span>3×</span></div><div aria-label="快速選擇倍速" class="forest-speed-presets" role="group"><button data-speed-preset="0.5" type="button">0.5×</button><button data-speed-preset="1" type="button">1.0×</button><button data-speed-preset="1.25" type="button">1.25×</button><button data-speed-preset="1.5" type="button">1.5×</button><button data-speed-preset="2" type="button">2.0×</button><button data-speed-preset="3" type="button">3.0×</button></div></div>
+</div>
+<div class="storage-hint" id="storageHint">✓ 上次播放的章节、位置、倍速和界面颜色自动保存在本机</div>
+</div>
 </section>
-
-<audio id="audio" preload="metadata" playsinline></audio>
-
+</main>
+</div>
+<!-- v4.0 stage 1: the same audio, library and settings, with a separate immersive presentation. -->
+<section aria-label="森夜閱讀沉浸播放器" class="im-mode" hidden="" id="immersiveMode">
+<div aria-hidden="true" class="im-background"></div>
+<div aria-hidden="true" class="im-atmosphere"><i class="im-moonbeam"></i><i class="im-mist im-mist-one"></i><i class="im-mist im-mist-two"></i><i class="im-water-shimmer"></i></div>
+<div aria-hidden="true" class="im-fireflies">
+<i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+</div>
+<div class="im-screen">
+<header class="im-topbar">
+<div class="im-brand"><img alt="" aria-hidden="true" class="im-brand-icon" src="./icon-192.png?v=4202"/><span class="im-brand-type"><b>PineTree</b><small>A U D I O B O O K</small></span></div>
+<nav aria-label="沉浸頁操作" class="im-top-actions">
+<button class="im-glass im-top-button" id="imChapters" title="返回章節目錄" type="button">☷ <span>章節</span></button>
+<button class="im-glass im-top-button" id="imTheme" title="開啟外觀設定" type="button">◐ <span>外觀</span></button>
+<button class="im-glass im-top-button" id="imExit" title="退出沉浸播放並返回書庫" type="button">▦ <span>返回書庫</span></button>
+</nav>
+</header>
+<main class="im-main">
+<div class="im-heading">
+<p class="im-eyebrow">P I N E T R E E · F L A G S H I P  R E A D I N G</p>
+<h1><span aria-hidden="true" class="im-title-sprig">✦</span>森夜閱讀<span aria-hidden="true" class="im-title-sprig">✦</span></h1>
+<p class="im-eng">F O R E S T   R E A D I N G</p>
+<div class="im-chapter">
+<p id="imBookTitle">選擇一部小說，開始聆聽</p>
+<h2 id="imChapterTitle">在月光與松林之間，聽見故事</h2>
+</div>
+</div>
+<section aria-label="播放控制" class="im-audio">
+<div class="im-progress-labels"><span id="imElapsed">00:00</span><span class="im-save-text" id="imProgressCaption">✧ 播放進度會自動儲存</span><span id="imDuration">00:00</span></div>
+<div class="im-progress-wrap"><span aria-hidden="true" class="im-progress-shimmer"></span><input aria-label="沉浸播放進度" disabled="" id="imSeek" max="1000" min="0" step="1" type="range" value="0"/></div>
+<div class="im-transport-card">
+<div aria-label="章節及音訊控制" class="im-transport" role="group">
+<button aria-label="上一章" class="im-small im-chapter-control" disabled="" id="imPrev" title="上一章" type="button"><svg aria-hidden="true" class="im-control-art" focusable="false" viewbox="0 0 82 70"><path class="im-icon-fill" d="M39 14 20 32l19 18V14Zm19 0L39 32l19 18V14Z"></path><path class="im-leaf-stroke" d="M15 54c13-8 28-8 49-6M25 49l-4-8m4 8-11-1m22-1-3-8m3 8 9-9m1 8 3-9m-3 9 10-6"></path><path class="im-cone" d="M59 52c4 2 5 7 1 11-4 5-11 4-14 0-3-5-2-9 2-11 4-2 8-2 11 0Z"></path><path class="im-cone-line" d="m49 55 8 2m-9 3 11 1m-7-9 2 12m5-10-4 11"></path></svg></button>
+<button aria-label="後退15秒" class="im-small im-skip-control" disabled="" id="imBack" title="後退15秒" type="button"><svg aria-hidden="true" class="im-vine-arrow" focusable="false" viewbox="0 0 64 48"><path d="M51 34C47 15 25 10 12 22"></path><path d="m16 9-8 14 15 2"></path><path class="vine-leaf" d="M26 13c0-8-6-9-10-8 0 6 4 9 10 8Zm11 3c2-7 8-8 12-5-1 5-5 7-12 5Z"></path></svg><small>15</small></button>
+<button aria-label="播放" class="im-play" data-playing="false" disabled="" id="imPlay" title="播放 / 暫停" type="button"><span class="im-gem-inner"><span aria-hidden="true" class="im-gem-facets"></span><span aria-hidden="true" class="im-gem-filigree"></span><svg aria-hidden="true" class="im-play-symbol" focusable="false" viewbox="0 0 64 64"><path class="im-play-triangle" d="M22 15c0-2.5 2.6-4.1 4.8-2.8L50 27.7c3.1 1.9 3.1 6.7 0 8.6L26.8 51.8C24.6 53.1 22 51.5 22 49V15Z"></path><g class="im-pause-bars"><rect height="32" rx="2.6" width="10" x="19" y="16"></rect><rect height="32" rx="2.6" width="10" x="35" y="16"></rect></g></svg><span aria-hidden="true" class="im-gem-leaves">❧</span></span></button>
+<button aria-label="快進15秒" class="im-small im-skip-control" disabled="" id="imAhead" title="快進15秒" type="button"><svg aria-hidden="true" class="im-vine-arrow" focusable="false" viewbox="0 0 64 48"><path d="M13 34c4-19 26-24 39-12"></path><path d="m48 9 8 14-15 2"></path><path class="vine-leaf" d="M38 13c0-8 6-9 10-8 0 6-4 9-10 8Zm-11 3c-2-7-8-8-12-5 1 5 5 7 12 5Z"></path></svg><small>15</small></button>
+<button aria-label="下一章" class="im-small im-chapter-control" disabled="" id="imNext" title="下一章" type="button"><svg aria-hidden="true" class="im-control-art" focusable="false" viewbox="0 0 82 70"><path class="im-icon-fill" d="m43 14 19 18-19 18V14Zm-19 0 19 18-19 18V14Z"></path><path class="im-leaf-stroke" d="M67 54c-13-8-28-8-49-6M57 49l4-8m-4 8 11-1m-22-1 3-8m-3 8-9-9m-1 8-3-9m3 9-10-6"></path><path class="im-cone" d="M23 52c-4 2-5 7-1 11 4 5 11 4 14 0 3-5 2-9-2-11-4-2-8-2-11 0Z"></path><path class="im-cone-line" d="m33 55-8 2m9 3-11 1m7-9-2 12m-5-10 4 11"></path></svg></button>
+</div>
+<div class="im-speed"><label for="imSpeed">✧ 播放速度 <output id="imSpeedLabel">1.00×</output></label><input aria-label="調整播放倍速" id="imSpeed" max="3" min="0.5" step="0.05" type="range" value="1"/><div class="im-speed-presets"><button data-im-speed="0.75" type="button">0.75×</button><button data-im-speed="1" type="button">1.0×</button><button data-im-speed="1.5" type="button">1.5×</button><button data-im-speed="2" type="button">2.0×</button><button data-im-speed="3" type="button">3.0×</button></div></div>
+</div>
+</section>
+<section aria-label="沉浸同步字幕" aria-live="off" class="im-lyrics">
+<div class="im-lyrics-lines" id="imLyrics"><p class="im-lyric-empty">將 MP3 與 LRC 匯入書庫後，字幕會在這裡同步顯示。</p></div>
+<p class="im-lyrics-tip">點擊文字可跳轉到對應時間 · 鎖屏顯示沿用你的原本設定</p>
+</section>
+</main>
+<footer aria-label="聆聽工具" class="im-footer">
+<button class="im-glass" id="imSleep" title="設定睡眠定時器" type="button">☾ <span>睡眠定時</span></button>
+<button class="im-glass" id="imBookmark" title="收藏目前句子" type="button">☆ <span>收藏此句</span></button>
+<button class="im-glass" id="imBookmarkList" title="查看書籤" type="button">▤ <span>我的書籤</span></button>
+<button class="im-glass" id="imCloud" title="打開 iCloud 手動同步" type="button">☁ <span>同步 iCloud</span></button>
+<button class="im-glass" id="imText" title="返回完整字幕閱讀頁" type="button">☷ <span>完整字幕</span></button>
+</footer>
+</div>
+</section>
+<audio id="audio" playsinline="" preload="metadata"></audio>
 <!-- Management actions are intentionally kept outside of the daily listening layout. -->
-<dialog id="importDialog" class="drawer-dialog import-dialog" aria-labelledby="importTitle">
- <div class="dialog-inner">
-  <div class="dialog-head"><div><span class="dialog-kicker">PINETREE · IMPORT MONITOR</span><h2 id="importTitle">匯入進度監控</h2><p>正在逐章保存到本機，原始 iCloud Drive 檔案不會被改動。</p></div></div>
-  <div class="import-monitor" role="status" aria-live="polite" aria-atomic="true">
-   <div class="import-phase" id="importPhase">準備匯入…</div>
-   <strong class="import-count" id="importCount">等待檔案清單…</strong>
-   <progress id="importBar" max="100" value="0" aria-label="已完成的章節比例"></progress>
-   <div class="import-detail" id="importDetail">正在準備</div>
-   <div class="import-stats" id="importCounters">新增 0 · 更新 0 · 略過 0 · 失敗 0</div>
-   <small id="importElapsed">已耗時 0 秒</small>
-  </div>
-  <p class="dialog-note">本次操作可取消，已完成章節保留。若 iOS 在「檔案」選擇器內下載大量 iCloud 檔案，PineTree 無法顯示該系統下載百分比；返回播放器後才開始統計。</p>
-  <div class="import-actions"><button id="cancelImport" class="btn btn-danger" type="button">停止匯入</button><button id="downloadImportReport" class="btn btn-quiet" type="button" disabled>匯出診斷報告</button><button id="closeImport" class="btn btn-accent" type="button" disabled>完成 / 關閉</button></div>
-  <div id="importStorage" class="dialog-note">可用空間依 iPhone 系統設定而定。</div>
- </div>
+<dialog aria-labelledby="importTitle" class="drawer-dialog import-dialog" id="importDialog">
+<div class="dialog-inner">
+<div class="dialog-head"><div><span class="dialog-kicker">PINETREE · IMPORT MONITOR</span><h2 id="importTitle">匯入進度監控</h2><p>正在逐章保存到本機，原始 iCloud Drive 檔案不會被改動。</p></div></div>
+<div aria-atomic="true" aria-live="polite" class="import-monitor" role="status">
+<div class="import-phase" id="importPhase">準備匯入…</div>
+<strong class="import-count" id="importCount">等待檔案清單…</strong>
+<progress aria-label="已完成的章節比例" id="importBar" max="100" value="0"></progress>
+<div class="import-detail" id="importDetail">正在準備</div>
+<div class="import-stats" id="importCounters">新增 0 · 更新 0 · 略過 0 · 失敗 0</div>
+<small id="importElapsed">已耗時 0 秒</small>
+</div>
+<p class="dialog-note">本次操作可取消，已完成章節保留。若 iOS 在「檔案」選擇器內下載大量 iCloud 檔案，PineTree 無法顯示該系統下載百分比；返回播放器後才開始統計。</p>
+<div class="import-actions"><button class="btn btn-danger" id="cancelImport" type="button">停止匯入</button><button class="btn btn-quiet" disabled="" id="downloadImportReport" type="button">匯出診斷報告</button><button class="btn btn-accent" disabled="" id="closeImport" type="button">完成 / 關閉</button></div>
+<div class="dialog-note" id="importStorage">可用空間依 iPhone 系統設定而定。</div>
+</div>
 </dialog>
-<dialog id="bookManager" class="drawer-dialog" aria-label="书库管理">
- <div class="dialog-inner">
-  <div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v4.1 · 森夜閱讀融合旗艦版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button id="bookManagerClose" class="close-action" type="button" aria-label="关闭">×</button></div>
-  <form class="create-book" id="createBookForm"><label for="newBookName">新建小说文件夹</label><div class="form-row"><input id="newBookName" class="field" maxlength="90" type="text" placeholder="输入书名，例如：拙石衍天" required><button class="btn btn-accent" type="submit">＋ 新建</button></div></form>
-  <div class="manager-icloud-shortcut"><button id="releaseOpen" class="btn btn-quiet" type="button">ⓘ 版本與更新內容 · v4.1 融合旗艦版</button><button id="cleanupOpen" class="btn btn-quiet" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button id="syncOpenSecondary" class="btn btn-quiet" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
-  <div class="manager-section-head"><strong>全部小说</strong><span class="counter" id="bookCount">0 本</span></div>
-  <div class="book-grid" id="bookGrid" aria-label="小说封面书架"></div>
-  <div class="book-detail" id="bookDetail">
-   <div class="book-title-row"><div class="selected-book"><small>已选小说</small><b id="activeBookName">尚未选择</b></div><button id="deleteBookBtn" class="btn btn-danger" type="button" disabled>删除整本</button></div>
-   <div class="manager-action-grid">
-    <button id="renameBookBtn" class="btn btn-quiet" type="button" disabled>✎ 修改书名</button>
-    <button id="coverBtn" class="btn btn-quiet" type="button" disabled>▣ 更换封面</button>
-   </div>
-   <input id="coverPicker" type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif" hidden>
-   <p class="dialog-note">可以将 <code>output_mp3</code> 改成小说书名；删除只清除 Lyra 内的副本，不会删除 iPhone「文件」App 中的原始文件。</p>
-  </div>
- </div>
+<dialog aria-label="书库管理" class="drawer-dialog" id="bookManager">
+<div class="dialog-inner">
+<div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v4.2 · 森夜閱讀極致旗艦版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button aria-label="关闭" class="close-action" id="bookManagerClose" type="button">×</button></div>
+<form class="create-book" id="createBookForm"><label for="newBookName">新建小说文件夹</label><div class="form-row"><input class="field" id="newBookName" maxlength="90" placeholder="输入书名，例如：拙石衍天" required="" type="text"/><button class="btn btn-accent" type="submit">＋ 新建</button></div></form>
+<div class="manager-icloud-shortcut"><button class="btn btn-quiet" id="releaseOpen" type="button">ⓘ 版本與更新內容 · v4.2 極致旗艦版</button><button class="btn btn-quiet" id="cleanupOpen" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button class="btn btn-quiet" id="syncOpenSecondary" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
+<div class="manager-section-head"><strong>全部小说</strong><span class="counter" id="bookCount">0 本</span></div>
+<div aria-label="小说封面书架" class="book-grid" id="bookGrid"></div>
+<div class="book-detail" id="bookDetail">
+<div class="book-title-row"><div class="selected-book"><small>已选小说</small><b id="activeBookName">尚未选择</b></div><button class="btn btn-danger" disabled="" id="deleteBookBtn" type="button">删除整本</button></div>
+<div class="manager-action-grid">
+<button class="btn btn-quiet" disabled="" id="renameBookBtn" type="button">✎ 修改书名</button>
+<button class="btn btn-quiet" disabled="" id="coverBtn" type="button">▣ 更换封面</button>
+</div>
+<input accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif" hidden="" id="coverPicker" type="file"/>
+<p class="dialog-note">可以将 <code>output_mp3</code> 改成小说书名；删除只清除 Lyra 内的副本，不会删除 iPhone「文件」App 中的原始文件。</p>
+</div>
+</div>
 </dialog>
-<dialog id="syncDialog" class="drawer-dialog" aria-label="iCloud Drive 同步與備份">
- <div class="dialog-inner">
-  <div class="dialog-head"><div><span class="dialog-kicker">PineTree 3.6 · ICLOUD DRIVE</span><h2>iCloud 同步檔</h2><p>Windows 與 iPhone 以相同 Apple Account 的 iCloud Drive 交換書架和播放位置。<strong>此版採手動同步</strong>，不是背景自動同步。</p></div><button id="syncClose" class="close-action" type="button" aria-label="關閉">×</button></div>
-  <div class="sync-guide"><strong>☁ 同步包含</strong><p>小說名稱、封面（每張不超過 2 MB）、各章續聽位置、書籤、上次播放章節、0.5–3× 倍速、字幕字體與行距、時間偏移及護眼主題。</p><p><strong>不包含：</strong>MP3/LRC 音訊檔。請在兩台裝置各自從「檔案」App 匯入同名章節。</p></div>
-  <div class="sync-actions"><button class="btn btn-accent" id="syncExport" type="button">⬇ 匯出 Lyra_Sync.json</button><button class="btn btn-quiet" id="syncImport" type="button">⬆ 從 iCloud Drive 匯入</button><input type="file" id="syncFile" accept=".json,application/json" hidden></div>
-  <div class="sync-guide"><strong>📱 iPhone 上怎樣用？</strong><p>在 Safari 設定「下載項目」保存至 iCloud Drive（或下載後用「檔案」App 移動）。先按匯出，在另一台裝置按匯入並選同一個 JSON 文件。每次換機前後都需要再次操作。</p><p>Safari 無法替網頁持續自動覆寫 iCloud 檔案；多次匯出可能會產生 Lyra_Sync (1).json，請選擇日期最新的檔案。</p></div>
-  <p class="dialog-note" id="syncStatus" role="status">尚未匯入或匯出同步檔。請先備份原始 MP3/LRC；同步檔不能還原音訊。</p>
- </div>
+<dialog aria-label="iCloud Drive 同步與備份" class="drawer-dialog" id="syncDialog">
+<div class="dialog-inner">
+<div class="dialog-head"><div><span class="dialog-kicker">PineTree 3.6 · ICLOUD DRIVE</span><h2>iCloud 同步檔</h2><p>Windows 與 iPhone 以相同 Apple Account 的 iCloud Drive 交換書架和播放位置。<strong>此版採手動同步</strong>，不是背景自動同步。</p></div><button aria-label="關閉" class="close-action" id="syncClose" type="button">×</button></div>
+<div class="sync-guide"><strong>☁ 同步包含</strong><p>小說名稱、封面（每張不超過 2 MB）、各章續聽位置、書籤、上次播放章節、0.5–3× 倍速、字幕字體與行距、時間偏移及護眼主題。</p><p><strong>不包含：</strong>MP3/LRC 音訊檔。請在兩台裝置各自從「檔案」App 匯入同名章節。</p></div>
+<div class="sync-actions"><button class="btn btn-accent" id="syncExport" type="button">⬇ 匯出 Lyra_Sync.json</button><button class="btn btn-quiet" id="syncImport" type="button">⬆ 從 iCloud Drive 匯入</button><input accept=".json,application/json" hidden="" id="syncFile" type="file"/></div>
+<div class="sync-guide"><strong>📱 iPhone 上怎樣用？</strong><p>在 Safari 設定「下載項目」保存至 iCloud Drive（或下載後用「檔案」App 移動）。先按匯出，在另一台裝置按匯入並選同一個 JSON 文件。每次換機前後都需要再次操作。</p><p>Safari 無法替網頁持續自動覆寫 iCloud 檔案；多次匯出可能會產生 Lyra_Sync (1).json，請選擇日期最新的檔案。</p></div>
+<p class="dialog-note" id="syncStatus" role="status">尚未匯入或匯出同步檔。請先備份原始 MP3/LRC；同步檔不能還原音訊。</p>
+</div>
 </dialog>
-<dialog id="themeDialog" class="drawer-dialog theme-dialog" aria-label="外观与配色">
- <div class="dialog-inner">
-  <div class="dialog-head"><div><span class="dialog-kicker">FOREST READING FUSION · 森夜閱讀融合旗艦版</span><h2>護眼閱讀主題</h2><p>森夜閱讀已升級為融合旗艦版：在原本章節列表與字幕工作流上直接套用森林月夜場景、玻璃金邊、翡翠播放鍵與更強的層次光效。聖誕季、新年、墨玉夜讀、松針晨露、暖茶夜燈仍保留主題切換能力。</p></div><button id="themeClose" class="close-action" type="button" aria-label="关闭">×</button></div>
-  <div class="color-presets" aria-label="一鍵切換配色">
-   <div class="theme-group-label">✨ 五彩幻光系列 · 全新五款</div>
-   <!-- PineTree 3.7.4: gentle iridescence for long listening/reading; Wood+Fire+Earth is ONE unified theme. -->
-   <button type="button" class="theme-preset art-preset" data-art-theme="prism-black" data-ui-theme="prism-black" data-page="#0C101A" data-panel="#1A202B" data-accent="#DFC5FA"><i class="prism-swatch prism-swatch-black" aria-hidden="true"></i><span><strong>🌌 五彩斑斕的黑</strong><small>虹曜黑 · 深黑底微光折射</small></span></button>
-   <button type="button" class="theme-preset art-preset" data-art-theme="prism-green" data-ui-theme="prism-green" data-page="#0B241E" data-panel="#173B32" data-accent="#DBE17D"><i class="prism-swatch prism-swatch-green" aria-hidden="true"></i><span><strong>🌈 五彩斑斕的綠</strong><small>幻森綠 · 森林綠與彩霧</small></span></button>
-   <button type="button" class="theme-preset art-preset" data-art-theme="prism-red" data-ui-theme="prism-red" data-page="#270F1A" data-panel="#3B1D29" data-accent="#F2B58C"><i class="prism-swatch prism-swatch-red" aria-hidden="true"></i><span><strong>🌹 五彩斑斕的紅</strong><small>琉璃紅 · 柔紅與紫金光</small></span></button>
-   <button type="button" class="theme-preset art-preset" data-art-theme="prism-gold" data-ui-theme="prism-gold" data-page="#272015" data-panel="#3B3020" data-accent="#F0D27B"><i class="prism-swatch prism-swatch-gold" aria-hidden="true"></i><span><strong>✨ 五彩斑斕的金</strong><small>流光金 · 古金與虹彩寶光</small></span></button>
-   <button type="button" class="theme-preset art-preset" data-art-theme="wood-fire-earth" data-ui-theme="wood-fire-earth" data-page="#18271D" data-panel="#302C23" data-accent="#EBC17B"><i class="prism-swatch prism-swatch-elements" aria-hidden="true"></i><span><strong>🌳🔥 木火土 · 三相共生</strong><small>一體融合 · 木青、火赤、土金</small></span></button>
-   <div class="theme-group-label">🎄 節日限定系列</div>
-   <button type="button" class="theme-preset art-preset" data-art-theme="christmas-season" data-ui-theme="christmas-season" data-page="#10251A" data-panel="#1A3A2B" data-accent="#EBCB73"><i class="prism-swatch prism-swatch-christmas" aria-hidden="true"></i><span><strong>🎄 聖誕季</strong><small>雪松綠 · 暖紅緞帶 · 金色星光</small></span></button>
-   <button type="button" class="theme-preset art-preset" data-art-theme="new-year-festival" data-ui-theme="new-year-festival" data-page="#230F16" data-panel="#3B2027" data-accent="#F3C96F"><i class="prism-swatch prism-swatch-newyear" aria-hidden="true"></i><span><strong>🧨 新年華彩</strong><small>瑞歲紅 · 流光金 · 華燈微彩</small></span></button>
-   <div class="theme-group-label">🌿 經典護眼系列</div>
-   <button type="button" class="theme-preset" data-ui-theme="forest-reading" data-page="#0F2A1F" data-panel="#163427" data-accent="#E0B84F"><i style="background:#163427;border-color:#E0B84F"></i>🌿 森夜閱讀</button>
-   <button type="button" class="theme-preset" data-page="#0B1220" data-panel="#182438" data-accent="#F4C678"><i style="background:#0B1220;border-color:#F4C678"></i>深夜金</button>
-   <button type="button" class="theme-preset" data-page="#0C3222" data-panel="#15513A" data-accent="#EFD58F"><i style="background:#15513A;border-color:#EFD58F"></i>森林绿</button>
-   <button type="button" class="theme-preset" data-page="#F2EEE5" data-panel="#FFFDF8" data-accent="#A5673B"><i style="background:#FFFDF8;border-color:#A5673B"></i>暖纸白</button>
-   <button type="button" class="theme-preset" data-page="#181D30" data-panel="#303B56" data-accent="#91BBFB"><i style="background:#303B56;border-color:#91BBFB"></i>霧藍</button>
-   <button type="button" class="theme-preset" data-ui-theme="pine-morning" data-page="#172D28" data-panel="#24473C" data-accent="#F0CD78"><i style="background:#24473C;border-color:#F0CD78"></i>🍃 松針晨露</button>
-   <button type="button" class="theme-preset" data-ui-theme="jade-night" data-page="#101D1C" data-panel="#1D3532" data-accent="#E7BD63"><i style="background:#1D3532;border-color:#E7BD63"></i>🌙 墨玉夜讀</button>
-   <button type="button" class="theme-preset" data-page="#E8EEDC" data-panel="#F7F6EC" data-accent="#9A7225"><i style="background:#F7F6EC;border-color:#9A7225"></i>🌱 春苔紙頁</button>
-   <button type="button" class="theme-preset" data-page="#EDE8DA" data-panel="#FFF9EC" data-accent="#A16A38"><i style="background:#FFF9EC;border-color:#A16A38"></i>📖 奶油書房</button>
-   <button type="button" class="theme-preset" data-ui-theme="warm-tea" data-page="#241F20" data-panel="#34292A" data-accent="#E5BF73"><i style="background:#34292A;border-color:#E5BF73"></i>🍂 暖茶夜燈</button>
-   <button type="button" class="theme-preset" data-page="#171F24" data-panel="#26333A" data-accent="#F2C96E"><i style="background:#26333A;border-color:#F2C96E"></i>☁️ 雨夜松林</button>
-  </div>
-  <div class="theme-fields">
-   <label class="theme-field" for="bgColor"><span>網頁背景色 <small>頁面外側</small></span><span class="color-input-wrap"><input id="bgColor" type="color" value="#0F2A1F"><output id="bgColorLabel">#0F2A1F</output></span></label>
-   <label class="theme-field" for="panelColor"><span>面板顏色 <small>包含目錄、控制面板、字幕框</small></span><span class="color-input-wrap"><input id="panelColor" type="color" value="#163427"><output id="panelColorLabel">#163427</output></span></label>
-   <label class="theme-field" for="accentColor"><span>重點顏色 <small>播放按鈕、選中章節、字幕高亮</small></span><span class="color-input-wrap"><input id="accentColor" type="color" value="#E0B84F"><output id="accentColorLabel">#E0B84F</output></span></label>
-  </div>
-  <label class="check-row"><input type="checkbox" id="linkPanels" checked> 調整網頁背景時，自動搭配面板顏色</label>
-  <label class="range-setting" for="lineSpacing">字幕行距 <output id="lineSpacingLabel">1.85</output><input id="lineSpacing" type="range" min="1.4" max="2.6" step="0.05" value="1.85"></label>
-  <label class="check-row"><input type="checkbox" id="themeMotion" checked> ✨ 啟用旗艦主題動態特效（雪花／星光／螢火／茶霧；低耗電可關閉）</label>
-  <p class="dialog-note">為保護閱讀體驗，特效只在控制面板背後顯示；系統設定「減少動態效果」時會自動停用。播放時才會旋轉中央聖誕五角星，暫停即停止。</p>
-  <label class="check-row"><input type="checkbox" id="keepAwake"> 專注閱讀時嘗試保持螢幕常亮（iOS 可能不支援）</label>
-  <p class="theme-legend"><span><i class="theme-legend-dot green"></i>綠色 · 主要閱讀區</span><span><i class="theme-legend-dot red"></i>柔紅 · 刪除與警告</span><span><i class="theme-legend-dot yellow"></i>暖黃 · 當前字幕</span></p>
-  <div class="theme-bottom"><span>主題及配色保存在本機；自訂顏色會切換至純色模式，不影響小說資料</span><div class="theme-bottom-actions"><button id="restorePreviousTheme" type="button" class="btn btn-quiet" hidden>還原升級前配色</button><button id="resetColor" type="button" class="btn btn-accent">恢復森夜預設配色</button></div></div>
- </div>
+<dialog aria-label="外观与配色" class="drawer-dialog theme-dialog" id="themeDialog">
+<div class="dialog-inner">
+<div class="dialog-head"><div><span class="dialog-kicker">FOREST READING FUSION · 森夜閱讀融合旗艦版</span><h2>護眼閱讀主題</h2><p>森夜閱讀已升級為融合旗艦版：在原本章節列表與字幕工作流上直接套用森林月夜場景、玻璃金邊、翡翠播放鍵與更強的層次光效。聖誕季、新年、墨玉夜讀、松針晨露、暖茶夜燈仍保留主題切換能力。</p></div><button aria-label="关闭" class="close-action" id="themeClose" type="button">×</button></div>
+<div aria-label="一鍵切換配色" class="color-presets">
+<div class="theme-group-label">✨ 五彩幻光系列 · 全新五款</div>
+<!-- PineTree 3.7.4: gentle iridescence for long listening/reading; Wood+Fire+Earth is ONE unified theme. -->
+<button class="theme-preset art-preset" data-accent="#DFC5FA" data-art-theme="prism-black" data-page="#0C101A" data-panel="#1A202B" data-ui-theme="prism-black" type="button"><i aria-hidden="true" class="prism-swatch prism-swatch-black"></i><span><strong>🌌 五彩斑斕的黑</strong><small>虹曜黑 · 深黑底微光折射</small></span></button>
+<button class="theme-preset art-preset" data-accent="#DBE17D" data-art-theme="prism-green" data-page="#0B241E" data-panel="#173B32" data-ui-theme="prism-green" type="button"><i aria-hidden="true" class="prism-swatch prism-swatch-green"></i><span><strong>🌈 五彩斑斕的綠</strong><small>幻森綠 · 森林綠與彩霧</small></span></button>
+<button class="theme-preset art-preset" data-accent="#F2B58C" data-art-theme="prism-red" data-page="#270F1A" data-panel="#3B1D29" data-ui-theme="prism-red" type="button"><i aria-hidden="true" class="prism-swatch prism-swatch-red"></i><span><strong>🌹 五彩斑斕的紅</strong><small>琉璃紅 · 柔紅與紫金光</small></span></button>
+<button class="theme-preset art-preset" data-accent="#F0D27B" data-art-theme="prism-gold" data-page="#272015" data-panel="#3B3020" data-ui-theme="prism-gold" type="button"><i aria-hidden="true" class="prism-swatch prism-swatch-gold"></i><span><strong>✨ 五彩斑斕的金</strong><small>流光金 · 古金與虹彩寶光</small></span></button>
+<button class="theme-preset art-preset" data-accent="#EBC17B" data-art-theme="wood-fire-earth" data-page="#18271D" data-panel="#302C23" data-ui-theme="wood-fire-earth" type="button"><i aria-hidden="true" class="prism-swatch prism-swatch-elements"></i><span><strong>🌳🔥 木火土 · 三相共生</strong><small>一體融合 · 木青、火赤、土金</small></span></button>
+<div class="theme-group-label">🎄 節日限定系列</div>
+<button class="theme-preset art-preset" data-accent="#EBCB73" data-art-theme="christmas-season" data-page="#10251A" data-panel="#1A3A2B" data-ui-theme="christmas-season" type="button"><i aria-hidden="true" class="prism-swatch prism-swatch-christmas"></i><span><strong>🎄 聖誕季</strong><small>雪松綠 · 暖紅緞帶 · 金色星光</small></span></button>
+<button class="theme-preset art-preset" data-accent="#F3C96F" data-art-theme="new-year-festival" data-page="#230F16" data-panel="#3B2027" data-ui-theme="new-year-festival" type="button"><i aria-hidden="true" class="prism-swatch prism-swatch-newyear"></i><span><strong>🧨 新年華彩</strong><small>瑞歲紅 · 流光金 · 華燈微彩</small></span></button>
+<div class="theme-group-label">🌿 經典護眼系列</div>
+<button class="theme-preset" data-accent="#E0B84F" data-page="#0F2A1F" data-panel="#163427" data-ui-theme="forest-reading" type="button"><i style="background:#163427;border-color:#E0B84F"></i>🌿 森夜閱讀</button>
+<button class="theme-preset" data-accent="#F4C678" data-page="#0B1220" data-panel="#182438" type="button"><i style="background:#0B1220;border-color:#F4C678"></i>深夜金</button>
+<button class="theme-preset" data-accent="#EFD58F" data-page="#0C3222" data-panel="#15513A" type="button"><i style="background:#15513A;border-color:#EFD58F"></i>森林绿</button>
+<button class="theme-preset" data-accent="#A5673B" data-page="#F2EEE5" data-panel="#FFFDF8" type="button"><i style="background:#FFFDF8;border-color:#A5673B"></i>暖纸白</button>
+<button class="theme-preset" data-accent="#91BBFB" data-page="#181D30" data-panel="#303B56" type="button"><i style="background:#303B56;border-color:#91BBFB"></i>霧藍</button>
+<button class="theme-preset" data-accent="#F0CD78" data-page="#172D28" data-panel="#24473C" data-ui-theme="pine-morning" type="button"><i style="background:#24473C;border-color:#F0CD78"></i>🍃 松針晨露</button>
+<button class="theme-preset" data-accent="#E7BD63" data-page="#101D1C" data-panel="#1D3532" data-ui-theme="jade-night" type="button"><i style="background:#1D3532;border-color:#E7BD63"></i>🌙 墨玉夜讀</button>
+<button class="theme-preset" data-accent="#9A7225" data-page="#E8EEDC" data-panel="#F7F6EC" type="button"><i style="background:#F7F6EC;border-color:#9A7225"></i>🌱 春苔紙頁</button>
+<button class="theme-preset" data-accent="#A16A38" data-page="#EDE8DA" data-panel="#FFF9EC" type="button"><i style="background:#FFF9EC;border-color:#A16A38"></i>📖 奶油書房</button>
+<button class="theme-preset" data-accent="#E5BF73" data-page="#241F20" data-panel="#34292A" data-ui-theme="warm-tea" type="button"><i style="background:#34292A;border-color:#E5BF73"></i>🍂 暖茶夜燈</button>
+<button class="theme-preset" data-accent="#F2C96E" data-page="#171F24" data-panel="#26333A" type="button"><i style="background:#26333A;border-color:#F2C96E"></i>☁️ 雨夜松林</button>
+</div>
+<div class="theme-fields">
+<label class="theme-field" for="bgColor"><span>網頁背景色 <small>頁面外側</small></span><span class="color-input-wrap"><input id="bgColor" type="color" value="#0F2A1F"/><output id="bgColorLabel">#0F2A1F</output></span></label>
+<label class="theme-field" for="panelColor"><span>面板顏色 <small>包含目錄、控制面板、字幕框</small></span><span class="color-input-wrap"><input id="panelColor" type="color" value="#163427"/><output id="panelColorLabel">#163427</output></span></label>
+<label class="theme-field" for="accentColor"><span>重點顏色 <small>播放按鈕、選中章節、字幕高亮</small></span><span class="color-input-wrap"><input id="accentColor" type="color" value="#E0B84F"/><output id="accentColorLabel">#E0B84F</output></span></label>
+</div>
+<label class="check-row"><input checked="" id="linkPanels" type="checkbox"/> 調整網頁背景時，自動搭配面板顏色</label>
+<label class="range-setting" for="lineSpacing">字幕行距 <output id="lineSpacingLabel">1.85</output><input id="lineSpacing" max="2.6" min="1.4" step="0.05" type="range" value="1.85"/></label>
+<label class="check-row"><input checked="" id="themeMotion" type="checkbox"/> ✨ 啟用旗艦主題動態特效（雪花／星光／螢火／茶霧；低耗電可關閉）</label>
+<p class="dialog-note">為保護閱讀體驗，特效只在控制面板背後顯示；系統設定「減少動態效果」時會自動停用。播放時才會旋轉中央聖誕五角星，暫停即停止。</p>
+<label class="check-row"><input id="keepAwake" type="checkbox"/> 專注閱讀時嘗試保持螢幕常亮（iOS 可能不支援）</label>
+<p class="theme-legend"><span><i class="theme-legend-dot green"></i>綠色 · 主要閱讀區</span><span><i class="theme-legend-dot red"></i>柔紅 · 刪除與警告</span><span><i class="theme-legend-dot yellow"></i>暖黃 · 當前字幕</span></p>
+<div class="theme-bottom"><span>主題及配色保存在本機；自訂顏色會切換至純色模式，不影響小說資料</span><div class="theme-bottom-actions"><button class="btn btn-quiet" hidden="" id="restorePreviousTheme" type="button">還原升級前配色</button><button class="btn btn-accent" id="resetColor" type="button">恢復森夜預設配色</button></div></div>
+</div>
 </dialog>
-<dialog id="lockScreenDialog" class="drawer-dialog" aria-labelledby="lockScreenTitle"><div class="dialog-inner">
- <div class="dialog-head"><div><span class="dialog-kicker">NOW PLAYING · EXPERIMENTAL</span><h2 id="lockScreenTitle">🔒 iPhone 鎖屏資訊</h2><p>使用系統播放器的媒體資訊顯示 LRC 句子，不會修改 MP3 或字幕文件。</p></div><button id="lockScreenClose" class="close-action" type="button" aria-label="關閉">×</button></div>
- <div class="lockscreen-options" role="radiogroup" aria-label="選擇鎖屏資訊模式">
-  <label class="lockscreen-choice"><input type="radio" name="lockScreenMode" value="lyrics" checked><span><strong>實驗性 LRC 鎖屏字幕</strong><small>有時間軸字幕時，嘗試將目前句子放在鎖屏播放器標題；第二行顯示章節。iOS 可能停更或不顯示。</small></span></label>
-  <label class="lockscreen-choice"><input type="radio" name="lockScreenMode" value="standard"><span><strong>標準章節資訊（穩定備用）</strong><small>固定顯示章節名稱、PineTree 有聲書與封面，不逐句更新。</small></span></label>
- </div>
- <div class="sync-guide"><strong>鎖屏久暫停後的續播</strong><p>已加入 Audio Session playback 模式與播放指令修復；如果 iOS 已把網頁 App 凍結或移除系統媒體工作階段，仍可能必須解鎖開啟 App。這是 iOS 限制，不會因網頁更新而保證完全解決。</p></div>
- <div class="lockscreen-speed" role="radiogroup" aria-label="鎖屏字幕更新速度">
-  <strong>字幕反應速度</strong>
-  <div class="lockscreen-speed-options">
-   <label><input type="radio" name="lockScreenSpeed" value="fast" checked><span>⚡ 快速 <small>至少間隔 0.65 秒 · 推薦</small></span></label>
-   <label><input type="radio" name="lockScreenSpeed" value="balanced"><span>平衡 <small>至少間隔 1.5 秒</small></span></label>
-   <label><input type="radio" name="lockScreenSpeed" value="quiet"><span>省電 <small>至少間隔 3.5 秒</small></span></label>
-  </div>
- </div>
- <div class="lockscreen-preview" aria-label="預覽目前鎖屏資訊"><small>鎖屏文字預覽（不代表 iOS 一定如此呈現）</small><strong id="lockScreenPreviewTitle">尚未選擇章節</strong><span id="lockScreenPreviewArtist">PineTree 有聲書</span></div>
- <p id="lockScreenStatus" class="dialog-note" role="status">準備鎖屏資訊…</p>
- <p class="dialog-note">字幕變換時才嘗試更新媒體資訊；上方數字是最短更新間隔，不代表 iOS 一定在該時間內顯示；<strong>iPhone 鎖定後可能停止執行網頁 JavaScript</strong>。鎖屏文字可能停留在舊句子，但不會刻意中斷 MP3。鎖屏上顯示的小說句子可能被旁人看見。</p>
- </div></dialog>
-<dialog id="sleepDialog" class="drawer-dialog" aria-label="睡眠定時器"><div class="dialog-inner">
- <div class="dialog-head"><div><span class="dialog-kicker">SLEEP TIMER</span><h2>☾ 睡眠定時器</h2><p>睡前聽書更安心。定時器到點將暫停播放並儲存進度。</p></div><button id="sleepClose" class="close-action" type="button" aria-label="關閉">×</button></div>
- <div class="quick-choices" id="sleepChoices"><button class="btn btn-quiet" data-sleep="15">15 分鐘</button><button class="btn btn-quiet" data-sleep="30">30 分鐘</button><button class="btn btn-quiet" data-sleep="45">45 分鐘</button><button class="btn btn-quiet" data-sleep="60">60 分鐘</button><button class="btn btn-quiet" data-sleep="chapter">本章結束</button><button class="btn btn-danger" data-sleep="off">取消定時</button></div>
- <p class="dialog-note" id="sleepDetail">目前尚未啟用。注意 iOS 鎖屏時網頁定時器可能受到節流，無法保證精確到秒。</p>
- </div></dialog>
-<dialog id="bookmarksDialog" class="drawer-dialog" aria-label="我的書籤"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">BOOKMARKS</span><h2>☆ 我的書籤</h2><p>收藏章節位置與當前字幕，點擊即可返回播放位置。</p></div><button id="bookmarkClose" class="close-action" type="button" aria-label="關閉">×</button></div><div id="bookmarksList" class="bookmarks-list"></div></div></dialog>
-<dialog id="cleanupDialog" class="drawer-dialog" aria-label="儲存空間管理"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">STORAGE MANAGER</span><h2>▦ 本機儲存管理</h2><p>只清理 PineTree 本機 MP3 副本，保留書名、章節目錄、LRC 字幕、書籤和播放記錄。iCloud 原件完全不動。</p></div><button id="cleanupClose" class="close-action" type="button" aria-label="關閉">×</button></div>
- <p id="cleanupEstimate" class="sync-guide">正在計算本書可清理章節…</p>
- <label class="range-setting" for="cleanupKeep">保護本書最後 <output id="cleanupKeepLabel">20</output> 章不清理<input id="cleanupKeep" type="range" min="0" max="100" step="5" value="20"></label>
- <div class="import-monitor" id="cleanupProgress" hidden><strong id="cleanupProgressTitle">準備清理</strong><progress id="cleanupBar" max="100" value="0"></progress><span id="cleanupDetail">不會修改原始檔案</span></div>
- <div class="import-actions"><button id="cleanupPreview" class="btn btn-quiet" type="button">重新計算</button><button id="cleanupRun" class="btn btn-danger" type="button">確認清理已聽 MP3</button></div>
- <p class="dialog-note">如果清理了 MP3，再次播放該章時需重新從 iCloud Drive 匯入對應音訊。清理操作無法在 PineTree 內撤銷。</p>
- </div></dialog>
-<dialog id="releaseDialog" class="drawer-dialog" aria-label="版本更新與說明"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v4.1 · 森夜閱讀融合旗艦版</h2><p>森夜閱讀融合旗艦版：保留原有書庫、章節列表、字幕與播放控制，同時把主工作介面升級成月夜森林沉浸式旗艦外觀。</p></div><button id="releaseClose" class="close-action" type="button" aria-label="關閉">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>此版把「圖三的功能工作流」與「圖一的森夜旗艦視覺」融合：左側章節欄改成深綠玻璃書架面板，右側字幕與控制區直接融入月夜森林場景，保留原有書庫、章節搜索、批量刪除、書籤、睡眠定時、iCloud 手動同步、快速續聽與鎖屏續播修復。森夜閱讀成為桌面主介面的預設旗艦視覺，之後可再把同級融合風格擴展到其他主題。</p><p>仍以 iCloud Drive 手動匯入／匯出同步檔；iOS 系統檔案選取器及鎖屏背景播放限制依然存在。</p></div><button id="releaseDismiss" class="btn btn-accent" type="button">知道了</button></div></dialog>
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="./app.js?v=420" defer></script>
+<dialog aria-labelledby="lockScreenTitle" class="drawer-dialog" id="lockScreenDialog"><div class="dialog-inner">
+<div class="dialog-head"><div><span class="dialog-kicker">NOW PLAYING · EXPERIMENTAL</span><h2 id="lockScreenTitle">🔒 iPhone 鎖屏資訊</h2><p>使用系統播放器的媒體資訊顯示 LRC 句子，不會修改 MP3 或字幕文件。</p></div><button aria-label="關閉" class="close-action" id="lockScreenClose" type="button">×</button></div>
+<div aria-label="選擇鎖屏資訊模式" class="lockscreen-options" role="radiogroup">
+<label class="lockscreen-choice"><input checked="" name="lockScreenMode" type="radio" value="lyrics"/><span><strong>實驗性 LRC 鎖屏字幕</strong><small>有時間軸字幕時，嘗試將目前句子放在鎖屏播放器標題；第二行顯示章節。iOS 可能停更或不顯示。</small></span></label>
+<label class="lockscreen-choice"><input name="lockScreenMode" type="radio" value="standard"/><span><strong>標準章節資訊（穩定備用）</strong><small>固定顯示章節名稱、PineTree 有聲書與封面，不逐句更新。</small></span></label>
+</div>
+<div class="sync-guide"><strong>鎖屏久暫停後的續播</strong><p>已加入 Audio Session playback 模式與播放指令修復；如果 iOS 已把網頁 App 凍結或移除系統媒體工作階段，仍可能必須解鎖開啟 App。這是 iOS 限制，不會因網頁更新而保證完全解決。</p></div>
+<div aria-label="鎖屏字幕更新速度" class="lockscreen-speed" role="radiogroup">
+<strong>字幕反應速度</strong>
+<div class="lockscreen-speed-options">
+<label><input checked="" name="lockScreenSpeed" type="radio" value="fast"/><span>⚡ 快速 <small>至少間隔 0.65 秒 · 推薦</small></span></label>
+<label><input name="lockScreenSpeed" type="radio" value="balanced"/><span>平衡 <small>至少間隔 1.5 秒</small></span></label>
+<label><input name="lockScreenSpeed" type="radio" value="quiet"/><span>省電 <small>至少間隔 3.5 秒</small></span></label>
+</div>
+</div>
+<div aria-label="預覽目前鎖屏資訊" class="lockscreen-preview"><small>鎖屏文字預覽（不代表 iOS 一定如此呈現）</small><strong id="lockScreenPreviewTitle">尚未選擇章節</strong><span id="lockScreenPreviewArtist">PineTree 有聲書</span></div>
+<p class="dialog-note" id="lockScreenStatus" role="status">準備鎖屏資訊…</p>
+<p class="dialog-note">字幕變換時才嘗試更新媒體資訊；上方數字是最短更新間隔，不代表 iOS 一定在該時間內顯示；<strong>iPhone 鎖定後可能停止執行網頁 JavaScript</strong>。鎖屏文字可能停留在舊句子，但不會刻意中斷 MP3。鎖屏上顯示的小說句子可能被旁人看見。</p>
+</div></dialog>
+<dialog aria-label="睡眠定時器" class="drawer-dialog" id="sleepDialog"><div class="dialog-inner">
+<div class="dialog-head"><div><span class="dialog-kicker">SLEEP TIMER</span><h2>☾ 睡眠定時器</h2><p>睡前聽書更安心。定時器到點將暫停播放並儲存進度。</p></div><button aria-label="關閉" class="close-action" id="sleepClose" type="button">×</button></div>
+<div class="quick-choices" id="sleepChoices"><button class="btn btn-quiet" data-sleep="15">15 分鐘</button><button class="btn btn-quiet" data-sleep="30">30 分鐘</button><button class="btn btn-quiet" data-sleep="45">45 分鐘</button><button class="btn btn-quiet" data-sleep="60">60 分鐘</button><button class="btn btn-quiet" data-sleep="chapter">本章結束</button><button class="btn btn-danger" data-sleep="off">取消定時</button></div>
+<p class="dialog-note" id="sleepDetail">目前尚未啟用。注意 iOS 鎖屏時網頁定時器可能受到節流，無法保證精確到秒。</p>
+</div></dialog>
+<dialog aria-label="我的書籤" class="drawer-dialog" id="bookmarksDialog"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">BOOKMARKS</span><h2>☆ 我的書籤</h2><p>收藏章節位置與當前字幕，點擊即可返回播放位置。</p></div><button aria-label="關閉" class="close-action" id="bookmarkClose" type="button">×</button></div><div class="bookmarks-list" id="bookmarksList"></div></div></dialog>
+<dialog aria-label="儲存空間管理" class="drawer-dialog" id="cleanupDialog"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">STORAGE MANAGER</span><h2>▦ 本機儲存管理</h2><p>只清理 PineTree 本機 MP3 副本，保留書名、章節目錄、LRC 字幕、書籤和播放記錄。iCloud 原件完全不動。</p></div><button aria-label="關閉" class="close-action" id="cleanupClose" type="button">×</button></div>
+<p class="sync-guide" id="cleanupEstimate">正在計算本書可清理章節…</p>
+<label class="range-setting" for="cleanupKeep">保護本書最後 <output id="cleanupKeepLabel">20</output> 章不清理<input id="cleanupKeep" max="100" min="0" step="5" type="range" value="20"/></label>
+<div class="import-monitor" hidden="" id="cleanupProgress"><strong id="cleanupProgressTitle">準備清理</strong><progress id="cleanupBar" max="100" value="0"></progress><span id="cleanupDetail">不會修改原始檔案</span></div>
+<div class="import-actions"><button class="btn btn-quiet" id="cleanupPreview" type="button">重新計算</button><button class="btn btn-danger" id="cleanupRun" type="button">確認清理已聽 MP3</button></div>
+<p class="dialog-note">如果清理了 MP3，再次播放該章時需重新從 iCloud Drive 匯入對應音訊。清理操作無法在 PineTree 內撤銷。</p>
+</div></dialog>
+<dialog aria-label="版本更新與說明" class="drawer-dialog" id="releaseDialog"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v4.2 · 森夜閱讀極致旗艦版</h2><p>森夜閱讀融合旗艦版：保留原有書庫、章節列表、字幕與播放控制，同時把主工作介面升級成月夜森林沉浸式旗艦外觀。</p></div><button aria-label="關閉" class="close-action" id="releaseClose" type="button">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>此版把「圖三的功能工作流」與「圖一的森夜旗艦視覺」融合：左側章節欄改成深綠玻璃書架面板，右側字幕與控制區直接融入月夜森林場景，保留原有書庫、章節搜索、批量刪除、書籤、睡眠定時、iCloud 手動同步、快速續聽與鎖屏續播修復。森夜閱讀成為桌面主介面的預設旗艦視覺，之後可再把同級融合風格擴展到其他主題。</p><p>仍以 iCloud Drive 手動匯入／匯出同步檔；iOS 系統檔案選取器及鎖屏背景播放限制依然存在。</p></div><button class="btn btn-accent" id="releaseDismiss" type="button">知道了</button></div></dialog>
+<div aria-live="polite" class="toast" id="toast" role="status"></div>
+<script defer="" src="./app.js?v=4202"></script>
 </body>
 </html>
