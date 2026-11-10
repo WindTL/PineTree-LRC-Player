@@ -9,17 +9,17 @@
  <meta name="apple-mobile-web-app-title" content="PineTree 有聲書">
  <meta name="description" content="PineTree 有聲書 · 森夜閱讀、離線 MP3/LRC、iCloud Drive 手動同步">
  <link rel="manifest" href="./manifest.webmanifest">
- <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=321">
- <link rel="icon" href="./icon-192.png?v=321">
- <link rel="stylesheet" href="./styles.css?v=420">
- <title>PineTree 有聲書 · v4.0 第二階段 · 森夜藝術精修</title>
+ <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=4101">
+ <link rel="icon" href="./icon-192.png?v=4101">
+ <link rel="stylesheet" href="./styles.css?v=4101">
+ <title>PineTree 有聲書 · v4.1 森夜閱讀融合旗艦版</title>
 </head>
 <body>
 <div class="app-shell">
  <header class="topbar">
   <div class="brand">
-   <div class="brand-mark" id="brandMonogram" aria-hidden="true"><img src="./apple-touch-icon.png?v=321" alt=""></div>
-   <div class="brand-copy"><strong id="brandTitle">我的小说书库</strong><span>PineTree v4.0 第二階段 · 森夜藝術精修 · iCloud 手動同步</span></div>
+   <div class="brand-mark" id="brandMonogram" aria-hidden="true"><img src="./apple-touch-icon.png?v=4101" alt=""></div>
+   <div class="brand-copy"><strong id="brandTitle">我的小说书库</strong><span>PineTree v4.1 森夜閱讀融合旗艦版 · iCloud 手動同步</span></div>
   </div>
   <nav class="header-actions" aria-label="全局操作">
    <span class="status-chip" id="networkBadge">● 准备就绪</span>
@@ -138,7 +138,7 @@
   </div>
   <div class="im-screen">
    <header class="im-topbar">
-    <div class="im-brand"><img class="im-brand-icon" src="./icon-192.png?v=321" alt="" aria-hidden="true"><span class="im-brand-type"><b>PineTree</b><small>A U D I O B O O K</small></span></div>
+    <div class="im-brand"><img class="im-brand-icon" src="./icon-192.png?v=4101" alt="" aria-hidden="true"><span class="im-brand-type"><b>PineTree</b><small>A U D I O B O O K</small></span></div>
     <nav class="im-top-actions" aria-label="沉浸頁操作">
       <button type="button" id="imChapters" class="im-glass im-top-button" title="返回章節目錄">☷ <span>章節</span></button>
       <button type="button" id="imTheme" class="im-glass im-top-button" title="開啟外觀設定">◐ <span>外觀</span></button>
@@ -205,9 +205,9 @@
 </dialog>
 <dialog id="bookManager" class="drawer-dialog" aria-label="书库管理">
  <div class="dialog-inner">
-  <div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v4.0 · Stage 2 森夜藝術精修</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button id="bookManagerClose" class="close-action" type="button" aria-label="关闭">×</button></div>
+  <div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v4.1 · 森夜閱讀融合旗艦版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button id="bookManagerClose" class="close-action" type="button" aria-label="关闭">×</button></div>
   <form class="create-book" id="createBookForm"><label for="newBookName">新建小说文件夹</label><div class="form-row"><input id="newBookName" class="field" maxlength="90" type="text" placeholder="输入书名，例如：拙石衍天" required><button class="btn btn-accent" type="submit">＋ 新建</button></div></form>
-  <div class="manager-icloud-shortcut"><button id="releaseOpen" class="btn btn-quiet" type="button">ⓘ 版本與更新內容 · v4.0 Stage 2</button><button id="cleanupOpen" class="btn btn-quiet" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button id="syncOpenSecondary" class="btn btn-quiet" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
+  <div class="manager-icloud-shortcut"><button id="releaseOpen" class="btn btn-quiet" type="button">ⓘ 版本與更新內容 · v4.1 融合旗艦版</button><button id="cleanupOpen" class="btn btn-quiet" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button id="syncOpenSecondary" class="btn btn-quiet" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
   <div class="manager-section-head"><strong>全部小说</strong><span class="counter" id="bookCount">0 本</span></div>
   <div class="book-grid" id="bookGrid" aria-label="小说封面书架"></div>
   <div class="book-detail" id="bookDetail">
@@ -232,7 +232,7 @@
 </dialog>
 <dialog id="themeDialog" class="drawer-dialog theme-dialog" aria-label="外观与配色">
  <div class="dialog-inner">
-  <div class="dialog-head"><div><span class="dialog-kicker">FOREST READING · 森夜閱讀</span><h2>護眼閱讀主題</h2><p>新增聖誕季與新年主題，並讓按鍵可跟隨主題換成旗艦版款式。加入主題專屬場景與可關閉的雪花、螢火、茶霧等輕量動態；中央字幕保持清楚耐讀。</p></div><button id="themeClose" class="close-action" type="button" aria-label="关闭">×</button></div>
+  <div class="dialog-head"><div><span class="dialog-kicker">FOREST READING FUSION · 森夜閱讀融合旗艦版</span><h2>護眼閱讀主題</h2><p>森夜閱讀已升級為融合旗艦版：在原本章節列表與字幕工作流上直接套用森林月夜場景、玻璃金邊、翡翠播放鍵與更強的層次光效。聖誕季、新年、墨玉夜讀、松針晨露、暖茶夜燈仍保留主題切換能力。</p></div><button id="themeClose" class="close-action" type="button" aria-label="关闭">×</button></div>
   <div class="color-presets" aria-label="一鍵切換配色">
    <div class="theme-group-label">✨ 五彩幻光系列 · 全新五款</div>
    <!-- PineTree 3.7.4: gentle iridescence for long listening/reading; Wood+Fire+Earth is ONE unified theme. -->
@@ -303,7 +303,7 @@
  <div class="import-actions"><button id="cleanupPreview" class="btn btn-quiet" type="button">重新計算</button><button id="cleanupRun" class="btn btn-danger" type="button">確認清理已聽 MP3</button></div>
  <p class="dialog-note">如果清理了 MP3，再次播放該章時需重新從 iCloud Drive 匯入對應音訊。清理操作無法在 PineTree 內撤銷。</p>
  </div></dialog>
-<dialog id="releaseDialog" class="drawer-dialog" aria-label="版本更新與說明"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v4.0 · 第二階段</h2><p>森夜閱讀旗艦沉浸頁第二階段：翡翠晶面播放鍵、松枝與松果控制鍵、森林月光與流霧、水面微光，以及更精緻的進度條。</p></div><button id="releaseClose" class="close-action" type="button" aria-label="關閉">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>延續增量匯入、匯入檢查、睡眠定時、書籤、快速續聽、專注閱讀、鎖屏 LRC 實驗模式與置中字幕修復；v3.9 進一步把森夜閱讀、墨玉夜讀、松針晨露、暖茶夜燈、聖誕季與新年華彩升級為旗艦版控制按鍵，讓不同主題擁有各自的按鍵輪廓、玻璃質感與圖標風格；v3.11 新增真實場景細節與可關閉的動態粒子，改善鎖屏暫停後續播；v4.0 第一階段新增獨立的森夜全螢幕沉浸播放頁；第二階段專注森林場景與控制項美術精修，沿用原本的音訊與書庫。可在外觀設定關閉動態特效。</p><p>仍以 iCloud Drive 手動匯入／匯出同步檔；iOS 系統檔案選取器及鎖屏背景播放限制依然存在。</p></div><button id="releaseDismiss" class="btn btn-accent" type="button">知道了</button></div></dialog>
+<dialog id="releaseDialog" class="drawer-dialog" aria-label="版本更新與說明"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v4.1 · 森夜閱讀融合旗艦版</h2><p>森夜閱讀融合旗艦版：保留原有書庫、章節列表、字幕與播放控制，同時把主工作介面升級成月夜森林沉浸式旗艦外觀。</p></div><button id="releaseClose" class="close-action" type="button" aria-label="關閉">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>此版把「圖三的功能工作流」與「圖一的森夜旗艦視覺」融合：左側章節欄改成深綠玻璃書架面板，右側字幕與控制區直接融入月夜森林場景，保留原有書庫、章節搜索、批量刪除、書籤、睡眠定時、iCloud 手動同步、快速續聽與鎖屏續播修復。森夜閱讀成為桌面主介面的預設旗艦視覺，之後可再把同級融合風格擴展到其他主題。</p><p>仍以 iCloud Drive 手動匯入／匯出同步檔；iOS 系統檔案選取器及鎖屏背景播放限制依然存在。</p></div><button id="releaseDismiss" class="btn btn-accent" type="button">知道了</button></div></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script src="./app.js?v=420" defer></script>
 </body>

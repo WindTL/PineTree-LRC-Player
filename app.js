@@ -36,7 +36,7 @@ const state = {
   keepAwake:localStorage.getItem('pinetree-keep-awake')==='1',wakeLock:null,
   themeMotion:localStorage.getItem('pinetree-theme-motion-v310')!=='0',
   mediaResumeError:'',
-  immersive:localStorage.getItem('pinetree-immersive-v400')==='1',
+  immersive:localStorage.getItem('pinetree-immersive-v4101')==='1',
   immersiveLastLyricKey:'',
   lineSpacing:bounded(storedNumber('pinetree-line-spacing',1.85),1.4,2.6,1.85),
   lyricsCentered:localStorage.getItem('pinetree-lyrics-centered-v372')!=='0',
@@ -54,7 +54,7 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v420';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4101';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -1276,7 +1276,7 @@ function setImmersiveMode(enabled,{persist=true}={}){
   $('immersiveMode').hidden=!state.immersive;
   $('immersiveEnter').setAttribute('aria-pressed',String(state.immersive));
   $('immersiveEnterSecondary').setAttribute('aria-pressed',String(state.immersive));
-  if(persist)localStorage.setItem('pinetree-immersive-v400',state.immersive?'1':'0');
+  if(persist)localStorage.setItem('pinetree-immersive-v4101',state.immersive?'1':'0');
   if(state.immersive){state.immersiveLastLyricKey='';updateImmersiveUI(true);}
   else requestAnimationFrame(()=>{syncLyricsViewportPadding();updateLyrics(true);});
 }
@@ -1385,7 +1385,7 @@ async function start(){
   registerSW();
   try{
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.0 第二階段：森夜藝術精修已更新；原書庫、LRC 與播放進度保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.1 森夜閱讀融合旗艦版已更新；原書庫、LRC 與播放進度保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     const last=state.tracks.find(x=>x.id===localStorage.getItem('lyra-last-id'));
