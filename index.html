@@ -13,15 +13,15 @@
 <link href="./icon-192.png?v=4380" rel="icon"/>
 <link href="./styles.css?v=4380" rel="stylesheet"/>
 <link href="./themes/forest-reading/theme.css?v=4380" rel="stylesheet"/>
-<link href="./themes/forest-reading/flagship-v438.css" rel="stylesheet"/>
-<title>PineTree 有聲書 · v4.3.8 校準徽章修復與森夜沉浸旗艦版</title>
+<link href="./themes/forest-reading/flagship-v439.css?v=4390" rel="stylesheet"/>
+<title>PineTree 有聲書 · v4.3.9 PNG 校準修復與森夜沉浸旗艦版</title>
 </head>
 <body>
 <div class="app-shell">
 <header class="topbar">
 <div class="brand">
 <div aria-hidden="true" class="brand-mark" id="brandMonogram"><img alt="" src="./apple-touch-icon.png?v=4380"/></div>
-<div class="brand-copy"><strong class="forest-brandname">PineTree <small>v4.3.8</small></strong><span>A U D I O B O O K <b>·</b> 森夜閱讀</span><strong class="visually-hidden" id="brandTitle">我的小说书库</strong></div>
+<div class="brand-copy"><strong class="forest-brandname">PineTree <small>v4.3.9</small></strong><span>A U D I O B O O K <b>·</b> 森夜閱讀</span><strong class="visually-hidden" id="brandTitle">我的小说书库</strong></div>
 </div>
 <div class="forest-top-title" aria-hidden="true"><span class="forest-top-kicker">✦ P I N E T R E E ✦</span><strong>森 夜 閱 讀</strong><span class="forest-top-sub">F O R E S T · R E A D I N G</span></div>
 <nav aria-label="全局操作" class="header-actions">
@@ -108,7 +108,7 @@
 <button class="tiny-action" id="fontMinus" title="缩小字体" type="button">A−</button>
 <button class="tiny-action" id="fontPlus" title="放大字体" type="button">A＋</button>
 <button class="tiny-action" id="offsetMinus" title="字幕提前半秒" type="button">−0.5s</button>
-<span class="offset-label" id="offsetLabel" role="status" aria-live="polite" title="LRC 字幕時間校準"><img id="offsetArtwork" class="calibration-art" src="./themes/forest-reading/assets/calibration-moon.webp" alt="" width="28" height="28"/><span id="offsetValue">0.0s</span></span>
+<span class="offset-label" id="offsetLabel" role="status" aria-live="polite" title="LRC 字幕時間校準"><img id="offsetArtwork" class="calibration-art" src="./themes/forest-reading/assets/calibration-moon.png?v=4390" alt="" width="28" height="28"/><span id="offsetValue">0.0s</span></span>
 <button class="tiny-action" id="offsetPlus" title="字幕延后半秒" type="button">+0.5s</button>
 <button aria-pressed="true" class="tiny-action" id="lyricsCenterToggle" title="播放時自動將當前字幕置中" type="button">◎ 置中</button>
 <button aria-pressed="false" class="tiny-action full-lyrics" id="toggleLyricsMax" title="字幕最大化" type="button">⛶ 最大化</button>
@@ -121,7 +121,7 @@
 <div aria-hidden="true" class="theme-particles" id="themeParticles"></div>
 <div class="listen-extras"><button class="tiny-action" disabled="" id="bookmarkAdd" title="收藏目前時間及文字" type="button">收藏此句</button><button class="tiny-action" id="bookmarkOpen" title="檢視已收藏書籤" type="button">我的書籤</button><button class="tiny-action" id="sleepOpen" title="設定睡眠定時器" type="button">☾ 睡眠定時</button><button class="tiny-action" id="lockScreenOpen" title="設定鎖屏顯示資訊" type="button">🔒 鎖屏字幕 · 實驗</button><button class="tiny-action forest-delete-shortcut" id="forestDeleteShortcut" type="button" title="僅刪除本機目前章節" aria-label="刪除本機目前章節">⌫ 刪除本章</button><span aria-live="polite" id="sleepStatus">定時器未開啟</span></div>
 <div class="time-line"><time id="elapsed">00:00</time><span id="playStatus">等待播放</span><time id="duration">00:00</time></div>
-<div class="forest-seek-scene" id="seekScene"><span class="squirrel-chase" aria-hidden="true"><img src="./themes/forest-reading/assets/squirrel-running.webp" alt="" loading="eager"/></span><input aria-label="播放进度" class="seek-bar" disabled="" id="seekBar" max="1000" min="0" step="1" type="range" value="0"/></div>
+<div class="forest-seek-scene" id="seekScene"><span class="squirrel-chase" aria-hidden="true"><img src="./themes/forest-reading/assets/squirrel-running.webp?v=4390" alt="" loading="eager"/></span><input aria-label="播放进度" class="seek-bar" disabled="" id="seekBar" max="1000" min="0" step="1" type="range" value="0"/></div>
 <div class="playbar">
 <div class="transport">
 <button aria-label="上一章" class="control minor gem-chapter" id="prevBtn" title="上一章" type="button"><svg aria-hidden="true" class="im-control-art" focusable="false" viewbox="0 0 82 70"><path class="im-icon-fill" d="M39 14 20 32l19 18V14Zm19 0L39 32l19 18V14Z"></path><path class="im-leaf-stroke" d="M15 54c13-8 28-8 49-6M25 49l-4-8m4 8-11-1m22-1-3-8m3 8 9-9m1 8 3-9m-3 9 10-6"></path><path class="im-cone" d="M59 52c4 2 5 7 1 11-4 5-11 4-14 0-3-5-2-9 2-11 4-2 8-2 11 0Z"></path><path class="im-cone-line" d="m49 55 8 2m-9 3 11 1m-7-9 2 12m5-10-4 11"></path></svg></button>
@@ -175,7 +175,7 @@
 <button aria-label="快進15秒" class="im-small im-skip-control" disabled="" id="imAhead" title="快進15秒" type="button"><svg aria-hidden="true" class="im-vine-arrow" focusable="false" viewbox="0 0 64 48"><path d="M13 34c4-19 26-24 39-12"></path><path d="m48 9 8 14-15 2"></path><path class="vine-leaf" d="M38 13c0-8 6-9 10-8 0 6-4 9-10 8Zm-11 3c-2-7-8-8-12-5 1 5 5 7 12 5Z"></path></svg><small>15</small></button>
 <button aria-label="下一章" class="im-small im-chapter-control" disabled="" id="imNext" title="下一章" type="button"><svg aria-hidden="true" class="im-control-art" focusable="false" viewbox="0 0 82 70"><path class="im-icon-fill" d="m43 14 19 18-19 18V14Zm-19 0 19 18-19 18V14Z"></path><path class="im-leaf-stroke" d="M67 54c-13-8-28-8-49-6M57 49l4-8m-4 8 11-1m-22-1 3-8m-3 8-9-9m-1 8-3-9m3 9-10-6"></path><path class="im-cone" d="M23 52c-4 2-5 7-1 11 4 5 11 4 14 0 3-5 2-9-2-11-4-2-8-2-11 0Z"></path><path class="im-cone-line" d="m33 55-8 2m9 3-11 1m7-9-2 12m-5-10 4 11"></path></svg></button>
 </div>
-<div class="im-speed"><label for="imSpeed"><img class="im-speed-icon" src="./themes/forest-reading/assets/speed.webp" width="30" height="30" alt=""/><span>播放速度</span> <output id="imSpeedLabel">1.00×</output></label><input aria-label="調整播放倍速" id="imSpeed" max="3" min="0.5" step="0.05" type="range" value="1"/><div class="im-speed-presets"><button data-im-speed="0.5" type="button">0.5×</button><button data-im-speed="1" type="button">1.0×</button><button data-im-speed="1.25" type="button">1.25×</button><button data-im-speed="1.5" type="button">1.5×</button><button data-im-speed="2" type="button">2.0×</button><button data-im-speed="3" type="button">3.0×</button></div></div>
+<div class="im-speed"><label for="imSpeed"><img class="im-speed-icon" src="./themes/forest-reading/assets/speed.png?v=4390" width="30" height="30" alt=""/><span>播放速度</span> <output id="imSpeedLabel">1.00×</output></label><input aria-label="調整播放倍速" id="imSpeed" max="3" min="0.5" step="0.05" type="range" value="1"/><div class="im-speed-presets"><button data-im-speed="0.5" type="button">0.5×</button><button data-im-speed="1" type="button">1.0×</button><button data-im-speed="1.25" type="button">1.25×</button><button data-im-speed="1.5" type="button">1.5×</button><button data-im-speed="2" type="button">2.0×</button><button data-im-speed="3" type="button">3.0×</button></div></div>
 </div>
 </section>
 <section aria-label="沉浸同步字幕" aria-live="off" class="im-lyrics">
@@ -212,9 +212,9 @@
 </dialog>
 <dialog aria-label="书库管理" class="drawer-dialog" id="bookManager">
 <div class="dialog-inner">
-<div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v4.3.8 · Dynamic Firefly 森夜旗艦版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button aria-label="关闭" class="close-action" id="bookManagerClose" type="button">×</button></div>
+<div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v4.3.9 · PNG 校準與森夜沉浸修正版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button aria-label="关闭" class="close-action" id="bookManagerClose" type="button">×</button></div>
 <form class="create-book" id="createBookForm"><label for="newBookName">新建小说文件夹</label><div class="form-row"><input class="field" id="newBookName" maxlength="90" placeholder="输入书名，例如：拙石衍天" required="" type="text"/><button class="btn btn-accent" type="submit">＋ 新建</button></div></form>
-<div class="manager-icloud-shortcut"><button class="btn btn-quiet" id="releaseOpen" type="button">ⓘ 版本與更新內容 · v4.3.8 動態螢火蟲旗艦版</button><button class="btn btn-quiet" id="cleanupOpen" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button class="btn btn-quiet" id="syncOpenSecondary" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
+<div class="manager-icloud-shortcut"><button class="btn btn-quiet" id="releaseOpen" type="button">ⓘ 版本與更新內容 · v4.3.9 PNG 校準修正版</button><button class="btn btn-quiet" id="cleanupOpen" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button class="btn btn-quiet" id="syncOpenSecondary" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
 <div class="manager-section-head"><strong>全部小说</strong><span class="counter" id="bookCount">0 本</span></div>
 <div aria-label="小说封面书架" class="book-grid" id="bookGrid"></div>
 <div class="book-detail" id="bookDetail">
@@ -275,9 +275,9 @@
 <label class="check-row"><input checked="" id="themeMotion" type="checkbox"/> ✨ 啟用旗艦主題動態特效（雪花／星光／螢火／茶霧；低耗電可關閉）</label>
 <label class="theme-field firefly-strength-field" for="fireflyIntensity"><span>螢火特效強度 <small>森夜閱讀的全頁動態螢火蟲</small></span><select class="field" id="fireflyIntensity"><option value="soft">柔和</option><option value="medium">標準</option><option value="high">濃郁</option><option value="cinematic">電影級</option></select></label>
 <div class="forest-calibration-picker" id="calibrationPicker"><strong>字幕校準徽章 · 三款旗艦設計</strong><div class="forest-calibration-choices" role="group" aria-label="校準徽章款式">
-<button type="button" class="calibration-choice" data-calibration-style="wave" aria-pressed="false"><img src="./themes/forest-reading/assets/calibration-wave.webp" alt="" width="66" height="66"/><span>聲波精準</span><small class="calibration-selected">選用</small></button>
-<button type="button" class="calibration-choice" data-calibration-style="dial" aria-pressed="false"><img src="./themes/forest-reading/assets/calibration-dial.webp" alt="" width="66" height="66"/><span>翡翠儀表</span><small class="calibration-selected">選用</small></button>
-<button type="button" class="calibration-choice" data-calibration-style="moon" aria-pressed="false"><img src="./themes/forest-reading/assets/calibration-moon.webp" alt="" width="66" height="66"/><span>月夜同步</span><small class="calibration-selected">選用</small></button></div><div class="calibration-live-preview"><span>即時預覽</span><span class="calibration-preview-badge"><img id="calibrationPreviewImage" src="./themes/forest-reading/assets/calibration-moon.webp" width="36" height="36" alt=""/><span id="calibrationPreviewValue">0.0s</span></span><strong id="calibrationCurrentName">月夜同步</strong></div><small>選擇後立即套用並保存。數值由真實字幕偏移即時更新。</small></div>
+<button type="button" class="calibration-choice" data-calibration-style="wave" aria-pressed="false"><img src="./themes/forest-reading/assets/calibration-wave.png?v=4390" alt="" width="66" height="66"/><span>聲波精準</span><small class="calibration-selected">選用</small></button>
+<button type="button" class="calibration-choice" data-calibration-style="dial" aria-pressed="false"><img src="./themes/forest-reading/assets/calibration-dial.png?v=4390" alt="" width="66" height="66"/><span>翡翠儀表</span><small class="calibration-selected">選用</small></button>
+<button type="button" class="calibration-choice" data-calibration-style="moon" aria-pressed="false"><img src="./themes/forest-reading/assets/calibration-moon.png?v=4390" alt="" width="66" height="66"/><span>月夜同步</span><small class="calibration-selected">選用</small></button></div><div class="calibration-live-preview"><span>即時預覽</span><span class="calibration-preview-badge"><img id="calibrationPreviewImage" src="./themes/forest-reading/assets/calibration-moon.png?v=4390" width="36" height="36" alt=""/><span id="calibrationPreviewValue">0.0s</span></span><strong id="calibrationCurrentName">月夜同步</strong></div><small>選擇後立即套用並保存。數值由真實字幕偏移即時更新。</small></div>
 <label class="check-row forest-trail-setting"><input type="checkbox" id="fireflyTrails" checked/> 螢火流光拖尾（關閉後保留飄浮光點）</label>
 <p class="dialog-note">森夜閱讀現已使用全頁、置頂、可穿透點擊的動態螢火蟲與流光拖尾；你可隨時調整柔和／標準／濃郁／電影級強度。系統設定「減少動態效果」時會自動停用。</p>
 <label class="check-row"><input id="keepAwake" type="checkbox"/> 專注閱讀時嘗試保持螢幕常亮（iOS 可能不支援）</label>
@@ -317,8 +317,8 @@
 <div class="import-actions"><button class="btn btn-quiet" id="cleanupPreview" type="button">重新計算</button><button class="btn btn-danger" id="cleanupRun" type="button">確認清理已聽 MP3</button></div>
 <p class="dialog-note">如果清理了 MP3，再次播放該章時需重新從 iCloud Drive 匯入對應音訊。清理操作無法在 PineTree 內撤銷。</p>
 </div></dialog>
-<dialog aria-label="版本更新與說明" class="drawer-dialog" id="releaseDialog"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v4.3.8 · Dynamic Firefly 森夜旗艦版</h2><p>森夜閱讀融合旗艦版：保留原有書庫、章節列表、字幕與播放控制，同時把主工作介面升級成月夜森林沉浸式旗艦外觀。</p></div><button aria-label="關閉" class="close-action" id="releaseClose" type="button">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>v4.3.8 進一步升級森夜閱讀：螢火蟲改為真正的全頁動態粒子，且可在外觀面板調整柔和／標準／濃郁／電影級強度；字幕偏移區可選三款校準徽章，螢火蟲可開關流光拖尾。保留既有森夜獨立素材命名空間、松鼠跑步進度動畫、章節工作流、書籤、睡眠定時與 iCloud / Edge 同步橋接。</p><p>Windows Edge 可連結資料夾後自動寫入同步檔；iPhone 仍須手動匯出並挑選 JSON；iOS 系統檔案選取器及鎖屏背景播放限制依然存在；如鎖屏暫停後無法從系統面板續播，請改用標準章節資訊模式，必要時開啟 App 恢復。</p></div><button class="btn btn-accent" id="releaseDismiss" type="button">知道了</button></div></dialog>
+<dialog aria-label="版本更新與說明" class="drawer-dialog" id="releaseDialog"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v4.3.9 · PNG 校準與森夜沉浸修正版</h2><p>森夜閱讀融合旗艦版：保留原有書庫、章節列表、字幕與播放控制，同時把主工作介面升級成月夜森林沉浸式旗艦外觀。</p></div><button aria-label="關閉" class="close-action" id="releaseClose" type="button">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>v4.3.9 重點修復：校準徽章改用 PNG 直連資產，避免 iPhone / Safari 出現破圖；森夜沉浸控制列改為直接使用旗艦 PNG 圖標並加版本化樣式，降低快取造成的舊介面殘留。另保留：螢火蟲改為真正的全頁動態粒子，且可在外觀面板調整柔和／標準／濃郁／電影級強度；字幕偏移區可選三款校準徽章，螢火蟲可開關流光拖尾。保留既有森夜獨立素材命名空間、松鼠跑步進度動畫、章節工作流、書籤、睡眠定時與 iCloud / Edge 同步橋接。</p><p>Windows Edge 可連結資料夾後自動寫入同步檔；iPhone 仍須手動匯出並挑選 JSON；iOS 系統檔案選取器及鎖屏背景播放限制依然存在；如鎖屏暫停後無法從系統面板續播，請改用標準章節資訊模式，必要時開啟 App 恢復。</p></div><button class="btn btn-accent" id="releaseDismiss" type="button">知道了</button></div></dialog>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-<script defer="" src="./app.js?v=4380"></script>
+<script defer="" src="./app.js?v=4390"></script>
 </body>
 </html>

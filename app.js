@@ -700,7 +700,7 @@ function setCalibrationStyle(value,{persist=true}={}){
   state.calibrationStyle=Object.prototype.hasOwnProperty.call(CALIBRATION_ART,value)?value:'moon';
   const style=state.calibrationStyle;
   document.body.dataset.calibrationStyle=style;
-  const src='./themes/forest-reading/assets/calibration-'+style+'.webp';
+  const src='./themes/forest-reading/assets/calibration-'+style+'.png?v=4390';
   for(const id of ['offsetArtwork','calibrationPreviewImage']){
     const img=$(id);if(img)img.setAttribute('src',src);
   }
@@ -829,7 +829,8 @@ function renderOffsetLabel(){
   const value=state.delay;
   const abs=Math.abs(value).toFixed(1);
   const compact=`${value>0?'+':value<0?'−':''}${abs}s`;
-  if($('offsetValue'))$('offsetValue').textContent=compact;else el.textContent=compact;
+  if($('offsetValue'))$('offsetValue').textContent=compact;
+  if($('offsetLabel'))$('offsetLabel').dataset.adjusted = state.offset===0 ? 'false' : 'true';else el.textContent=compact;
   if($('calibrationPreviewValue'))$('calibrationPreviewValue').textContent=compact;
   el.dataset.adjusted=String(value!==0);
   el.dataset.zero=String(value===0);

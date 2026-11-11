@@ -1,0 +1,83 @@
+/* v4.3.8 • real image selection and shared forest artwork in immersive mode. */
+body[data-ui-theme="forest-reading"] #offsetLabel{padding:1px 9px 1px 3px!important;gap:5px!important;min-width:78px!important;height:34px!important;}
+body[data-ui-theme="forest-reading"] #offsetLabel::before{content:none!important;display:none!important;}
+#offsetArtwork{display:none;object-fit:contain;flex:0 0 auto;}
+body[data-ui-theme="forest-reading"] #offsetArtwork{display:block;width:29px;height:29px;filter:drop-shadow(0 0 3px #e0c56777);}
+body[data-ui-theme="forest-reading"] #offsetValue{font-variant-numeric:tabular-nums;white-space:nowrap;}
+body[data-ui-theme="forest-reading"] #offsetLabel[data-adjusted="true"] #offsetValue{color:#fff0ac;}
+body.immersive-active #calibrationPicker,body[data-ui-theme="forest-reading"] #calibrationPicker{display:block!important;}
+#calibrationPicker{padding:12px;margin:12px 0;border:1px solid #a88c505e;border-radius:15px;background:linear-gradient(145deg,#123d30,#08221b);color:#f9e7b1;}
+#calibrationPicker .forest-calibration-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+#calibrationPicker button.calibration-choice{appearance:none;-webkit-appearance:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:9px 3px;min-width:0;border:1px solid #ae995f84;border-radius:12px;background:linear-gradient(160deg,#174c38,#06271e);color:#f9e6ac;font:600 12px/1.3 system-ui,sans-serif;cursor:pointer;}
+#calibrationPicker button.calibration-choice img{display:block;width:min(100%,66px);height:66px;object-fit:contain;filter:drop-shadow(0 2px 4px #0008);}
+#calibrationPicker button.calibration-choice[aria-pressed="true"]{border-color:#f7df93;background:radial-gradient(ellipse at 50% 15%,#44834e,#0c3b2c 80%);box-shadow:0 0 10px #d4f39b55,inset 0 0 8px #dbf39444;}
+#calibrationPicker button.calibration-choice:focus-visible{outline:2px solid #ffed9a;outline-offset:2px;}
+#calibrationPicker .calibration-selected{font-size:10px;color:#c1c9af;}
+#calibrationPicker [aria-pressed="true"] .calibration-selected{color:#efffb5;}
+.calibration-live-preview{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px;padding:7px 8px;border-top:1px solid #cab16b55;font-size:11px;}
+.calibration-live-preview>span:first-child{color:#b7ccbd;}
+.calibration-preview-badge{display:inline-flex;gap:5px;align-items:center;padding:1px 10px 1px 3px;border:1px solid #dcb86c;border-radius:999px;background:linear-gradient(145deg,#15583d,#061f18);color:#fff1b6;font-weight:800;font-variant-numeric:tabular-nums;}
+.calibration-preview-badge img{object-fit:contain;}
+.calibration-live-preview strong{margin-left:auto;color:#f6d993;}
+/* The immersive screen is explicitly the Forest Reading scene regardless of normal theme. */
+#immersiveMode .im-background{background-image:linear-gradient(180deg,#001c1710,#00181035 42%,#02150e39 80%,#03140e70),url('./assets/forest-desktop.png?v=4390');background-position:center;background-size:cover;filter:none;}
+#immersiveMode .im-transport-card{background:linear-gradient(180deg,#0c3d309c,#031d17bd);border:1px solid #e7d18d9c;box-shadow:inset 0 1px 0 #f7e8b943,0 8px 28px #001a1077;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);}
+#immersiveMode .im-transport-card::before,#immersiveMode .im-transport-card::after{display:none;}
+#immersiveMode .im-transport button{appearance:none;-webkit-appearance:none;border:0!important;border-radius:50%!important;padding:0!important;background-color:transparent!important;background-position:center!important;background-repeat:no-repeat!important;background-size:contain!important;box-shadow:none!important;filter:drop-shadow(0 3px 6px #0009);animation:none!important;transition:transform .15s ease,filter .15s ease;}
+#immersiveMode .im-transport button::before,#immersiveMode .im-transport button::after,#immersiveMode .im-transport button>svg,#immersiveMode .im-transport button>small,#immersiveMode .im-transport button>.im-gem-inner{display:none!important;content:none!important;}
+#immersiveMode #imPrev{background-image:url('./assets/prev-v434.png?v=4390')!important;}
+#immersiveMode #imBack{background-image:url('./assets/back-v434.png?v=4390')!important;}
+#immersiveMode #imAhead{background-image:url('./assets/ahead-v434.png?v=4390')!important;}
+#immersiveMode #imNext{background-image:url('./assets/next-v434.png?v=4390')!important;}
+#immersiveMode #imPlay{background-image:url('./assets/play-v434.png?v=4390')!important;}
+#immersiveMode #imPlay[data-playing="true"]{background-image:url('./assets/pause.png?v=4390')!important;}
+#immersiveMode .im-transport .im-small{width:clamp(56px,6.5vw,108px);height:clamp(56px,6.5vw,108px);flex:0 0 clamp(56px,6.5vw,108px);}
+#immersiveMode .im-transport .im-play{width:clamp(90px,11vw,156px);height:clamp(90px,11vw,156px);flex:0 0 clamp(90px,11vw,156px);}
+#immersiveMode .im-transport button:disabled{opacity:.48;filter:grayscale(.25);}
+#immersiveMode .im-transport button:hover:not(:disabled){transform:scale(1.05);filter:drop-shadow(0 0 12px #efd98088);}
+#immersiveMode .im-transport button:active:not(:disabled){transform:scale(.94);}
+#immersiveMode #imSeek{height:10px!important;background:linear-gradient(90deg,#abf781 0%,#f7d886 var(--im-percent,0%),#134f3c var(--im-percent,0%),#092e25 100%)!important;}
+#immersiveMode #imSeek::-webkit-slider-thumb{background:transparent url('./assets/pinecone.png?v=4390') center/contain no-repeat!important;border:0;box-shadow:0 0 10px #ffd44b99;width:36px;height:36px;}
+#immersiveMode #imSeek::-moz-range-thumb{background:transparent url('./assets/pinecone.png?v=4390') center/contain no-repeat!important;border:0;width:36px;height:36px;}
+#immersiveMode .im-progress-wrap{margin-top:22px;}
+#immersiveMode .im-squirrel{position:absolute;z-index:1;bottom:13px;left:clamp(0px,calc(var(--im-percent,0%) - 76px),calc(100% - 82px));width:76px;height:48px;background:url('./assets/squirrel-run-4.png?v=4390') 0 0/400% 100% no-repeat;pointer-events:none;filter:drop-shadow(0 2px 3px #001b11c9);}
+body[data-playing="true"][data-theme-motion="on"] #immersiveMode .im-squirrel{animation:pineGallopFrames .55s step-end infinite;}
+#immersiveMode .im-speed{position:relative;isolation:isolate;background:#07372ac9;border:1px solid #cdb97b8c;border-radius:18px;padding:10px 12px;gap:4px;}
+#immersiveMode .im-speed::before{content:'';position:absolute;inset:-3px;z-index:-1;pointer-events:none;background:url('./assets/speed-frame-v434.png?v=4390') center/100% 100% no-repeat;}
+#immersiveMode .im-speed>label{display:flex;justify-content:flex-start;gap:6px;color:#f6dd9a;}
+#immersiveMode .im-speed>label output{margin-left:auto;color:#ffe6a3;}
+#immersiveMode .im-speed-icon{width:30px;height:30px;object-fit:contain;}
+#immersiveMode .im-speed-presets button[aria-pressed="true"]{background:#285b33;box-shadow:0 0 8px #c7e77d88;color:#fff0b1;}
+#immersiveMode .im-glass{position:relative;isolation:isolate;background:#0b372bdb;border:1px solid #e7d18d94;color:#ffedba;box-shadow:inset 0 1px 0 #f8eab655;}
+#immersiveMode .im-glass::before{content:'';position:absolute;inset:-2px;z-index:-1;pointer-events:none;background:var(--im-button-art) center/100% 100% no-repeat;border-radius:inherit;}
+#imChapters,#imExit{--im-button-art:url('./assets/top-library-border.webp');}
+#imTheme{--im-button-art:url('./assets/top-appearance-border.webp');}
+#imSleep{--im-button-art:url('./assets/extra-sleep-border.webp');}
+#imBookmark{--im-button-art:url('./assets/extra-save-border.webp');}
+#imBookmarkList{--im-button-art:url('./assets/extra-bookmarks-border.webp');}
+#imCloud{--im-button-art:url('./assets/top-cloud-border.webp');}
+#imText{--im-button-art:url('./assets/lrc-expand-border.webp');}
+#immersiveMode .im-lyrics{border:1px solid #d7c07a55;border-radius:20px;background:radial-gradient(ellipse at 50% 50%,#05251eaf,#021b1680);}
+/* Existing full-page flight particles cover the immersive screen as well, when the normal theme is forest. */
+body[data-ui-theme="forest-reading"] #immersiveMode .im-fireflies{display:none;}
+@media(max-width:720px){
+ #immersiveMode .im-background{background-image:linear-gradient(180deg,#001c1715,#00181045 50%,#02150e44),url('./assets/forest-mobile.png?v=4390');}
+ #immersiveMode .im-transport{gap:4px;}
+ #immersiveMode .im-transport .im-small{width:clamp(39px,12.5vw,62px);height:clamp(39px,12.5vw,62px);flex:0 0 clamp(39px,12.5vw,62px);}
+ #immersiveMode .im-transport .im-play{width:clamp(71px,22vw,99px);height:clamp(71px,22vw,99px);flex:0 0 clamp(71px,22vw,99px);}
+ #immersiveMode .im-squirrel{width:49px;height:32px;left:clamp(0px,calc(var(--im-percent,0%) - 48px),calc(100% - 50px));}
+ #immersiveMode .im-progress-wrap{margin-top:17px;}
+ #immersiveMode .im-speed{padding:5px 8px;}
+ #immersiveMode .im-speed-icon{width:21px;height:21px;}
+ #immersiveMode .im-speed-presets button{padding:2px 5px;}
+ #immersiveMode #imSeek::-webkit-slider-thumb{width:28px;height:28px;}
+ #immersiveMode #imSeek::-moz-range-thumb{width:28px;height:28px;}
+}
+@media(max-width:540px){body[data-ui-theme="forest-reading"] #offsetLabel{height:29px!important;min-width:61px!important;gap:3px!important;padding:1px 5px 1px 2px!important;}body[data-ui-theme="forest-reading"] #offsetArtwork{width:23px;height:23px;}}
+@media(prefers-reduced-motion:reduce){#immersiveMode .im-squirrel,#immersiveMode .im-transport button{animation:none!important;transition:none!important;}}
+
+@media(max-width:850px){.mobile-switch{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.65fr)!important;}.mobile-immersive-entry{color:#f5dd9a!important;border:1px solid #d2b66b66!important;border-radius:20px!important;background:#103a2c!important;}}
+/* Reserve a separate lane for the running sprite so it cannot cover the time/status label. */
+#immersiveMode .im-progress-wrap{margin-top:40px;}
+#immersiveMode .im-squirrel{height:42px;width:70px;left:clamp(0px,calc(var(--im-percent,0%) - 70px),calc(100% - 74px));}
+@media(max-width:720px){#immersiveMode .im-progress-wrap{margin-top:30px;}#immersiveMode .im-squirrel{width:49px;height:30px;left:clamp(0px,calc(var(--im-percent,0%) - 48px),calc(100% - 50px));}}
