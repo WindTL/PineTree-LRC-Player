@@ -1,9 +1,9 @@
-/* PineTree v4.3.1 · atomic shell and locally cached Phase 3 art; original IndexedDB untouched. */
-const CACHE='lyra-shell-v4310-phase3-20261111';
+/* PineTree v4.3.3 · atomic shell and locally cached Phase 3 art; original IndexedDB untouched. */
+const CACHE='lyra-shell-v4330-scoped-forest';
 const ASSETS=[
-  './','./index.html','./styles.css?v=4310','./phase3.css?v=4310','./app.js?v=4310',
-  './manifest.webmanifest','./icon-192.png?v=4310','./icon-512.png?v=4310',
-  './apple-touch-icon.png?v=4310',
+  './','./index.html','./styles.css?v=4330','./themes/forest-reading/theme.css?v=4330','./app.js?v=4330',
+  './manifest.webmanifest','./icon-192.png?v=4330','./icon-512.png?v=4330',
+  './apple-touch-icon.png?v=4330',
   './assets/scene-christmas.webp',
   './assets/scene-newyear.webp',
   './assets/scene-forest.webp',
@@ -15,17 +15,18 @@ const ASSETS=[
   './assets/emerald-facets-phase2.svg',
   './assets/botanical-border-phase2.svg',
   './assets/pine-garland-phase2.svg',
-  './assets/phase3/forest-desktop.webp',
-  './assets/phase3/forest-mobile.webp',
-  './assets/phase3/play.webp',
-  './assets/phase3/pause.webp',
-  './assets/phase3/prev.webp',
-  './assets/phase3/next.webp',
-  './assets/phase3/back15.webp',
-  './assets/phase3/forward15.webp',
-  './assets/phase3/pinecone.webp',
-  './assets/phase3/speed.webp',
-  './assets/phase3/bookmark.webp',
+  './themes/forest-reading/assets/forest-desktop.webp',
+  './themes/forest-reading/assets/forest-mobile.webp',
+  './themes/forest-reading/assets/play.webp',
+  './themes/forest-reading/assets/pause.webp',
+  './themes/forest-reading/assets/prev.webp',
+  './themes/forest-reading/assets/next.webp',
+  './themes/forest-reading/assets/back15.webp',
+  './themes/forest-reading/assets/forward15.webp',
+  './themes/forest-reading/assets/pinecone.webp',
+  './themes/forest-reading/assets/speed.webp',
+  './themes/forest-reading/assets/bookmark.webp',
+  './themes/forest-reading/assets/squirrel-running.webp',
 ];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('lyra-shell-')&&k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});

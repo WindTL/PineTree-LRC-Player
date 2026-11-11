@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 140" fill="none"><defs><linearGradient id="needle" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#deed99"/><stop offset=".42" stop-color="#8dab4a"/><stop offset="1" stop-color="#1a5d3c"/></linearGradient><linearGradient id="stem"><stop stop-color="#c4a456"/><stop offset="1" stop-color="#314a27"/></linearGradient></defs>
+<path d="M4 58Q100 41 204 73T490 31" stroke="url(#stem)" stroke-width="6" stroke-linecap="round"/>
+<g stroke="url(#needle)" stroke-width="2.5" stroke-linecap="round" opacity=".92">
+<path d="M32 55 16 5 M37 57 45 8 M48 55 75 7 M54 56 100 17 M61 56 110 28 M83 58 91 11 M95 60 138 17 M109 62 159 24 M134 68 153 12 M148 70 195 36 M161 72 202 46 M193 74 240 36 M207 73 260 27 M236 68 260 25 M249 64 295 23 M277 60 314 16 M303 56 354 10 M325 52 354 3 M347 47 382 5 M370 43 422 2 M388 39 440 4 M416 36 462 5 M442 33 489 4"/>
+<path d="M30 58 6 93 M48 58 25 107 M62 57 50 118 M76 58 77 118 M102 62 95 129 M118 64 139 129 M135 67 155 130 M150 73 191 131 M172 73 207 125 M189 74 235 132 M215 71 245 120 M244 66 286 118 M277 61 310 110 M307 55 351 108 M328 49 386 106 M357 47 401 91 M386 40 434 86 M416 36 457 78 M447 33 494 75"/>
+</g></svg>
