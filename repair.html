@@ -1,0 +1,41 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PineTree 資源修復</title><style>body{background:#08231a;color:#f8e5ae;font:16px/1.6 system-ui,sans-serif;max-width:650px;margin:50px auto;padding:20px}button,a{font:inherit;color:#ffe2a0}button{padding:12px 18px;background:#174d38;border:1px solid #e3c573;border-radius:10px}p{overflow-wrap:anywhere}#resourceRepairStatus{padding:14px;border:1px solid #799c74;border-radius:10px}</style></head><body data-repair-page="true"><h1>🌲 PineTree 資源修復</h1><p>獨立修復頁 · 不依賴舊版 app.js 或樣式。請先在原播放器暫停並儲存進度。只會更新同一網站路徑的 PineTree 網頁快取，保留原有書庫及播放資料。</p><p id="resourceRepairStatus" role="status">按下按鈕開始驗證最新版資源。</p><button id="resourceRepairBtn" type="button">↻ 強制刷新資源</button><p><a href="./index.html">返回 PineTree</a></p><script>/* Independent, versioned recovery bootstrap. Never clears IndexedDB or storage. */
+(()=>{
+'use strict';
+const RELEASE='4391', scope=new URL('./',location.href), recovery=document.body.dataset.repairPage==='true';
+const prefix='pinetree-shell-'+encodeURIComponent(scope.pathname)+'-';
+const status=document.getElementById('resourceRepairStatus'), btn=document.getElementById('resourceRepairBtn');
+let busy=false;
+const note=(s,kind='')=>{if(status){status.textContent=s;status.dataset.status=kind;} console.info('[PineTree 資源]',s);};
+const bust=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const canonical=path=>new URL(path,scope).href;
+function safePath(path){if(typeof path!=='string'||!path||path.startsWith('/')||path.includes('..')||path.includes('\\')||path.includes('#')||/^[a-z]+:/i.test(path))throw Error('資源路徑不合法');const u=new URL(path,scope);if(u.origin!==scope.origin||!u.pathname.startsWith(scope.pathname))throw Error('資源超出播放器範圍');return u;}
+async function fresh(path,token){const u=safePath(path);u.searchParams.set('pt_refresh',token);const r=await fetch(u.href,{cache:'no-store',credentials:'same-origin'});if(!r.ok)throw Error(path+' · HTTP '+r.status);return r;}
+async function latest(token){const r=await fresh('version.json',token),m=await r.json();if(m.format!=='pinetree-shell-v1'||!/^\d{4,12}$/.test(m.version)||!m.files||!m.files['index.html']||!m.files['app.js']||!m.files['sw.js'])throw Error('版本清單無效或網站尚未完整更新');const entries=Object.entries(m.files);if(entries.length>300||entries.some(([p,h])=>{safePath(p);return !/^[a-f0-9]{64}$/.test(h)}))throw Error('資源驗證清單無效');return m;}
+async function digest(bytes){if(!globalThis.crypto?.subtle)throw Error('資源完整性檢查需要 HTTPS');return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');}
+async function verifyAll(m,token){const entries=Object.entries(m.files), verified=[];for(let i=0;i<entries.length;i+=6){const group=await Promise.all(entries.slice(i,i+6).map(async([path,hash])=>{const r=await fresh(path,token);const bytes=await r.arrayBuffer();if(await digest(bytes)!==hash)throw Error(path+' · 內容與發布版本不符');return [canonical(path),new Response(bytes,{status:200,headers:{'Content-Type':r.headers.get('Content-Type')||'application/octet-stream'}})];}));verified.push(...group);note('已驗證 '+verified.length+' / '+entries.length+' 項資源…');}return verified;}
+async function stage(m,verified){if(!('caches'in window))return;const target=await caches.open(prefix+m.version);for(const [url,response] of verified)await target.put(url,response);await target.put(canonical('./'),new Response(await (await target.match(canonical('index.html'))).arrayBuffer(),{headers:{'Content-Type':'text/html; charset=utf-8'}}));}
+async function cleanOld(version){if(!('caches'in window))return 0;let count=0;for(const key of await caches.keys()){if(key===prefix+version)continue;if(key.startsWith(prefix)){await caches.delete(key);count++;continue;}if(!key.startsWith('lyra-shell-'))continue;const c=await caches.open(key),requests=await c.keys();if(requests.length&&requests.every(r=>new URL(r.url).origin===scope.origin&&new URL(r.url).pathname.startsWith(scope.pathname))&&requests.some(r=>[canonical('index.html'),canonical('./')].includes(r.url))&&requests.every(r=>{const p=new URL(r.url).pathname;return !(p.endsWith('/')||p.endsWith('/index.html'))||[canonical('index.html'),canonical('./')].includes(r.url)})){await caches.delete(key);count++;}}return count;}
+function workerVersion(worker){return new Promise(resolve=>{if(!worker)return resolve('');const chan=new MessageChannel(),timer=setTimeout(()=>{chan.port1.close();resolve('');},500);chan.port1.onmessage=e=>{clearTimeout(timer);chan.port1.close();resolve(e.data?.version||'');};try{worker.postMessage({type:'PINETREE_VERSION'},[chan.port2]);}catch{clearTimeout(timer);resolve('');}});}
+async function ensureWorker(version,wait){if(!('serviceWorker'in navigator)||!isSecureContext)return false;const reg=await navigator.serviceWorker.register(canonical('sw.js'),{scope:scope.pathname,updateViaCache:'none'});try{await reg.update();}catch(e){if(wait)throw e;}if(!wait)return true;for(let i=0;i<24;i++){if(await workerVersion(navigator.serviceWorker.controller)===version||await workerVersion(reg.active)===version)return true;await new Promise(r=>setTimeout(r,250));}throw Error('新版離線服務尚未啟用；保留舊快取，請稍後重試');}
+function localHealth(){const css=getComputedStyle(document.documentElement), values=['--pt-base-release','--pt-theme-release','--pt-flagship-release'].map(k=>css.getPropertyValue(k).trim());const pictures=[...document.querySelectorAll('#calibrationPicker img,#offsetArtwork')];const imagesOK=pictures.length===5&&pictures.every(i=>i.complete&&i.naturalWidth>0);const immersiveOK=getComputedStyle(document.getElementById('imPlay')).backgroundImage.startsWith('url("data:image/');return {ok:window.PineTreeAppRelease===RELEASE&&values.every(v=>v===RELEASE)&&imagesOK&&immersiveOK,values,imagesOK,immersiveOK};}
+async function run(force=false){if(busy)return;busy=true;if(btn)btn.disabled=true;try{
+ const token=bust();note('正在檢查網站上的最新版…');let m;try{m=await latest(token);}catch(e){note('無法核對線上版本：'+e.message+'。保留現有離線資料與快取。','error');return;}
+ const health=recovery?{ok:false}:localHealth();
+ const controller=navigator.serviceWorker?.controller;const workerMismatch=!!controller&&(await workerVersion(controller))!==m.version;
+ if(!force&&m.version===RELEASE&&health.ok&&!workerMismatch){try{sessionStorage.removeItem('pinetree-repair-attempt-'+m.version);}catch{}note('版本 '+(m.displayVersion||m.version)+' · HTML／CSS／JS／徽章資源一致','ok');ensureWorker(m.version,false).catch(e=>note('資源正常，離線服務更新待完成：'+e.message,'error'));return;}
+ const attempt='pinetree-repair-attempt-'+m.version;
+ if(!force&&!recovery){try{if(sessionStorage.getItem(attempt)==='1'){note('已自動修復一次但仍不一致；停止重載。請按強制刷新或開啟獨立修復頁。','error');return;}}catch{note('無法保存重載防護，請手動刷新。','error');return;}}
+ if(!force&&!recovery&&document.getElementById('audio')&&!document.getElementById('audio').paused){note('發現新版或資源不一致；播放中暫緩，請暫停後刷新。');return;}
+ const verified=await verifyAll(m,token); // no deletion before every byte is validated
+ if(!recovery&&window.PineTreeBeforeResourceReload&&!(await window.PineTreeBeforeResourceReload(force))){note('正在播放、匯入或儲存，暫緩刷新；請完成操作後再試。');return;}
+ await stage(m,verified);
+ if('serviceWorker'in navigator&&isSecureContext)await ensureWorker(m.version,true);
+ const removed=await cleanOld(m.version);
+ try{sessionStorage.setItem(attempt,'1');}catch(e){if(!force)throw Error('無法保存防止重載循環的標記，請手動刷新');}
+ note('全部資源驗證成功，已清理 '+removed+' 個舊版播放器快取。正在載入 '+(m.displayVersion||m.version)+'…','ok');
+ const dest=new URL('index.html',scope);dest.searchParams.set('pt_reload',token);location.replace(dest.href);
+ }catch(e){note('刷新未完成：'+(e?.message||e)+'。保留書庫及既有播放資料；請確認所有 ZIP 檔案已部署。','error');}finally{busy=false;if(btn)btn.disabled=false;}}
+btn?.addEventListener('click',()=>run(true));
+if(!recovery){window.addEventListener('load',()=>setTimeout(()=>run(false),900),{once:true});}
+})();
+</script></body></html>
