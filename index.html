@@ -9,17 +9,17 @@
 <meta content="PineTree 有聲書" name="apple-mobile-web-app-title"/>
 <meta content="PineTree 有聲書 · 森夜閱讀、離線 MP3/LRC、iCloud Drive 手動同步" name="description"/>
 <link href="./manifest.webmanifest" rel="manifest"/>
-<link href="./apple-touch-icon.png?v=4202" rel="apple-touch-icon"/>
-<link href="./icon-192.png?v=4202" rel="icon"/>
-<link href="./styles.css?v=4202" rel="stylesheet"/>
-<title>PineTree 有聲書 · v4.2 森夜閱讀極致旗艦版</title>
+<link href="./apple-touch-icon.png?v=4212" rel="apple-touch-icon"/>
+<link href="./icon-192.png?v=4212" rel="icon"/>
+<link href="./styles.css?v=4212" rel="stylesheet"/>
+<title>PineTree 有聲書 · v4.2.1 森夜閱讀藝術強化版</title>
 </head>
 <body>
 <div class="app-shell">
 <header class="topbar">
 <div class="brand">
-<div aria-hidden="true" class="brand-mark" id="brandMonogram"><img alt="" src="./apple-touch-icon.png?v=4202"/></div>
-<div class="brand-copy"><strong class="forest-brandname">PineTree <small>v4.2</small></strong><span>A U D I O B O O K <b>·</b> 森夜閱讀</span><strong class="visually-hidden" id="brandTitle">我的小说书库</strong></div>
+<div aria-hidden="true" class="brand-mark" id="brandMonogram"><img alt="" src="./apple-touch-icon.png?v=4212"/></div>
+<div class="brand-copy"><strong class="forest-brandname">PineTree <small>v4.2.1</small></strong><span>A U D I O B O O K <b>·</b> 森夜閱讀</span><strong class="visually-hidden" id="brandTitle">我的小说书库</strong></div>
 </div>
 <nav aria-label="全局操作" class="header-actions">
 <span class="status-chip" id="networkBadge">● 准备就绪</span>
@@ -77,6 +77,8 @@
 </aside>
 <section aria-label="小说播放器" class="reader card" id="readerPanel">
 <div aria-hidden="true" class="forest-atmosphere"><i class="forest-moon-rays"></i><i class="forest-mist"></i><i class="forest-reflection"></i><i class="forest-orb orb-one"></i><i class="forest-orb orb-two"></i><i class="forest-orb orb-three"></i><i class="forest-orb orb-four"></i><i class="forest-orb orb-five"></i><i class="forest-orb orb-six"></i><i class="forest-orb orb-seven"></i><i class="forest-orb orb-eight"></i><i class="forest-orb orb-nine"></i></div>
+<div class="forest-frame-art" aria-hidden="true"></div>
+<div class="forest-garland-art" aria-hidden="true"></div>
 <div class="now-playing">
 <div class="now-playing-text">
 <div aria-label="PineTree 森夜閱讀" class="forest-signature"><div class="signature-top">✦ P I N E T R E E · F L A G S H I P ✦</div><div class="signature-title"><span aria-hidden="true" class="signature-leaf">❧</span> 森 夜 閱 讀 <span aria-hidden="true" class="signature-leaf">❧</span></div><div class="signature-sub">F O R E S T   R E A D I N G</div></div>
@@ -119,7 +121,7 @@
 <div class="transport">
 <button aria-label="上一章" class="control minor gem-chapter" id="prevBtn" title="上一章" type="button"><svg aria-hidden="true" class="im-control-art" focusable="false" viewbox="0 0 82 70"><path class="im-icon-fill" d="M39 14 20 32l19 18V14Zm19 0L39 32l19 18V14Z"></path><path class="im-leaf-stroke" d="M15 54c13-8 28-8 49-6M25 49l-4-8m4 8-11-1m22-1-3-8m3 8 9-9m1 8 3-9m-3 9 10-6"></path><path class="im-cone" d="M59 52c4 2 5 7 1 11-4 5-11 4-14 0-3-5-2-9 2-11 4-2 8-2 11 0Z"></path><path class="im-cone-line" d="m49 55 8 2m-9 3 11 1m-7-9 2 12m5-10-4 11"></path></svg></button>
 <button aria-label="后退15秒" class="control minor skip-control gem-skip" id="backBtn" title="后退15秒" type="button"><svg aria-hidden="true" class="im-vine-arrow" focusable="false" viewbox="0 0 64 48"><path d="M51 34C47 15 25 10 12 22"></path><path d="m16 9-8 14 15 2"></path><path class="vine-leaf" d="M26 13c0-8-6-9-10-8 0 6 4 9 10 8Zm11 3c2-7 8-8 12-5-1 5-5 7-12 5Z"></path></svg><small>15</small></button>
-<button aria-label="播放" class="control play forest-crystal" data-playing="false" disabled="" id="playBtn" title="播放 / 暂停" type="button"><span class="im-gem-inner"><span aria-hidden="true" class="im-gem-facets"></span><span aria-hidden="true" class="im-gem-filigree"></span><svg aria-hidden="true" class="im-play-symbol" focusable="false" viewbox="0 0 64 64"><path class="im-play-triangle" d="M22 15c0-2.5 2.6-4.1 4.8-2.8L50 27.7c3.1 1.9 3.1 6.7 0 8.6L26.8 51.8C24.6 53.1 22 51.5 22 49V15Z"></path><g class="im-pause-bars"><rect height="32" rx="2.6" width="10" x="19" y="16"></rect><rect height="32" rx="2.6" width="10" x="35" y="16"></rect></g></svg><span aria-hidden="true" class="im-gem-leaves">❧</span></span></button>
+<button aria-label="播放" class="control play forest-crystal" data-playing="false" disabled="" id="playBtn" title="播放 / 暂停" type="button"><span class="im-gem-inner"><span aria-hidden="true" class="im-gem-facets"></span><span aria-hidden="true" class="forest-gem-physical-facets"></span><span aria-hidden="true" class="im-gem-filigree"></span><svg aria-hidden="true" class="im-play-symbol" focusable="false" viewbox="0 0 64 64"><path class="im-play-triangle" d="M22 15c0-2.5 2.6-4.1 4.8-2.8L50 27.7c3.1 1.9 3.1 6.7 0 8.6L26.8 51.8C24.6 53.1 22 51.5 22 49V15Z"></path><g class="im-pause-bars"><rect height="32" rx="2.6" width="10" x="19" y="16"></rect><rect height="32" rx="2.6" width="10" x="35" y="16"></rect></g></svg><span aria-hidden="true" class="im-gem-leaves">❧</span></span></button>
 <button aria-label="快进15秒" class="control minor skip-control gem-skip" id="aheadBtn" title="快进15秒" type="button"><svg aria-hidden="true" class="im-vine-arrow" focusable="false" viewbox="0 0 64 48"><path d="M13 34c4-19 26-24 39-12"></path><path d="m48 9 8 14-15 2"></path><path class="vine-leaf" d="M38 13c0-8 6-9 10-8 0 6-4 9-10 8Zm-11 3c-2-7-8-8-12-5 1 5 5 7 12 5Z"></path></svg><small>15</small></button>
 <button aria-label="下一章" class="control minor gem-chapter" id="nextBtn" title="下一章" type="button"><svg aria-hidden="true" class="im-control-art" focusable="false" viewbox="0 0 82 70"><path class="im-icon-fill" d="m43 14 19 18-19 18V14Zm-19 0 19 18-19 18V14Z"></path><path class="im-leaf-stroke" d="M67 54c-13-8-28-8-49-6M57 49l4-8m-4 8 11-1m-22-1 3-8m-3 8-9-9m-1 8-3-9m3 9-10-6"></path><path class="im-cone" d="M23 52c-4 2-5 7-1 11 4 5 11 4 14 0 3-5 2-9-2-11-4-2-8-2-11 0Z"></path><path class="im-cone-line" d="m33 55-8 2m9 3-11 1m7-9-2 12m-5-10 4 11"></path></svg></button>
 </div>
@@ -139,7 +141,7 @@
 </div>
 <div class="im-screen">
 <header class="im-topbar">
-<div class="im-brand"><img alt="" aria-hidden="true" class="im-brand-icon" src="./icon-192.png?v=4202"/><span class="im-brand-type"><b>PineTree</b><small>A U D I O B O O K</small></span></div>
+<div class="im-brand"><img alt="" aria-hidden="true" class="im-brand-icon" src="./icon-192.png?v=4212"/><span class="im-brand-type"><b>PineTree</b><small>A U D I O B O O K</small></span></div>
 <nav aria-label="沉浸頁操作" class="im-top-actions">
 <button class="im-glass im-top-button" id="imChapters" title="返回章節目錄" type="button">☷ <span>章節</span></button>
 <button class="im-glass im-top-button" id="imTheme" title="開啟外觀設定" type="button">◐ <span>外觀</span></button>
@@ -304,6 +306,6 @@
 </div></dialog>
 <dialog aria-label="版本更新與說明" class="drawer-dialog" id="releaseDialog"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v4.2 · 森夜閱讀極致旗艦版</h2><p>森夜閱讀融合旗艦版：保留原有書庫、章節列表、字幕與播放控制，同時把主工作介面升級成月夜森林沉浸式旗艦外觀。</p></div><button aria-label="關閉" class="close-action" id="releaseClose" type="button">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>此版把「圖三的功能工作流」與「圖一的森夜旗艦視覺」融合：左側章節欄改成深綠玻璃書架面板，右側字幕與控制區直接融入月夜森林場景，保留原有書庫、章節搜索、批量刪除、書籤、睡眠定時、iCloud 手動同步、快速續聽與鎖屏續播修復。森夜閱讀成為桌面主介面的預設旗艦視覺，之後可再把同級融合風格擴展到其他主題。</p><p>仍以 iCloud Drive 手動匯入／匯出同步檔；iOS 系統檔案選取器及鎖屏背景播放限制依然存在。</p></div><button class="btn btn-accent" id="releaseDismiss" type="button">知道了</button></div></dialog>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-<script defer="" src="./app.js?v=4202"></script>
+<script defer="" src="./app.js?v=4212"></script>
 </body>
 </html>

@@ -57,7 +57,7 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4202';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4212';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -503,8 +503,12 @@ function centerActiveLyric(el,force=false){
   const maxTop=Math.max(0,win.scrollHeight-win.clientHeight);
   const top=Math.max(0,Math.min(maxTop,desired));
   if(Math.abs(top-win.scrollTop)<1)return;
-  if(force)win.scrollTop=top;
-  else win.scrollTo({top,behavior:'smooth'});
+  if(force){
+    // A forced center must be instantaneous even if CSS sets scroll-behavior:smooth.
+    // This also prevents a visible drift after resizing/maximizing lyrics.
+    const former=win.style.scrollBehavior;
+    win.style.scrollBehavior='auto';win.scrollTo({top,behavior:'instant'});win.style.scrollBehavior=former;
+  }else win.scrollTo({top,behavior:'smooth'});
 }
 function displayLyrics(lrc){
   state.lines=parseLRC(lrc);
@@ -1394,7 +1398,7 @@ async function start(){
   registerSW();
   try{
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.2 森夜閱讀極致旗艦版已更新；原書庫、LRC 與播放進度保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.2.1 森夜閱讀美術強化版已更新；原書庫、LRC 與播放進度保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     const last=state.tracks.find(x=>x.id===localStorage.getItem('lyra-last-id'));
