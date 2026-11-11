@@ -1,9 +1,9 @@
-/* PineTree v4.3.3 · atomic shell and locally cached Phase 3 art; original IndexedDB untouched. */
-const CACHE='lyra-shell-v4330-scoped-forest';
+/* PineTree v4.3.4 · atomic shell and locally cached Phase 3 art; original IndexedDB untouched. */
+const CACHE='lyra-shell-v4340-scoped-forest';
 const ASSETS=[
-  './','./index.html','./styles.css?v=4330','./themes/forest-reading/theme.css?v=4330','./app.js?v=4330',
-  './manifest.webmanifest','./icon-192.png?v=4330','./icon-512.png?v=4330',
-  './apple-touch-icon.png?v=4330',
+  './','./index.html','./styles.css?v=4340','./themes/forest-reading/theme.css?v=4340','./app.js?v=4340',
+  './manifest.webmanifest','./icon-192.png?v=4340','./icon-512.png?v=4340',
+  './apple-touch-icon.png?v=4340',
   './assets/scene-christmas.webp',
   './assets/scene-newyear.webp',
   './assets/scene-forest.webp',
@@ -27,6 +27,32 @@ const ASSETS=[
   './themes/forest-reading/assets/speed.webp',
   './themes/forest-reading/assets/bookmark.webp',
   './themes/forest-reading/assets/squirrel-running.webp',
+  './themes/forest-reading/assets/ahead-v434.webp',
+  './themes/forest-reading/assets/back-v434.webp',
+  './themes/forest-reading/assets/next-v434.webp',
+  './themes/forest-reading/assets/play-v434.webp',
+  './themes/forest-reading/assets/prev-v434.webp',
+  './themes/forest-reading/assets/speed-frame-v434.webp',
+  './themes/forest-reading/assets/badge-chip-border.webp',
+  './themes/forest-reading/assets/extra-bookmarks-border.webp',
+  './themes/forest-reading/assets/extra-delete-border.webp',
+  './themes/forest-reading/assets/extra-lock-border.webp',
+  './themes/forest-reading/assets/extra-save-border.webp',
+  './themes/forest-reading/assets/extra-sleep-border.webp',
+  './themes/forest-reading/assets/lrc-center-border.webp',
+  './themes/forest-reading/assets/lrc-expand-border.webp',
+  './themes/forest-reading/assets/lrc-focus-border.webp',
+  './themes/forest-reading/assets/lrc-fontminus-border.webp',
+  './themes/forest-reading/assets/lrc-fontplus-border.webp',
+  './themes/forest-reading/assets/lrc-offsetminus-border.webp',
+  './themes/forest-reading/assets/lrc-offsetplus-border.webp',
+  './themes/forest-reading/assets/top-appearance-border.webp',
+  './themes/forest-reading/assets/top-cloud-border.webp',
+  './themes/forest-reading/assets/top-immersive-border.webp',
+  './themes/forest-reading/assets/top-library-border.webp',
+  './themes/forest-reading/assets/top-resume-border.webp',
+  './themes/forest-reading/assets/squirrel-run-4.webp',
+  './themes/forest-reading/assets/firefly-overlay.webp',
 ];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('lyra-shell-')&&k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
