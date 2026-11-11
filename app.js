@@ -44,6 +44,7 @@ const state = {
   lockScreenMode:localStorage.getItem('pinetree-lockscreen-mode-v37')==='lyrics'?'lyrics':'standard',
   lockScreenSpeed:['fast','balanced','quiet'].includes(localStorage.getItem('pinetree-lockscreen-speed-v371'))?localStorage.getItem('pinetree-lockscreen-speed-v371'):'fast',
   lockScreenMetaKey:'',lockScreenLastAt:0,lockScreenLastText:'',lockScreenMediaError:false,
+  fireflyIntensity:['soft','medium','high','cinematic'].includes(localStorage.getItem('pinetree-firefly-intensity-v436')||'')?localStorage.getItem('pinetree-firefly-intensity-v436'):'high',
 
 };
 const normalizeBook = value => (value || '').trim().normalize('NFC').replace(/\u0000/g,'').slice(0,90);
@@ -57,7 +58,7 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4350';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4360';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -641,7 +642,7 @@ function updateMediaSession(force=false){
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
       title:info.title,artist:info.artist,album:info.album,
-      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4350',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4360',document.baseURI).href,sizes:'512x512',type:'image/png'}]
     });
     state.lockScreenMetaKey=info.key;
     state.lockScreenLastText=info.title;
@@ -652,7 +653,7 @@ function updateMediaSession(force=false){
       try{
         navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
           artist:'PineTree 有聲書',album:info.album,
-          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4350',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4360',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
         state.lockScreenMetaKey=info.key;
         state.lockScreenLastAt=now;
         return;
@@ -684,21 +685,44 @@ function setThemeMotion(value,{persist=true}={}){
   const control=$('themeMotion');if(control)control.checked=state.themeMotion;
   if(persist){localStorage.setItem('pinetree-theme-motion-v310',state.themeMotion?'1':'0');markSettingsChanged();}
 }
+function setFireflyIntensity(value,{persist=true}={}){
+  const allowed=['soft','medium','high','cinematic'];
+  state.fireflyIntensity=allowed.includes(value)?value:'high';
+  document.body.dataset.fireflyIntensity=state.fireflyIntensity;
+  const control=$('fireflyIntensity');if(control)control.value=state.fireflyIntensity;
+  installForestFireflies();
+  if(persist){localStorage.setItem('pinetree-firefly-intensity-v436',state.fireflyIntensity);markSettingsChanged();}
+}
 function installForestFireflies(){
   const host=$('forestFireflies');if(!host)return;
-  // Cover entire website, including header and library. This overlay is pointer-events:none.
   if(host.parentElement!==document.body)document.body.appendChild(host);
-  const fragment=document.createDocumentFragment();
-  for(let i=0;i<72;i++){
+  const presets={soft:{count:54,opacity:.62},medium:{count:92,opacity:.82},high:{count:136,opacity:.95},cinematic:{count:184,opacity:1}};
+  const level=presets[state.fireflyIntensity]?state.fireflyIntensity:'high';
+  const cfg=presets[level];
+  document.body.dataset.fireflyIntensity=level;
+  host.style.setProperty('--firefly-opacity',String(cfg.opacity));
+  const frag=document.createDocumentFragment();
+  for(let i=0;i<cfg.count;i++){
     const f=document.createElement('i');f.className='forest-firefly';
-    const x=2+(i*47%96),y=3+(i*37%93);
-    f.style.setProperty('--x',x+'%');f.style.setProperty('--y',y+'%');
-    f.style.setProperty('--d',(2+i%5)+'px');f.style.setProperty('--dx',((i*19)%58-27)+'px');
-    f.style.setProperty('--dy',((i*17)%66-32)+'px');
-    f.style.setProperty('--t',(6+(i%9)*1.7)+'s');f.style.setProperty('--delay',(-i*.83)+'s');
-    fragment.append(f);
+    const x=(i*37%100)+(i%3)*0.13, y=(i*29%100)+(i%5)*0.11;
+    const size=(2.5+(i*11)%7.5).toFixed(2)+'px';
+    const dx=((i*23)%160-80)+'px', dy=(-18-((i*19)%120))+'px';
+    const dx2=((i*13)%60-30)+'px', dy2=((i*17)%46-23)+'px';
+    const glow=(8+((i*7)%22));
+    const peak=(0.58+((i*5)%37)/100).toFixed(2);
+    const scale=(0.9+((i*3)%20)/100).toFixed(2);
+    f.style.setProperty('--x',x.toFixed(2)+'%');f.style.setProperty('--y',y.toFixed(2)+'%');
+    f.style.setProperty('--d',size);f.style.setProperty('--dx',dx);f.style.setProperty('--dy',dy);f.style.setProperty('--dx2',dx2);f.style.setProperty('--dy2',dy2);
+    f.style.setProperty('--t',(10+((i*7)%13)*1.1).toFixed(2)+'s');
+    f.style.setProperty('--blink',(1.8+((i*5)%11)*0.23).toFixed(2)+'s');
+    f.style.setProperty('--delay',(-i*0.31).toFixed(2)+'s');
+    f.style.setProperty('--delay2',(-i*0.17).toFixed(2)+'s');
+    f.style.setProperty('--glow',String(glow));
+    f.style.setProperty('--peak',peak);
+    f.style.setProperty('--scale-end',scale);
+    frag.append(f);
   }
-  host.replaceChildren(fragment);
+  host.replaceChildren(frag);
 }
 function installThemeParticles(){
   const host=$('themeParticles');if(!host)return;
@@ -787,9 +811,12 @@ function changeFont(delta){state.fontSize=bounded(state.fontSize+delta,14,38,21)
 function renderOffsetLabel(){
   const el=$('offsetLabel');if(!el)return;
   const value=state.delay;
-  el.textContent=`${value>0?'+':value<0?'−':'±'}${Math.abs(value).toFixed(1)} 秒`;
+  const abs=Math.abs(value).toFixed(1);
+  const compact=`${value>0?'+':value<0?'−':''}${abs}s`;
+  el.textContent=compact;
   el.dataset.adjusted=String(value!==0);
-  el.setAttribute('aria-label',`LRC 字幕校準：${value===0?'零秒':value>0?'延後':'提前'}${Math.abs(value).toFixed(1)} 秒`);
+  el.dataset.zero=String(value===0);
+  el.setAttribute('aria-label',`LRC 字幕校準：${value===0?'零秒':value>0?'延後':'提前'}${abs} 秒`);
 }
 function changeDelay(delta){state.delay=bounded(Math.round((state.delay+delta)*2)/2,-20,20,0);localStorage.setItem('lyra-delay',state.delay);markSettingsChanged();renderOffsetLabel();updateLyrics(true);updateMediaSession(true);}
 function setSpeed(value){state.speed=Math.round(bounded(Number(value),.5,3,1)*20)/20;audio.defaultPlaybackRate=state.speed;audio.playbackRate=state.speed;localStorage.setItem('lyra-speed',state.speed);$('speedRange').value=state.speed;$('speedLabel').textContent=`${state.speed.toFixed(2)}×`;for(const p of document.querySelectorAll('[data-speed-preset]'))p.setAttribute('aria-pressed',String(Math.abs(Number(p.dataset.speedPreset)-state.speed)<.026));updateMediaPosition();}
@@ -1126,7 +1153,7 @@ async function makeSyncSnapshot(){
     lastTrackId:localStorage.getItem('lyra-last-id')||'',
     selectedBook:state.selectedBook||'',
     settings:{speed:state.speed,fontSize:state.fontSize,delay:state.delay,
-      bg:state.bgColor,panel:state.panelColor,accent:state.accentColor,artTheme:state.artTheme,uiTheme:state.uiTheme,themeMotion:state.themeMotion,
+      bg:state.bgColor,panel:state.panelColor,accent:state.accentColor,artTheme:state.artTheme,uiTheme:state.uiTheme,themeMotion:state.themeMotion,fireflyIntensity:state.fireflyIntensity,
       linked:state.panelLinked,lyricsMax:state.lyricsMax,lyricsCentered:state.lyricsCentered,focusMode:state.focusMode,lineSpacing:state.lineSpacing,keepAwake:state.keepAwake,lockScreenMode:state.lockScreenMode,lockScreenSpeed:state.lockScreenSpeed},
     note:'僅書庫名稱、封面、播放進度及介面設定；不包含 MP3/LRC 音訊檔',
     skippedLargeCovers:skipped};
@@ -1228,6 +1255,7 @@ async function importICloudState(file,{autoConfirm=false,quiet=false}={}){
         if(typeof cfg.focusMode==='boolean')setFocusMode(cfg.focusMode,false);
         if(typeof cfg.keepAwake==='boolean')setKeepAwake(cfg.keepAwake,false);
         if(typeof cfg.themeMotion==='boolean')setThemeMotion(cfg.themeMotion,{persist:false});
+        if(typeof cfg.fireflyIntensity==='string')setFireflyIntensity(cfg.fireflyIntensity,{persist:false});
         if(cfg.lockScreenMode==='standard'||cfg.lockScreenMode==='lyrics')setLockScreenMode(cfg.lockScreenMode,{persist:false});
         if(['fast','balanced','quiet'].includes(cfg.lockScreenSpeed))setLockScreenSpeed(cfg.lockScreenSpeed,{persist:false});
         if(snapshot.settingsUpdatedAt)localStorage.setItem(SETTINGS_UPDATED_KEY,String(snapshot.settingsUpdatedAt));
@@ -1435,6 +1463,7 @@ function setupEvents(){
   $('focusToggle').addEventListener('click',()=>setFocusMode(!state.focusMode));
   $('lineSpacing').addEventListener('input',e=>setLineSpacing(e.target.value));
   $('themeMotion').addEventListener('change',event=>setThemeMotion(event.target.checked));
+  $('fireflyIntensity')?.addEventListener('change',event=>setFireflyIntensity(event.target.value));
   $('keepAwake').addEventListener('change',e=>setKeepAwake(e.target.checked));
   $('sleepOpen').addEventListener('click',()=>{updateSleepUI();openDialog('sleepDialog');});
   $('lockScreenOpen').addEventListener('click',()=>{refreshLockScreenControls();openDialog('lockScreenDialog');});
@@ -1651,7 +1680,7 @@ function setupImmersiveEvents(){
 async function registerSW(){if(!('serviceWorker'in navigator)||!isSecureContext)return;try{navigator.serviceWorker.addEventListener('controllerchange',()=>toast('PineTree 版本已更新；關閉再開啟 App 可使用最新版',5000));await navigator.serviceWorker.register('./sw.js',{scope:'./'});}catch(error){console.warn('离线缓存不可用：',error);}}
 async function start(){
   syncRestoreTask=restoreSyncFolder().catch(error=>console.warn("恢復同步資料夾授權失敗",error));
-  setupEvents();setupImmersiveEvents();requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();installForestFireflies();setThemeMotion(state.themeMotion,{persist:false});setPlayButtonVisual(false);
+  setupEvents();setupImmersiveEvents();requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setPlayButtonVisual(false);
   setMobileTab(localStorage.getItem('lyra-mobile-tab')==='chapters'?'chapters':'player');
   setImmersiveMode(state.immersive,{persist:false});
   setLineSpacing(state.lineSpacing,false);setKeepAwake(state.keepAwake,false);setFocusMode(state.focusMode,false);setLyricsCentered(state.lyricsCentered,false);updateSleepUI();
@@ -1672,7 +1701,7 @@ async function start(){
   try{
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
     await syncRestoreTask;await activateLinkedSyncAfterStartup();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.3.5：全頁螢火蟲、字幕偏移校準，以及可驗證的 Edge 同步；原書庫和 MP3/LRC 完整保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.3.6：全頁動態螢火蟲、可調特效強弱、專業校準徽章；原書庫和 MP3/LRC 完整保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     const last=state.tracks.find(x=>x.id===localStorage.getItem('lyra-last-id'));

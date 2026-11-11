@@ -1,9 +1,9 @@
-/* PineTree v4.3.5 · atomic shell and locally cached Phase 3 art; original IndexedDB untouched. */
-const CACHE='lyra-shell-v4350-scoped-forest';
+/* PineTree v4.3.6 · atomic shell and locally cached Phase 3 art; original IndexedDB untouched. */
+const CACHE='lyra-shell-v4360-scoped-forest';
 const ASSETS=[
-  './','./index.html','./styles.css?v=4350','./themes/forest-reading/theme.css?v=4350','./app.js?v=4350',
-  './manifest.webmanifest','./icon-192.png?v=4350','./icon-512.png?v=4350',
-  './apple-touch-icon.png?v=4350',
+  './','./index.html','./styles.css?v=4360','./themes/forest-reading/theme.css?v=4360','./app.js?v=4360',
+  './manifest.webmanifest','./icon-192.png?v=4360','./icon-512.png?v=4360',
+  './apple-touch-icon.png?v=4360',
   './assets/scene-christmas.webp',
   './assets/scene-newyear.webp',
   './assets/scene-forest.webp',
@@ -53,6 +53,7 @@ const ASSETS=[
   './themes/forest-reading/assets/top-resume-border.webp',
   './themes/forest-reading/assets/squirrel-run-4.webp',
   './themes/forest-reading/assets/firefly-overlay.webp',
+  './themes/forest-reading/assets/offset-badge-v436.png',
 ];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('lyra-shell-')&&k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
