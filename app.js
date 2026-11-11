@@ -44,6 +44,8 @@ const state = {
   lockScreenMode:localStorage.getItem('pinetree-lockscreen-mode-v37')==='lyrics'?'lyrics':'standard',
   lockScreenSpeed:['fast','balanced','quiet'].includes(localStorage.getItem('pinetree-lockscreen-speed-v371'))?localStorage.getItem('pinetree-lockscreen-speed-v371'):'fast',
   lockScreenMetaKey:'',lockScreenLastAt:0,lockScreenLastText:'',lockScreenMediaError:false,
+  calibrationStyle:['wave','dial','moon'].includes(localStorage.getItem('pinetree-calibration-style')||'')?localStorage.getItem('pinetree-calibration-style'):'moon',
+  fireflyTrails:localStorage.getItem('pinetree-firefly-trails')!=='0',
   fireflyIntensity:['soft','medium','high','cinematic'].includes(localStorage.getItem('pinetree-firefly-intensity-v436')||'')?localStorage.getItem('pinetree-firefly-intensity-v436'):'high',
 
 };
@@ -58,7 +60,7 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4360';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4370';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -642,7 +644,7 @@ function updateMediaSession(force=false){
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
       title:info.title,artist:info.artist,album:info.album,
-      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4360',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4370',document.baseURI).href,sizes:'512x512',type:'image/png'}]
     });
     state.lockScreenMetaKey=info.key;
     state.lockScreenLastText=info.title;
@@ -653,7 +655,7 @@ function updateMediaSession(force=false){
       try{
         navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
           artist:'PineTree 有聲書',album:info.album,
-          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4360',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4370',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
         state.lockScreenMetaKey=info.key;
         state.lockScreenLastAt=now;
         return;
@@ -693,33 +695,35 @@ function setFireflyIntensity(value,{persist=true}={}){
   installForestFireflies();
   if(persist){localStorage.setItem('pinetree-firefly-intensity-v436',state.fireflyIntensity);markSettingsChanged();}
 }
+function setCalibrationStyle(value,{persist=true}={}){
+  state.calibrationStyle=['wave','dial','moon'].includes(value)?value:'moon';
+  document.body.dataset.calibrationStyle=state.calibrationStyle;
+  document.querySelectorAll('[data-calibration-style]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.calibrationStyle===state.calibrationStyle)));
+  if(persist)localStorage.setItem('pinetree-calibration-style',state.calibrationStyle);
+}
+function setFireflyTrails(value,{persist=true}={}){
+  state.fireflyTrails=!!value;document.body.dataset.fireflyTrails=state.fireflyTrails?'on':'off';
+  const el=$('fireflyTrails');if(el)el.checked=state.fireflyTrails;
+  if(persist)localStorage.setItem('pinetree-firefly-trails',state.fireflyTrails?'1':'0');
+}
 function installForestFireflies(){
   const host=$('forestFireflies');if(!host)return;
   if(host.parentElement!==document.body)document.body.appendChild(host);
-  const presets={soft:{count:54,opacity:.62},medium:{count:92,opacity:.82},high:{count:136,opacity:.95},cinematic:{count:184,opacity:1}};
-  const level=presets[state.fireflyIntensity]?state.fireflyIntensity:'high';
-  const cfg=presets[level];
+  const presets={soft:{count:48,opacity:.78},medium:{count:84,opacity:.88},high:{count:128,opacity:.98},cinematic:{count:176,opacity:1}};
+  const level=presets[state.fireflyIntensity]?state.fireflyIntensity:'high',cfg=presets[level];
   document.body.dataset.fireflyIntensity=level;
   host.style.setProperty('--firefly-opacity',String(cfg.opacity));
   const frag=document.createDocumentFragment();
   for(let i=0;i<cfg.count;i++){
     const f=document.createElement('i');f.className='forest-firefly';
-    const x=(i*37%100)+(i%3)*0.13, y=(i*29%100)+(i%5)*0.11;
-    const size=(2.5+(i*11)%7.5).toFixed(2)+'px';
-    const dx=((i*23)%160-80)+'px', dy=(-18-((i*19)%120))+'px';
-    const dx2=((i*13)%60-30)+'px', dy2=((i*17)%46-23)+'px';
-    const glow=(8+((i*7)%22));
-    const peak=(0.58+((i*5)%37)/100).toFixed(2);
-    const scale=(0.9+((i*3)%20)/100).toFixed(2);
-    f.style.setProperty('--x',x.toFixed(2)+'%');f.style.setProperty('--y',y.toFixed(2)+'%');
-    f.style.setProperty('--d',size);f.style.setProperty('--dx',dx);f.style.setProperty('--dy',dy);f.style.setProperty('--dx2',dx2);f.style.setProperty('--dy2',dy2);
-    f.style.setProperty('--t',(10+((i*7)%13)*1.1).toFixed(2)+'s');
-    f.style.setProperty('--blink',(1.8+((i*5)%11)*0.23).toFixed(2)+'s');
-    f.style.setProperty('--delay',(-i*0.31).toFixed(2)+'s');
-    f.style.setProperty('--delay2',(-i*0.17).toFixed(2)+'s');
-    f.style.setProperty('--glow',String(glow));
-    f.style.setProperty('--peak',peak);
-    f.style.setProperty('--scale-end',scale);
+    // Deterministic viewport-wide distribution; one straight drift per cycle.
+    // Tail always points opposite the velocity, and the particle fades before recycling.
+    const x=1+((i*47.237)%98),y=1+((i*31.733)%98);
+    const angle=((i*137.508)%360)*Math.PI/180,dist=70+(i*17)%145;
+    const dx=Math.cos(angle)*dist,dy=Math.sin(angle)*dist;
+    const size=3+(i*7)%5;const tail=12+(i*13)%36;
+    const vars={x:x.toFixed(2)+'%',y:y.toFixed(2)+'%',d:size+'px',dx:dx.toFixed(2)+'px',dy:dy.toFixed(2)+'px',angle:angle.toFixed(4)+'rad',tail:tail+'px',t:(5.8+(i*7%13)*.62).toFixed(2)+'s',delay:(-i*.731).toFixed(2)+'s',peak:(.72+(i*5%27)/100).toFixed(2)};
+    for(const [k,v] of Object.entries(vars))f.style.setProperty('--'+k,v);
     frag.append(f);
   }
   host.replaceChildren(frag);
@@ -1464,6 +1468,8 @@ function setupEvents(){
   $('lineSpacing').addEventListener('input',e=>setLineSpacing(e.target.value));
   $('themeMotion').addEventListener('change',event=>setThemeMotion(event.target.checked));
   $('fireflyIntensity')?.addEventListener('change',event=>setFireflyIntensity(event.target.value));
+  $('fireflyTrails')?.addEventListener('change',event=>setFireflyTrails(event.target.checked));
+  document.querySelectorAll('[data-calibration-style]').forEach(b=>b.addEventListener('click',()=>setCalibrationStyle(b.dataset.calibrationStyle)));
   $('keepAwake').addEventListener('change',e=>setKeepAwake(e.target.checked));
   $('sleepOpen').addEventListener('click',()=>{updateSleepUI();openDialog('sleepDialog');});
   $('lockScreenOpen').addEventListener('click',()=>{refreshLockScreenControls();openDialog('lockScreenDialog');});
@@ -1680,7 +1686,7 @@ function setupImmersiveEvents(){
 async function registerSW(){if(!('serviceWorker'in navigator)||!isSecureContext)return;try{navigator.serviceWorker.addEventListener('controllerchange',()=>toast('PineTree 版本已更新；關閉再開啟 App 可使用最新版',5000));await navigator.serviceWorker.register('./sw.js',{scope:'./'});}catch(error){console.warn('离线缓存不可用：',error);}}
 async function start(){
   syncRestoreTask=restoreSyncFolder().catch(error=>console.warn("恢復同步資料夾授權失敗",error));
-  setupEvents();setupImmersiveEvents();requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setPlayButtonVisual(false);
+  setupEvents();setupImmersiveEvents();requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setCalibrationStyle(state.calibrationStyle,{persist:false});setFireflyTrails(state.fireflyTrails,{persist:false});setPlayButtonVisual(false);
   setMobileTab(localStorage.getItem('lyra-mobile-tab')==='chapters'?'chapters':'player');
   setImmersiveMode(state.immersive,{persist:false});
   setLineSpacing(state.lineSpacing,false);setKeepAwake(state.keepAwake,false);setFocusMode(state.focusMode,false);setLyricsCentered(state.lyricsCentered,false);updateSleepUI();
@@ -1701,7 +1707,7 @@ async function start(){
   try{
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
     await syncRestoreTask;await activateLinkedSyncAfterStartup();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.3.6：全頁動態螢火蟲、可調特效強弱、專業校準徽章；原書庫和 MP3/LRC 完整保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.3.7：全頁流光拖尾、三款可選校準徽章；原書庫和 MP3/LRC 完整保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     const last=state.tracks.find(x=>x.id===localStorage.getItem('lyra-last-id'));

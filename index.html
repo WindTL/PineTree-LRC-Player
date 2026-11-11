@@ -9,18 +9,18 @@
 <meta content="PineTree 有聲書" name="apple-mobile-web-app-title"/>
 <meta content="PineTree 有聲書 · 森夜閱讀、離線 MP3/LRC、iCloud Drive 手動同步" name="description"/>
 <link href="./manifest.webmanifest" rel="manifest"/>
-<link href="./apple-touch-icon.png?v=4360" rel="apple-touch-icon"/>
-<link href="./icon-192.png?v=4360" rel="icon"/>
-<link href="./styles.css?v=4360" rel="stylesheet"/>
-<link href="./themes/forest-reading/theme.css?v=4360" rel="stylesheet"/>
-<title>PineTree 有聲書 · v4.3.6 動態螢火蟲與校準徽章版</title>
+<link href="./apple-touch-icon.png?v=4370" rel="apple-touch-icon"/>
+<link href="./icon-192.png?v=4370" rel="icon"/>
+<link href="./styles.css?v=4370" rel="stylesheet"/>
+<link href="./themes/forest-reading/theme.css?v=4370" rel="stylesheet"/>
+<title>PineTree 有聲書 · v4.3.7 流光螢火與三款校準徽章版</title>
 </head>
 <body>
 <div class="app-shell">
 <header class="topbar">
 <div class="brand">
-<div aria-hidden="true" class="brand-mark" id="brandMonogram"><img alt="" src="./apple-touch-icon.png?v=4360"/></div>
-<div class="brand-copy"><strong class="forest-brandname">PineTree <small>v4.3.6</small></strong><span>A U D I O B O O K <b>·</b> 森夜閱讀</span><strong class="visually-hidden" id="brandTitle">我的小说书库</strong></div>
+<div aria-hidden="true" class="brand-mark" id="brandMonogram"><img alt="" src="./apple-touch-icon.png?v=4370"/></div>
+<div class="brand-copy"><strong class="forest-brandname">PineTree <small>v4.3.7</small></strong><span>A U D I O B O O K <b>·</b> 森夜閱讀</span><strong class="visually-hidden" id="brandTitle">我的小说书库</strong></div>
 </div>
 <div class="forest-top-title" aria-hidden="true"><span class="forest-top-kicker">✦ P I N E T R E E ✦</span><strong>森 夜 閱 讀</strong><span class="forest-top-sub">F O R E S T · R E A D I N G</span></div>
 <nav aria-label="全局操作" class="header-actions">
@@ -145,7 +145,7 @@
 </div>
 <div class="im-screen">
 <header class="im-topbar">
-<div class="im-brand"><img alt="" aria-hidden="true" class="im-brand-icon" src="./icon-192.png?v=4360"/><span class="im-brand-type"><b>PineTree</b><small>A U D I O B O O K</small></span></div>
+<div class="im-brand"><img alt="" aria-hidden="true" class="im-brand-icon" src="./icon-192.png?v=4370"/><span class="im-brand-type"><b>PineTree</b><small>A U D I O B O O K</small></span></div>
 <nav aria-label="沉浸頁操作" class="im-top-actions">
 <button class="im-glass im-top-button" id="imChapters" title="返回章節目錄" type="button">☷ <span>章節</span></button>
 <button class="im-glass im-top-button" id="imTheme" title="開啟外觀設定" type="button">◐ <span>外觀</span></button>
@@ -210,9 +210,9 @@
 </dialog>
 <dialog aria-label="书库管理" class="drawer-dialog" id="bookManager">
 <div class="dialog-inner">
-<div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v4.3.6 · Dynamic Firefly 森夜旗艦版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button aria-label="关闭" class="close-action" id="bookManagerClose" type="button">×</button></div>
+<div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v4.3.7 · Dynamic Firefly 森夜旗艦版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button aria-label="关闭" class="close-action" id="bookManagerClose" type="button">×</button></div>
 <form class="create-book" id="createBookForm"><label for="newBookName">新建小说文件夹</label><div class="form-row"><input class="field" id="newBookName" maxlength="90" placeholder="输入书名，例如：拙石衍天" required="" type="text"/><button class="btn btn-accent" type="submit">＋ 新建</button></div></form>
-<div class="manager-icloud-shortcut"><button class="btn btn-quiet" id="releaseOpen" type="button">ⓘ 版本與更新內容 · v4.3.6 動態螢火蟲旗艦版</button><button class="btn btn-quiet" id="cleanupOpen" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button class="btn btn-quiet" id="syncOpenSecondary" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
+<div class="manager-icloud-shortcut"><button class="btn btn-quiet" id="releaseOpen" type="button">ⓘ 版本與更新內容 · v4.3.7 動態螢火蟲旗艦版</button><button class="btn btn-quiet" id="cleanupOpen" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button class="btn btn-quiet" id="syncOpenSecondary" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
 <div class="manager-section-head"><strong>全部小说</strong><span class="counter" id="bookCount">0 本</span></div>
 <div aria-label="小说封面书架" class="book-grid" id="bookGrid"></div>
 <div class="book-detail" id="bookDetail">
@@ -228,7 +228,7 @@
 </dialog>
 <dialog aria-label="iCloud Drive 同步與備份" class="drawer-dialog" id="syncDialog">
 <div class="dialog-inner">
-<div class="dialog-head"><div><span class="dialog-kicker">PineTree 4.3.6 · SYNC FOLDER BRIDGE</span><h2>iCloud 同步檔</h2><p>Windows Edge 可在資料夾授權後嘗試暫停自動覆寫；iPhone 仍需經「檔案」選取同步檔。同步不包含音訊。</p></div><button aria-label="關閉" class="close-action" id="syncClose" type="button">×</button></div>
+<div class="dialog-head"><div><span class="dialog-kicker">PineTree 4.3.7 · SYNC FOLDER BRIDGE</span><h2>iCloud 同步檔</h2><p>Windows Edge 可在資料夾授權後嘗試暫停自動覆寫；iPhone 仍需經「檔案」選取同步檔。同步不包含音訊。</p></div><button aria-label="關閉" class="close-action" id="syncClose" type="button">×</button></div>
 <div class="sync-guide"><strong>☁ 同步包含</strong><p>小說名稱、封面（每張不超過 2 MB）、各章續聽位置、書籤、上次播放章節、0.5–3× 倍速、字幕字體與行距、時間偏移及護眼主題。</p><p><strong>不包含：</strong>MP3/LRC 音訊檔。請在兩台裝置各自從「檔案」App 匯入同名章節。</p></div>
 <div class="sync-actions"><button class="btn btn-accent" id="syncExport" type="button">⬇ 匯出 Lyra_Sync.json</button><button class="btn btn-quiet" id="syncImport" type="button">⬆ 從 iCloud Drive 匯入</button><button class="btn btn-quiet" id="syncFolderConnect" type="button">📂 Windows Edge：授權 Audiobooks 資料夾</button><button class="btn btn-quiet" id="syncWriteNow" type="button">🔎 立即驗證同步／寫入 JSON</button><input accept=".json,application/json" hidden="" id="syncFile" type="file"/><input accept=".json,application/json" hidden="" id="syncQuickFile" type="file"/></div>
 <div class="sync-guide"><strong>🔒 暫停自動同步／快速續聽</strong><p>Windows Edge（HTTPS）：先按「授權 Audiobooks 資料夾」，選擇 C:\Users\thoma\iCloudDrive\Audiobooks 並確認匯入已有的 JSON；取得持續寫入權限後，暫停時嘗試覆寫同資料夾的 Lyra_Sync.json。重新開啟 Edge 時會先安全合併外部 JSON；若授權失效，請再次手動授權。寫入後會重新讀取檔案核對內容，失敗則提示，不會假裝成功。</p><p>快速續聽會優先讀取已授權資料夾內最新 JSON，再恢復章節。iPhone Safari 不支援靜默存取此 Windows 路徑：點「快速續聽」時會開啟「檔案」選擇器，請挑選 iCloud Drive 裡最新的 Lyra_Sync.json，匯入後才續聽。</p><p id="syncBridgeStatus" aria-live="polite">尚未授權同步資料夾；使用一般手動同步。</p><p class="sync-evidence" id="syncEvidence" aria-live="polite">尚無已驗證的寫入紀錄。</p></div>
@@ -272,7 +272,12 @@
 <label class="range-setting" for="lineSpacing">字幕行距 <output id="lineSpacingLabel">1.85</output><input id="lineSpacing" max="2.6" min="1.4" step="0.05" type="range" value="1.85"/></label>
 <label class="check-row"><input checked="" id="themeMotion" type="checkbox"/> ✨ 啟用旗艦主題動態特效（雪花／星光／螢火／茶霧；低耗電可關閉）</label>
 <label class="theme-field firefly-strength-field" for="fireflyIntensity"><span>螢火特效強度 <small>森夜閱讀的全頁動態螢火蟲</small></span><select class="field" id="fireflyIntensity"><option value="soft">柔和</option><option value="medium">標準</option><option value="high">濃郁</option><option value="cinematic">電影級</option></select></label>
-<p class="dialog-note">森夜閱讀現已使用全頁、置頂、可穿透點擊的動態螢火蟲；你可隨時調整柔和／標準／濃郁／電影級強度。系統設定「減少動態效果」時會自動停用。</p>
+<div class="forest-calibration-picker" id="calibrationPicker"><strong>字幕校準徽章 · 三款旗艦設計</strong><div class="forest-calibration-choices" role="group" aria-label="校準徽章款式">
+<button type="button" class="calibration-choice" data-calibration-style="wave" aria-pressed="false"><i aria-hidden="true"></i><span>聲波精準</span></button>
+<button type="button" class="calibration-choice" data-calibration-style="dial" aria-pressed="false"><i aria-hidden="true"></i><span>翡翠儀表</span></button>
+<button type="button" class="calibration-choice" data-calibration-style="moon" aria-pressed="false"><i aria-hidden="true"></i><span>月夜同步</span></button></div><small>只改外觀；數值始終由真實字幕偏移即時更新。</small></div>
+<label class="check-row forest-trail-setting"><input type="checkbox" id="fireflyTrails" checked/> 螢火流光拖尾（關閉後保留飄浮光點）</label>
+<p class="dialog-note">森夜閱讀現已使用全頁、置頂、可穿透點擊的動態螢火蟲與流光拖尾；你可隨時調整柔和／標準／濃郁／電影級強度。系統設定「減少動態效果」時會自動停用。</p>
 <label class="check-row"><input id="keepAwake" type="checkbox"/> 專注閱讀時嘗試保持螢幕常亮（iOS 可能不支援）</label>
 <p class="theme-legend"><span><i class="theme-legend-dot green"></i>綠色 · 主要閱讀區</span><span><i class="theme-legend-dot red"></i>柔紅 · 刪除與警告</span><span><i class="theme-legend-dot yellow"></i>暖黃 · 當前字幕</span></p>
 <div class="theme-bottom"><span>主題及配色保存在本機；自訂顏色會切換至純色模式，不影響小說資料</span><div class="theme-bottom-actions"><button class="btn btn-quiet" hidden="" id="restorePreviousTheme" type="button">還原升級前配色</button><button class="btn btn-accent" id="resetColor" type="button">恢復森夜預設配色</button></div></div>
@@ -310,8 +315,8 @@
 <div class="import-actions"><button class="btn btn-quiet" id="cleanupPreview" type="button">重新計算</button><button class="btn btn-danger" id="cleanupRun" type="button">確認清理已聽 MP3</button></div>
 <p class="dialog-note">如果清理了 MP3，再次播放該章時需重新從 iCloud Drive 匯入對應音訊。清理操作無法在 PineTree 內撤銷。</p>
 </div></dialog>
-<dialog aria-label="版本更新與說明" class="drawer-dialog" id="releaseDialog"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v4.3.6 · Dynamic Firefly 森夜旗艦版</h2><p>森夜閱讀融合旗艦版：保留原有書庫、章節列表、字幕與播放控制，同時把主工作介面升級成月夜森林沉浸式旗艦外觀。</p></div><button aria-label="關閉" class="close-action" id="releaseClose" type="button">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>v4.3.6 進一步升級森夜閱讀：螢火蟲改為真正的全頁動態粒子，且可在外觀面板調整柔和／標準／濃郁／電影級強度；字幕偏移區新增專屬校準徽章，0.0s 顯示更專業。保留既有森夜獨立素材命名空間、松鼠跑步進度動畫、章節工作流、書籤、睡眠定時與 iCloud / Edge 同步橋接。</p><p>Windows Edge 可連結資料夾後自動寫入同步檔；iPhone 仍須手動匯出並挑選 JSON；iOS 系統檔案選取器及鎖屏背景播放限制依然存在；如鎖屏暫停後無法從系統面板續播，請改用標準章節資訊模式，必要時開啟 App 恢復。</p></div><button class="btn btn-accent" id="releaseDismiss" type="button">知道了</button></div></dialog>
+<dialog aria-label="版本更新與說明" class="drawer-dialog" id="releaseDialog"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v4.3.7 · Dynamic Firefly 森夜旗艦版</h2><p>森夜閱讀融合旗艦版：保留原有書庫、章節列表、字幕與播放控制，同時把主工作介面升級成月夜森林沉浸式旗艦外觀。</p></div><button aria-label="關閉" class="close-action" id="releaseClose" type="button">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>v4.3.7 進一步升級森夜閱讀：螢火蟲改為真正的全頁動態粒子，且可在外觀面板調整柔和／標準／濃郁／電影級強度；字幕偏移區可選三款校準徽章，螢火蟲可開關流光拖尾。保留既有森夜獨立素材命名空間、松鼠跑步進度動畫、章節工作流、書籤、睡眠定時與 iCloud / Edge 同步橋接。</p><p>Windows Edge 可連結資料夾後自動寫入同步檔；iPhone 仍須手動匯出並挑選 JSON；iOS 系統檔案選取器及鎖屏背景播放限制依然存在；如鎖屏暫停後無法從系統面板續播，請改用標準章節資訊模式，必要時開啟 App 恢復。</p></div><button class="btn btn-accent" id="releaseDismiss" type="button">知道了</button></div></dialog>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-<script defer="" src="./app.js?v=4360"></script>
+<script defer="" src="./app.js?v=4370"></script>
 </body>
 </html>

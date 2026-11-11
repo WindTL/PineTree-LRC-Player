@@ -328,7 +328,7 @@ body:not([data-ui-theme="forest-reading"]) #forestFireflies{display:none!importa
  body[data-ui-theme="forest-reading"] #forestFireflies{display:none!important;}
 }
 /* Mobile battery: fewer particles, still distributed over the whole viewport. */
-@media(max-width:850px){body[data-ui-theme="forest-reading"] #forestFireflies .forest-firefly:nth-child(n+37){display:none!important}}
+
 
 /* v4.3.5 · full-screen, click-through fireflies and refined subtitle calibration */
 body[data-ui-theme="forest-reading"] #forestFireflies{z-index:2147483600!important;pointer-events:none!important;}
@@ -419,3 +419,58 @@ body[data-ui-theme="forest-reading"] #offsetLabel[data-zero="true"]{color:#e8efc
   body[data-ui-theme="forest-reading"] #offsetLabel{min-width:70px!important;height:27px;padding:2px 8px 2px 28px!important;font-size:10px!important;}
   body[data-ui-theme="forest-reading"] #offsetLabel::before{left:7px;width:15px;height:15px;}
 }
+
+/* v4.3.7 · real directional firefly trails and switchable calibration artwork */
+body[data-ui-theme="forest-reading"][data-theme-motion="on"] #forestFireflies{
+ display:block!important;position:fixed!important;inset:0!important;z-index:2147483647!important;
+ opacity:var(--firefly-opacity,.98)!important;pointer-events:none!important;mix-blend-mode:normal!important;contain:paint;
+}
+body[data-ui-theme="forest-reading"] #forestFireflies::before{display:none!important;}
+body[data-ui-theme="forest-reading"] #forestFireflies .forest-firefly{
+ display:block!important;overflow:visible;filter:none!important;background:#fffad2!important;
+ box-shadow:0 0 4px 1px #ffed85,0 0 12px 3px #e8f98e88,0 0 22px 6px #e6f57f30!important;
+ animation:pineFireflyFlight var(--t) linear var(--delay) infinite!important;
+}
+body[data-ui-theme="forest-reading"] #forestFireflies .forest-firefly::before{
+ content:'';position:absolute;right:50%;top:50%;width:var(--tail);height:2px;
+ transform-origin:right center;transform:translateY(-50%) rotate(var(--angle));
+ background:linear-gradient(90deg,transparent 0%,#a4d96f18 22%,#e9df754d 59%,#fff3a9bd 100%);
+ border-radius:100%;box-shadow:0 0 4px #e5f78d45;pointer-events:none;
+}
+@keyframes pineFireflyFlight{
+ 0%{transform:translate3d(0,0,0);opacity:0}12%{opacity:var(--peak)}33%{opacity:.38}49%{opacity:var(--peak)}72%{opacity:.65}87%{opacity:var(--peak)}100%{transform:translate3d(var(--dx),var(--dy),0);opacity:0}
+}
+/* Preserve old on/off and reduced-motion behavior, even with later high-specificity declarations. */
+body[data-ui-theme="forest-reading"][data-firefly-trails="off"] #forestFireflies .forest-firefly::before{display:none!important;}
+body[data-ui-theme="forest-reading"][data-theme-motion="off"] #forestFireflies,body:not([data-ui-theme="forest-reading"]) #forestFireflies{display:none!important;}
+@media(max-width:850px){
+ body[data-ui-theme="forest-reading"][data-firefly-intensity="soft"] #forestFireflies .forest-firefly:nth-child(n+25),
+ body[data-ui-theme="forest-reading"][data-firefly-intensity="medium"] #forestFireflies .forest-firefly:nth-child(n+43),
+ body[data-ui-theme="forest-reading"][data-firefly-intensity="high"] #forestFireflies .forest-firefly:nth-child(n+65),
+ body[data-ui-theme="forest-reading"][data-firefly-intensity="cinematic"] #forestFireflies .forest-firefly:nth-child(n+89){display:none!important;}
+ body[data-ui-theme="forest-reading"] #forestFireflies .forest-firefly::before{width:calc(var(--tail) * .7);}
+}
+@media(prefers-reduced-motion:reduce){body[data-ui-theme="forest-reading"][data-theme-motion="on"] #forestFireflies{display:none!important;}}
+body:not([data-ui-theme="forest-reading"]) .forest-calibration-picker,body:not([data-ui-theme="forest-reading"]) .forest-trail-setting{display:none!important;}
+.forest-calibration-picker{margin:12px 0;padding:12px;border:1px solid var(--border);border-radius:15px;}
+.forest-calibration-picker>strong{font-size:13px;display:block;margin-bottom:8px;}
+.forest-calibration-picker>small{display:block;font-size:11px;color:var(--muted);margin-top:7px;}
+.forest-calibration-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+.calibration-choice{display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 2px;min-width:0;border:1px solid #bda15c77;border-radius:10px;background:#082a20;color:#ffedba;font-size:11px;cursor:pointer;}
+.calibration-choice[aria-pressed="true"]{border-color:#ffe49b;box-shadow:0 0 10px #cce98c66,inset 0 0 9px #cce98c33;}
+.calibration-choice i{width:43px;height:43px;background:var(--cal-art) center/contain no-repeat;border-radius:50%;}
+.calibration-choice[data-calibration-style="wave"],body[data-calibration-style="wave"]{--cal-art:url('./assets/calibration-wave.webp');}
+.calibration-choice[data-calibration-style="dial"],body[data-calibration-style="dial"]{--cal-art:url('./assets/calibration-dial.webp');}
+.calibration-choice[data-calibration-style="moon"],body[data-calibration-style="moon"]{--cal-art:url('./assets/calibration-moon.webp');}
+body[data-ui-theme="forest-reading"] #offsetLabel{
+ flex:0 0 auto;min-width:83px!important;height:32px!important;padding:2px 10px 2px 33px!important;
+ border:1px solid #f7dc8c!important;background:linear-gradient(165deg,#175f42,#052d23 53%,#021e18)!important;
+ box-shadow:inset 0 1px 1px #ffeb9b77,inset 0 -1px 2px #6fbd5b70,0 0 7px #c8dc8148!important;
+ font-size:12px!important;color:#fff1b8!important;letter-spacing:0!important;
+}
+body[data-ui-theme="forest-reading"] #offsetLabel::before{
+ background:var(--cal-art,url('./assets/calibration-moon.webp')) center/contain no-repeat!important;
+ width:27px!important;height:27px!important;left:3px!important;filter:drop-shadow(0 0 3px #e3ca64a6);
+}
+body[data-ui-theme="forest-reading"].focus-reading #offsetLabel{display:none!important;}
+@media(max-width:540px){body[data-ui-theme="forest-reading"] #offsetLabel{min-width:62px!important;height:28px!important;padding:2px 5px 2px 25px!important;font-size:10px!important;}body[data-ui-theme="forest-reading"] #offsetLabel::before{width:21px!important;height:21px!important;left:2px!important;}}
