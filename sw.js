@@ -1,9 +1,9 @@
-/* PineTree v4.3.4 · atomic shell and locally cached Phase 3 art; original IndexedDB untouched. */
-const CACHE='lyra-shell-v4340-scoped-forest';
+/* PineTree v4.3.5 · atomic shell and locally cached Phase 3 art; original IndexedDB untouched. */
+const CACHE='lyra-shell-v4350-scoped-forest';
 const ASSETS=[
-  './','./index.html','./styles.css?v=4340','./themes/forest-reading/theme.css?v=4340','./app.js?v=4340',
-  './manifest.webmanifest','./icon-192.png?v=4340','./icon-512.png?v=4340',
-  './apple-touch-icon.png?v=4340',
+  './','./index.html','./styles.css?v=4350','./themes/forest-reading/theme.css?v=4350','./app.js?v=4350',
+  './manifest.webmanifest','./icon-192.png?v=4350','./icon-512.png?v=4350',
+  './apple-touch-icon.png?v=4350',
   './assets/scene-christmas.webp',
   './assets/scene-newyear.webp',
   './assets/scene-forest.webp',

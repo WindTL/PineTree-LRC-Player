@@ -57,7 +57,7 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4340';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4350';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -641,7 +641,7 @@ function updateMediaSession(force=false){
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
       title:info.title,artist:info.artist,album:info.album,
-      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4340',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4350',document.baseURI).href,sizes:'512x512',type:'image/png'}]
     });
     state.lockScreenMetaKey=info.key;
     state.lockScreenLastText=info.title;
@@ -652,7 +652,7 @@ function updateMediaSession(force=false){
       try{
         navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
           artist:'PineTree 有聲書',album:info.album,
-          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4340',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4350',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
         state.lockScreenMetaKey=info.key;
         state.lockScreenLastAt=now;
         return;
@@ -689,13 +689,13 @@ function installForestFireflies(){
   // Cover entire website, including header and library. This overlay is pointer-events:none.
   if(host.parentElement!==document.body)document.body.appendChild(host);
   const fragment=document.createDocumentFragment();
-  for(let i=0;i<38;i++){
+  for(let i=0;i<72;i++){
     const f=document.createElement('i');f.className='forest-firefly';
-    const x=2+(i*37%96),y=4+(i*31%91);
+    const x=2+(i*47%96),y=3+(i*37%93);
     f.style.setProperty('--x',x+'%');f.style.setProperty('--y',y+'%');
-    f.style.setProperty('--d',(2+i%4)+'px');f.style.setProperty('--dx',((i*19)%58-27)+'px');
+    f.style.setProperty('--d',(2+i%5)+'px');f.style.setProperty('--dx',((i*19)%58-27)+'px');
     f.style.setProperty('--dy',((i*17)%66-32)+'px');
-    f.style.setProperty('--t',(5+(i%7)*1.4)+'s');f.style.setProperty('--delay',(-i*.83)+'s');
+    f.style.setProperty('--t',(6+(i%9)*1.7)+'s');f.style.setProperty('--delay',(-i*.83)+'s');
     fragment.append(f);
   }
   host.replaceChildren(fragment);
@@ -784,7 +784,14 @@ function adjacentTrack(delta){const list=state.current?sortedBookTracks(state.cu
 function updateProgressDisplay(){const cur=Number(audio.currentTime)||0,d=Number(audio.duration)||0;$('elapsed').textContent=formatTime(cur);$('duration').textContent=formatTime(d);const pct=d>0?Math.max(0,Math.min(100,cur/d*100)):0;const seekScene=$('seekScene');if(seekScene)seekScene.style.setProperty('--seek-progress',pct+'%');$('seekBar').style.setProperty('--seek-progress',pct+'%');if(!state.seeking)$('seekBar').value=d>0?String(Math.min(1000,Math.round(cur/d*1000))):'0';}
 async function deleteCurrent(){if(!state.current)return;await deleteEpisodes([state.current.id]);}
 function changeFont(delta){state.fontSize=bounded(state.fontSize+delta,14,38,21);document.documentElement.style.setProperty('--font-size',`${state.fontSize}px`);localStorage.setItem('lyra-font',state.fontSize);markSettingsChanged();requestAnimationFrame(()=>{syncLyricsViewportPadding();updateLyrics(true);});}
-function changeDelay(delta){state.delay=bounded(Math.round((state.delay+delta)*2)/2,-20,20,0);localStorage.setItem('lyra-delay',state.delay);markSettingsChanged();$('offsetLabel').textContent=`${state.delay>0?'+':''}${state.delay.toFixed(1)}s`;updateLyrics(true);updateMediaSession(true);}
+function renderOffsetLabel(){
+  const el=$('offsetLabel');if(!el)return;
+  const value=state.delay;
+  el.textContent=`${value>0?'+':value<0?'−':'±'}${Math.abs(value).toFixed(1)} 秒`;
+  el.dataset.adjusted=String(value!==0);
+  el.setAttribute('aria-label',`LRC 字幕校準：${value===0?'零秒':value>0?'延後':'提前'}${Math.abs(value).toFixed(1)} 秒`);
+}
+function changeDelay(delta){state.delay=bounded(Math.round((state.delay+delta)*2)/2,-20,20,0);localStorage.setItem('lyra-delay',state.delay);markSettingsChanged();renderOffsetLabel();updateLyrics(true);updateMediaSession(true);}
 function setSpeed(value){state.speed=Math.round(bounded(Number(value),.5,3,1)*20)/20;audio.defaultPlaybackRate=state.speed;audio.playbackRate=state.speed;localStorage.setItem('lyra-speed',state.speed);$('speedRange').value=state.speed;$('speedLabel').textContent=`${state.speed.toFixed(2)}×`;for(const p of document.querySelectorAll('[data-speed-preset]'))p.setAttribute('aria-pressed',String(Math.abs(Number(p.dataset.speedPreset)-state.speed)<.026));updateMediaPosition();}
 const isHex=x=>/^#[0-9a-f]{6}$/i.test(x);
 function rgb(hex){return [1,3,5].map(p=>parseInt(hex.slice(p,p+2),16));}
@@ -901,12 +908,22 @@ function updateNetwork(){$('networkBadge').textContent=navigator.onLine?'● 已
 // This uses a SEPARATE handle-only IndexedDB; the existing Lyra audiobook database stays untouched.
 const SYNC_HANDLE_DB='pinetree-sync-handles-v1';
 const SYNC_JSON_NAME='Lyra_Sync.json';
+let syncRestoreTask=null;
 let syncFolderHandle=null;
 let syncFolderReady=false;
 let syncLastFileModified=0;
 let syncWriteQueue=Promise.resolve();
 let syncPauseExportBusy=false;
-function syncBridgeMessage(message){const el=$('syncBridgeStatus');if(el)el.textContent=message;}
+function syncBridgeMessage(message,kind='auto'){
+  const el=$('syncBridgeStatus');if(el)el.textContent=message;
+  const indicator=$('syncLiveIndicator');if(!indicator)return;
+  const text=String(message||'');
+  const level=kind==='auto'?(text.includes('✅')?'success':text.includes('⚠')||text.includes('衝突')?'warning':text.includes('失敗')?'error':'local'):kind;
+  indicator.dataset.state=level;
+  indicator.textContent=level==='success'?'☁ '+text.replace(/^✅\s*/,'').slice(0,66):level==='warning'?'⚠ '+text.replace(/^⚠️?\s*/,'').slice(0,59):level==='error'?'✕ '+text.slice(0,59):'☁ '+text.slice(0,57);
+  indicator.title=text;indicator.setAttribute('aria-label','同步狀態：'+text+'；按此可查看或設定');
+}
+function syncEvidence(message){const el=$('syncEvidence');if(el)el.textContent=message;}
 async function syncHandleStore(operation,value){
   const db=await new Promise((resolve,reject)=>{
     const req=indexedDB.open(SYNC_HANDLE_DB,1);
@@ -948,10 +965,32 @@ async function restoreSyncFolder(){
     syncFolderReady=canRead&&canWrite;
     if(syncFolderReady){
       try{const f=await (await linkedSyncFile()).getFile();syncLastFileModified=f.lastModified;}catch(_){syncLastFileModified=0;}
-      syncFolderReady=false; // Re-import first after every browser reload to protect external iCloud changes.
+      syncFolderReady=false; // After startup DB is ready, merge external JSON first, then unlock safe writes.
       syncBridgeMessage(`已記住「${handle.name}」，具備讀寫權限。請按「快速續聽」先讀入最新 JSON，才會啟用暫停自動覆寫。`);
     }else syncBridgeMessage(`已記住「${handle.name}」，瀏覽器尚未授權讀寫；請再次按「授權資料夾」。`);
   }catch(error){console.warn('無法恢復同步資料夾授權',error);syncBridgeMessage('尚未取得可用的同步資料夾權限。');}
+}
+// v4.3.5: Restore the previously approved Edge folder safely on every startup.
+// Only import after the native Lyra database has opened and the library loaded.
+async function activateLinkedSyncAfterStartup(){
+  if(!syncFolderHandle || !state.db)return;
+  if(!await getFolderPermission('readwrite')){
+    syncFolderReady=false;
+    syncBridgeMessage(`已記住「${syncFolderHandle.name}」，但讀寫權限待授權。請在 iCloud 同步內重新授權。`,'warning');return;
+  }
+  try{
+    let file=null;
+    try{file=await(await linkedSyncFile()).getFile();}
+    catch(error){if(error?.name!=='NotFoundError')throw error;}
+    if(file && file.size){
+      const ok=await importICloudState(file,{autoConfirm:true,quiet:true});
+      if(!ok){syncFolderReady=false;syncBridgeMessage('已有 JSON，但自動合併未成功；請按「快速續聽」先匯入。','warning');return;}
+      syncLastFileModified=file.lastModified;
+      syncEvidence(`自動啟動時讀取 ${file.name} · ${new Date(file.lastModified).toLocaleString()} · ${file.size.toLocaleString()} bytes`);
+    }else{syncLastFileModified=0;syncEvidence('已授權資料夾；尚未有同步檔，首次暫停將建立 JSON。');}
+    syncFolderReady=true;
+    syncBridgeMessage(`✅ 已就緒：暫停自動更新 ${SYNC_JSON_NAME}；快速續聽會先讀入最新檔案。`);
+  }catch(error){syncFolderReady=false;syncBridgeMessage('⚠ 自動恢復同步失敗：'+(error?.message||error)+'；請在同步設定中檢查。','warning');}
 }
 async function connectSyncFolder(){
   if(typeof window.showDirectoryPicker!=='function'){
@@ -979,11 +1018,14 @@ async function connectSyncFolder(){
     await syncHandleStore('put',handle);
     syncFolderReady=true;
     syncBridgeMessage(`✅ 已授權「${handle.name}」；暫停時自動嘗試覆寫 ${SYNC_JSON_NAME}。`);
+    syncEvidence(`已連結「${handle.name}」；${oldFile?'已合併現有檔案，等待暫停寫入。':'尚無同步檔，首次暫停會建立。'}`);
     toast('資料夾連結完成；暫停後會嘗試直接寫入 iCloud Drive',4200);
   }catch(error){syncFolderHandle=previous;syncFolderReady=prevReady;syncBridgeMessage('無法啟用自動寫入：'+(error?.message||error));toast('同步資料夾連結失敗：'+(error?.message||error),6500);}
 }
 function queuePauseSyncExport(){
-  if(!syncFolderReady||!syncFolderHandle||state.suppressProgressWrites)return;
+  if(state.suppressProgressWrites)return;
+  if(!syncFolderHandle){syncBridgeMessage('暫停已保存本機；未連結 Windows Edge 資料夾，沒有寫入 iCloud JSON。','local');return;}
+  if(!syncFolderReady){syncBridgeMessage('⚠ 暫停已保存本機；自動同步未啟用，請先授權或匯入最新 JSON。','warning');return;}
   syncWriteQueue=syncWriteQueue.catch(()=>{}).then(async()=>{
     if(!await getFolderPermission('readwrite')){
       syncFolderReady=false;syncBridgeMessage('⚠️ 資料夾寫入權限已失效；暫停時僅保存本機。請重新授權。');return;
@@ -1003,10 +1045,30 @@ function queuePauseSyncExport(){
       const writable=await fileHandle.createWritable({keepExistingData:false});
       try{await writable.write(JSON.stringify(snapshot));await writable.close();}
       catch(err){try{await writable.abort();}catch(_){}throw err;}
-      syncLastFileModified=(await fileHandle.getFile()).lastModified;
-      syncBridgeMessage(`✅ 已覆寫 ${SYNC_JSON_NAME} · ${new Date().toLocaleTimeString()} · ${snapshot.progress.length} 筆進度`);
+      const verified=await fileHandle.getFile();
+      const diskSnapshot=JSON.parse(await verified.text());
+      if(diskSnapshot.format!==SYNC_SCHEMA||diskSnapshot.exportedAt!==snapshot.exportedAt||
+         !Array.isArray(diskSnapshot.progress)||diskSnapshot.progress.length!==snapshot.progress.length){
+        throw new Error('寫入後驗證失敗：檔案內容與輸出快照不一致');
+      }
+      syncLastFileModified=verified.lastModified;
+      const message=`✅ 已驗證寫入 ${SYNC_JSON_NAME} · ${new Date().toLocaleTimeString()} · ${snapshot.progress.length} 筆進度`;
+      syncBridgeMessage(message);
+      syncEvidence(`已重新讀取確認：${verified.name} · ${verified.size.toLocaleString()} bytes · 修改時間 ${new Date(verified.lastModified).toLocaleString()} · 最後章節 ${String(snapshot.lastTrackId||'無').split('\u0000').pop()}`);
     }catch(error){syncFolderReady=false;syncBridgeMessage('⚠️ 自動同步失敗：'+(error?.message||error)+'；本機播放記錄仍保留。');console.warn('暫停自動同步失敗',error);}
   });
+}
+async function verifyAndWriteSyncNow(){
+  if(!syncFolderHandle){syncBridgeMessage('⚠ 先授權 Windows Edge 的 Audiobooks 資料夾。','warning');return;}
+  if(!syncFolderReady){
+    const permitted=await getFolderPermission('readwrite',true);
+    if(permitted)await activateLinkedSyncAfterStartup();
+  }
+  if(!syncFolderReady){toast('尚未具備可寫入權限；請按授權資料夾再試',5000);return;}
+  try{await saveProgress();queuePauseSyncExport();await syncWriteQueue;
+    const ok=$('syncLiveIndicator').dataset.state==='success';
+    toast(ok?'同步檔已寫入並重新讀取驗證':'同步未完成；請查看同步狀態及診斷',5300);
+  }catch(err){syncBridgeMessage('立即驗證失敗：'+(err?.message||err),'error');}
 }
 async function resumeFromLinkedOrPickedFile(){
   // Mobile browsers cannot open a Windows path. Use the native iCloud Files picker.
@@ -1158,7 +1220,7 @@ async function importICloudState(file,{autoConfirm=false,quiet=false}={}){
       if(snapshot.settingsUpdatedAt>localSettingsAt || (!snapshot.settingsUpdatedAt && !localSettingsAt)){
         if(Number.isFinite(Number(cfg.speed)))setSpeed(cfg.speed);
         if(Number.isFinite(Number(cfg.fontSize))){state.fontSize=bounded(Number(cfg.fontSize),14,38,21);localStorage.setItem('lyra-font',state.fontSize);document.documentElement.style.setProperty('--font-size',`${state.fontSize}px`);}
-        if(Number.isFinite(Number(cfg.delay))){state.delay=bounded(Number(cfg.delay),-20,20,0);localStorage.setItem('lyra-delay',state.delay);$('offsetLabel').textContent=`${state.delay>0?'+':''}${state.delay.toFixed(1)}s`;}
+        if(Number.isFinite(Number(cfg.delay))){state.delay=bounded(Number(cfg.delay),-20,20,0);localStorage.setItem('lyra-delay',state.delay);renderOffsetLabel();}
         if([cfg.bg,cfg.panel,cfg.accent].every(isHex)){setTheme(cfg.bg,cfg.panel,cfg.accent,{linked:!!cfg.linked});setArtTheme(cfg.artTheme||'');setUITheme(cfg.uiTheme||'');}
         if(typeof cfg.lyricsMax==='boolean')setLyricsMax(cfg.lyricsMax,false);
         if(typeof cfg.lyricsCentered==='boolean')setLyricsCentered(cfg.lyricsCentered,false);
@@ -1305,6 +1367,7 @@ async function quickResume(){
     audio.pause();
   }
   // A fresh sync file is imported BEFORE selecting a chapter. Without permission we require a native file selection.
+  if(typeof window.showDirectoryPicker==='function' && syncRestoreTask)await syncRestoreTask;
   if(!syncFolderHandle){$('syncQuickFile').click();return;}
   return resumeFromLinkedOrPickedFile();
 }
@@ -1409,6 +1472,8 @@ function setupEvents(){
   $('syncExport').addEventListener('click',exportICloudState);
   $('syncImport').addEventListener('click',()=>$('syncFile').click());
   $('syncFolderConnect').addEventListener('click',connectSyncFolder);
+  $('syncWriteNow').addEventListener('click',verifyAndWriteSyncNow);
+  $('syncLiveIndicator').addEventListener('click',()=>openDialog('syncDialog'));
   $('syncQuickFile').addEventListener('change',event=>onQuickSyncFileSelected(event.target.files?.[0]));
   $('syncFile').addEventListener('change',event=>importICloudState(event.target.files?.[0]));
   $('themeClose').addEventListener('click',()=>closeDialog('themeDialog'));
@@ -1585,7 +1650,7 @@ function setupImmersiveEvents(){
 
 async function registerSW(){if(!('serviceWorker'in navigator)||!isSecureContext)return;try{navigator.serviceWorker.addEventListener('controllerchange',()=>toast('PineTree 版本已更新；關閉再開啟 App 可使用最新版',5000));await navigator.serviceWorker.register('./sw.js',{scope:'./'});}catch(error){console.warn('离线缓存不可用：',error);}}
 async function start(){
-  restoreSyncFolder().catch(error=>console.warn("恢復同步資料夾授權失敗",error));
+  syncRestoreTask=restoreSyncFolder().catch(error=>console.warn("恢復同步資料夾授權失敗",error));
   setupEvents();setupImmersiveEvents();requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();installForestFireflies();setThemeMotion(state.themeMotion,{persist:false});setPlayButtonVisual(false);
   setMobileTab(localStorage.getItem('lyra-mobile-tab')==='chapters'?'chapters':'player');
   setImmersiveMode(state.immersive,{persist:false});
@@ -1602,11 +1667,12 @@ async function start(){
   updateRestoreOption();
   setLyricsMax(state.lyricsMax,false);
   document.documentElement.style.setProperty('--font-size',`${state.fontSize}px`);
-  $('offsetLabel').textContent=`${state.delay>0?'+':''}${state.delay.toFixed(1)}s`;
+  renderOffsetLabel();
   registerSW();
   try{
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.3.4 旗艦圖標、松鼠四格奔跑、全頁螢火蟲與耳機按鍵相容性強化；原書庫、LRC 與播放進度保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    await syncRestoreTask;await activateLinkedSyncAfterStartup();
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.3.5：全頁螢火蟲、字幕偏移校準，以及可驗證的 Edge 同步；原書庫和 MP3/LRC 完整保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     const last=state.tracks.find(x=>x.id===localStorage.getItem('lyra-last-id'));

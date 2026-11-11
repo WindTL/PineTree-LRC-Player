@@ -9,18 +9,18 @@
 <meta content="PineTree 有聲書" name="apple-mobile-web-app-title"/>
 <meta content="PineTree 有聲書 · 森夜閱讀、離線 MP3/LRC、iCloud Drive 手動同步" name="description"/>
 <link href="./manifest.webmanifest" rel="manifest"/>
-<link href="./apple-touch-icon.png?v=4340" rel="apple-touch-icon"/>
-<link href="./icon-192.png?v=4340" rel="icon"/>
-<link href="./styles.css?v=4340" rel="stylesheet"/>
-<link href="./themes/forest-reading/theme.css?v=4340" rel="stylesheet"/>
-<title>PineTree 有聲書 · v4.3.4 森夜閱讀版面與續播強化版</title>
+<link href="./apple-touch-icon.png?v=4350" rel="apple-touch-icon"/>
+<link href="./icon-192.png?v=4350" rel="icon"/>
+<link href="./styles.css?v=4350" rel="stylesheet"/>
+<link href="./themes/forest-reading/theme.css?v=4350" rel="stylesheet"/>
+<title>PineTree 有聲書 · v4.3.5 森夜閱讀版面與續播強化版</title>
 </head>
 <body>
 <div class="app-shell">
 <header class="topbar">
 <div class="brand">
-<div aria-hidden="true" class="brand-mark" id="brandMonogram"><img alt="" src="./apple-touch-icon.png?v=4340"/></div>
-<div class="brand-copy"><strong class="forest-brandname">PineTree <small>v4.3.4</small></strong><span>A U D I O B O O K <b>·</b> 森夜閱讀</span><strong class="visually-hidden" id="brandTitle">我的小说书库</strong></div>
+<div aria-hidden="true" class="brand-mark" id="brandMonogram"><img alt="" src="./apple-touch-icon.png?v=4350"/></div>
+<div class="brand-copy"><strong class="forest-brandname">PineTree <small>v4.3.5</small></strong><span>A U D I O B O O K <b>·</b> 森夜閱讀</span><strong class="visually-hidden" id="brandTitle">我的小说书库</strong></div>
 </div>
 <div class="forest-top-title" aria-hidden="true"><span class="forest-top-kicker">✦ P I N E T R E E ✦</span><strong>森 夜 閱 讀</strong><span class="forest-top-sub">F O R E S T · R E A D I N G</span></div>
 <nav aria-label="全局操作" class="header-actions">
@@ -106,7 +106,7 @@
 <button class="tiny-action" id="fontMinus" title="缩小字体" type="button">A−</button>
 <button class="tiny-action" id="fontPlus" title="放大字体" type="button">A＋</button>
 <button class="tiny-action" id="offsetMinus" title="字幕提前半秒" type="button">−0.5s</button>
-<span class="offset-label" id="offsetLabel">0.0s</span>
+<span class="offset-label" id="offsetLabel" role="status" aria-live="polite" title="LRC 字幕時間校準">±0.0 秒</span>
 <button class="tiny-action" id="offsetPlus" title="字幕延后半秒" type="button">+0.5s</button>
 <button aria-pressed="true" class="tiny-action" id="lyricsCenterToggle" title="播放時自動將當前字幕置中" type="button">◎ 置中</button>
 <button aria-pressed="false" class="tiny-action full-lyrics" id="toggleLyricsMax" title="字幕最大化" type="button">⛶ 最大化</button>
@@ -130,6 +130,7 @@
 </div>
 <div class="speed-settings"><label for="speedRange">播放速度 <output id="speedLabel">1.00×</output></label><input aria-label="播放速度 0.5 至 3 倍" id="speedRange" max="3" min="0.5" step="0.05" type="range" value="1"/><div class="speed-ends"><span>0.5×</span><span>3×</span></div><div aria-label="快速選擇倍速" class="forest-speed-presets" role="group"><button data-speed-preset="0.5" type="button">0.5×</button><button data-speed-preset="1" type="button">1.0×</button><button data-speed-preset="1.25" type="button">1.25×</button><button data-speed-preset="1.5" type="button">1.5×</button><button data-speed-preset="2" type="button">2.0×</button><button data-speed-preset="3" type="button">3.0×</button></div></div>
 </div>
+<button type="button" id="syncLiveIndicator" class="sync-live-indicator" data-state="local" title="查看 iCloud 同步及最近寫入結果">☁ 僅存本機 · 按此設定同步</button>
 <div class="storage-hint" id="storageHint">✓ 上次播放的章节、位置、倍速和界面颜色自动保存在本机</div>
 </div>
 </section>
@@ -144,7 +145,7 @@
 </div>
 <div class="im-screen">
 <header class="im-topbar">
-<div class="im-brand"><img alt="" aria-hidden="true" class="im-brand-icon" src="./icon-192.png?v=4340"/><span class="im-brand-type"><b>PineTree</b><small>A U D I O B O O K</small></span></div>
+<div class="im-brand"><img alt="" aria-hidden="true" class="im-brand-icon" src="./icon-192.png?v=4350"/><span class="im-brand-type"><b>PineTree</b><small>A U D I O B O O K</small></span></div>
 <nav aria-label="沉浸頁操作" class="im-top-actions">
 <button class="im-glass im-top-button" id="imChapters" title="返回章節目錄" type="button">☷ <span>章節</span></button>
 <button class="im-glass im-top-button" id="imTheme" title="開啟外觀設定" type="button">◐ <span>外觀</span></button>
@@ -209,9 +210,9 @@
 </dialog>
 <dialog aria-label="书库管理" class="drawer-dialog" id="bookManager">
 <div class="dialog-inner">
-<div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v4.3.4 · 森夜閱讀 Phase 3 旗艦版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button aria-label="关闭" class="close-action" id="bookManagerClose" type="button">×</button></div>
+<div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v4.3.5 · 森夜閱讀 Phase 3 旗艦版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button aria-label="关闭" class="close-action" id="bookManagerClose" type="button">×</button></div>
 <form class="create-book" id="createBookForm"><label for="newBookName">新建小说文件夹</label><div class="form-row"><input class="field" id="newBookName" maxlength="90" placeholder="输入书名，例如：拙石衍天" required="" type="text"/><button class="btn btn-accent" type="submit">＋ 新建</button></div></form>
-<div class="manager-icloud-shortcut"><button class="btn btn-quiet" id="releaseOpen" type="button">ⓘ 版本與更新內容 · v4.3.4 極致旗艦版</button><button class="btn btn-quiet" id="cleanupOpen" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button class="btn btn-quiet" id="syncOpenSecondary" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
+<div class="manager-icloud-shortcut"><button class="btn btn-quiet" id="releaseOpen" type="button">ⓘ 版本與更新內容 · v4.3.5 極致旗艦版</button><button class="btn btn-quiet" id="cleanupOpen" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button class="btn btn-quiet" id="syncOpenSecondary" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
 <div class="manager-section-head"><strong>全部小说</strong><span class="counter" id="bookCount">0 本</span></div>
 <div aria-label="小说封面书架" class="book-grid" id="bookGrid"></div>
 <div class="book-detail" id="bookDetail">
@@ -227,11 +228,11 @@
 </dialog>
 <dialog aria-label="iCloud Drive 同步與備份" class="drawer-dialog" id="syncDialog">
 <div class="dialog-inner">
-<div class="dialog-head"><div><span class="dialog-kicker">PineTree 4.3.4 · SYNC FOLDER BRIDGE</span><h2>iCloud 同步檔</h2><p>Windows Edge 可在資料夾授權後嘗試暫停自動覆寫；iPhone 仍需經「檔案」選取同步檔。同步不包含音訊。</p></div><button aria-label="關閉" class="close-action" id="syncClose" type="button">×</button></div>
+<div class="dialog-head"><div><span class="dialog-kicker">PineTree 4.3.5 · SYNC FOLDER BRIDGE</span><h2>iCloud 同步檔</h2><p>Windows Edge 可在資料夾授權後嘗試暫停自動覆寫；iPhone 仍需經「檔案」選取同步檔。同步不包含音訊。</p></div><button aria-label="關閉" class="close-action" id="syncClose" type="button">×</button></div>
 <div class="sync-guide"><strong>☁ 同步包含</strong><p>小說名稱、封面（每張不超過 2 MB）、各章續聽位置、書籤、上次播放章節、0.5–3× 倍速、字幕字體與行距、時間偏移及護眼主題。</p><p><strong>不包含：</strong>MP3/LRC 音訊檔。請在兩台裝置各自從「檔案」App 匯入同名章節。</p></div>
-<div class="sync-actions"><button class="btn btn-accent" id="syncExport" type="button">⬇ 匯出 Lyra_Sync.json</button><button class="btn btn-quiet" id="syncImport" type="button">⬆ 從 iCloud Drive 匯入</button><button class="btn btn-quiet" id="syncFolderConnect" type="button">📂 Windows Edge：授權 Audiobooks 資料夾</button><input accept=".json,application/json" hidden="" id="syncFile" type="file"/><input accept=".json,application/json" hidden="" id="syncQuickFile" type="file"/></div>
-<div class="sync-guide"><strong>🔒 暫停自動同步／快速續聽</strong><p>Windows Edge（HTTPS）：先按「授權 Audiobooks 資料夾」，選擇 C:\Users\thoma\iCloudDrive\Audiobooks 並確認匯入已有的 JSON；取得持續寫入權限後，暫停時才會嘗試覆寫同資料夾的 Lyra_Sync.json。權限失效或外部檔案比上次更新，會停止覆寫並顯示警告，絕不假裝成功。</p><p>快速續聽會優先讀取已授權資料夾內最新 JSON，再恢復章節。iPhone Safari 不支援靜默存取此 Windows 路徑：點「快速續聽」時會開啟「檔案」選擇器，請挑選 iCloud Drive 裡最新的 Lyra_Sync.json，匯入後才續聽。</p><p id="syncBridgeStatus" aria-live="polite">尚未授權同步資料夾；使用一般手動同步。</p></div>
-<div class="sync-guide"><strong>📱 iPhone 上怎樣用？</strong><p>iPhone 上每次按「快速續聽」，請從「檔案」App 選擇 iCloud Drive 中最新的 Lyra_Sync.json；選取後會先合併再播放。Windows Edge 授權後可自動更新，同步並非在 iPhone 背景自動執行。</p><p>iPhone Safari 無法直接覆寫任意 iCloud 檔案。一般「匯出」會下載一個新副本；請於「檔案」App 確認名稱與日期，勿把下載副本誤認為已更新的原始檔。</p></div>
+<div class="sync-actions"><button class="btn btn-accent" id="syncExport" type="button">⬇ 匯出 Lyra_Sync.json</button><button class="btn btn-quiet" id="syncImport" type="button">⬆ 從 iCloud Drive 匯入</button><button class="btn btn-quiet" id="syncFolderConnect" type="button">📂 Windows Edge：授權 Audiobooks 資料夾</button><button class="btn btn-quiet" id="syncWriteNow" type="button">🔎 立即驗證同步／寫入 JSON</button><input accept=".json,application/json" hidden="" id="syncFile" type="file"/><input accept=".json,application/json" hidden="" id="syncQuickFile" type="file"/></div>
+<div class="sync-guide"><strong>🔒 暫停自動同步／快速續聽</strong><p>Windows Edge（HTTPS）：先按「授權 Audiobooks 資料夾」，選擇 C:\Users\thoma\iCloudDrive\Audiobooks 並確認匯入已有的 JSON；取得持續寫入權限後，暫停時嘗試覆寫同資料夾的 Lyra_Sync.json。重新開啟 Edge 時會先安全合併外部 JSON；若授權失效，請再次手動授權。寫入後會重新讀取檔案核對內容，失敗則提示，不會假裝成功。</p><p>快速續聽會優先讀取已授權資料夾內最新 JSON，再恢復章節。iPhone Safari 不支援靜默存取此 Windows 路徑：點「快速續聽」時會開啟「檔案」選擇器，請挑選 iCloud Drive 裡最新的 Lyra_Sync.json，匯入後才續聽。</p><p id="syncBridgeStatus" aria-live="polite">尚未授權同步資料夾；使用一般手動同步。</p><p class="sync-evidence" id="syncEvidence" aria-live="polite">尚無已驗證的寫入紀錄。</p></div>
+<div class="sync-guide"><strong>📱 iPhone 上怎樣用？</strong><p>iPhone 上每次按「快速續聽」，請從「檔案」App 選擇 iCloud Drive 中最新的 Lyra_Sync.json；選取後會先合併再播放。Windows Edge 授權後可於暫停時自動更新，但必須在 Windows 的 Edge 播放。iPhone 無法靜默寫回 iCloud Drive，跨裝置同步仍須在 iPhone 手動匯出／儲存與選取 JSON。</p><p>iPhone Safari 無法直接覆寫任意 iCloud 檔案。一般「匯出」會下載一個新副本；請於「檔案」App 確認名稱與日期，勿把下載副本誤認為已更新的原始檔。</p></div>
 <p class="dialog-note" id="syncStatus" role="status">尚未匯入或匯出同步檔。請先備份原始 MP3/LRC；同步檔不能還原音訊。</p>
 </div>
 </dialog>
@@ -308,8 +309,8 @@
 <div class="import-actions"><button class="btn btn-quiet" id="cleanupPreview" type="button">重新計算</button><button class="btn btn-danger" id="cleanupRun" type="button">確認清理已聽 MP3</button></div>
 <p class="dialog-note">如果清理了 MP3，再次播放該章時需重新從 iCloud Drive 匯入對應音訊。清理操作無法在 PineTree 內撤銷。</p>
 </div></dialog>
-<dialog aria-label="版本更新與說明" class="drawer-dialog" id="releaseDialog"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v4.3.4 · 森夜閱讀 Phase 3 旗艦版</h2><p>森夜閱讀融合旗艦版：保留原有書庫、章節列表、字幕與播放控制，同時把主工作介面升級成月夜森林沉浸式旗艦外觀。</p></div><button aria-label="關閉" class="close-action" id="releaseClose" type="button">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>v4.3.4 將森夜素材全部獨立放入 themes/forest-reading，加入低耗電螢火蟲與松鼠追松果進度動畫；Windows Edge 支援一次授權後暫停時嘗試更新 Lyra_Sync.json，快速續聽讀取最新檔案；iPhone 提供明確檔案選取流程。此版把「圖三的功能工作流」與「圖一的森夜旗艦視覺」融合：左側章節欄改成深綠玻璃書架面板，右側字幕與控制區直接融入月夜森林場景，保留原有書庫、章節搜索、批量刪除、書籤、睡眠定時、iCloud 手動同步、快速續聽與鎖屏續播補強（仍受 iOS 限制）。森夜閱讀成為桌面主介面的預設旗艦視覺，之後可再把同級融合風格擴展到其他主題。</p><p>Windows Edge 可連結資料夾後自動寫入同步檔；iPhone 仍須手動挑選 JSON；iOS 系統檔案選取器及鎖屏背景播放限制依然存在；如鎖屏暫停後無法從系統面板續播，請改用標準章節資訊模式，必要時開啟 App 恢復。</p></div><button class="btn btn-accent" id="releaseDismiss" type="button">知道了</button></div></dialog>
+<dialog aria-label="版本更新與說明" class="drawer-dialog" id="releaseDialog"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v4.3.5 · 森夜閱讀 Phase 3 旗艦版</h2><p>森夜閱讀融合旗艦版：保留原有書庫、章節列表、字幕與播放控制，同時把主工作介面升級成月夜森林沉浸式旗艦外觀。</p></div><button aria-label="關閉" class="close-action" id="releaseClose" type="button">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>v4.3.5 將森夜素材全部獨立放入 themes/forest-reading，加入低耗電螢火蟲與松鼠追松果進度動畫；Windows Edge 支援一次授權後暫停時嘗試更新 Lyra_Sync.json，快速續聽讀取最新檔案；iPhone 提供明確檔案選取流程。此版把「圖三的功能工作流」與「圖一的森夜旗艦視覺」融合：左側章節欄改成深綠玻璃書架面板，右側字幕與控制區直接融入月夜森林場景，保留原有書庫、章節搜索、批量刪除、書籤、睡眠定時、iCloud 手動同步、快速續聽與鎖屏續播補強（仍受 iOS 限制）。森夜閱讀成為桌面主介面的預設旗艦視覺，之後可再把同級融合風格擴展到其他主題。</p><p>Windows Edge 可連結資料夾後自動寫入同步檔；iPhone 仍須手動匯出並挑選 JSON；iOS 系統檔案選取器及鎖屏背景播放限制依然存在；如鎖屏暫停後無法從系統面板續播，請改用標準章節資訊模式，必要時開啟 App 恢復。</p></div><button class="btn btn-accent" id="releaseDismiss" type="button">知道了</button></div></dialog>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-<script defer="" src="./app.js?v=4340"></script>
+<script defer="" src="./app.js?v=4350"></script>
 </body>
 </html>
