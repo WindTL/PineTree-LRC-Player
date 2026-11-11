@@ -60,7 +60,7 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4370';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4380';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -644,7 +644,7 @@ function updateMediaSession(force=false){
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
       title:info.title,artist:info.artist,album:info.album,
-      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4370',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4380',document.baseURI).href,sizes:'512x512',type:'image/png'}]
     });
     state.lockScreenMetaKey=info.key;
     state.lockScreenLastText=info.title;
@@ -655,7 +655,7 @@ function updateMediaSession(force=false){
       try{
         navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
           artist:'PineTree 有聲書',album:info.album,
-          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4370',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4380',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
         state.lockScreenMetaKey=info.key;
         state.lockScreenLastAt=now;
         return;
@@ -695,11 +695,23 @@ function setFireflyIntensity(value,{persist=true}={}){
   installForestFireflies();
   if(persist){localStorage.setItem('pinetree-firefly-intensity-v436',state.fireflyIntensity);markSettingsChanged();}
 }
+const CALIBRATION_ART={wave:'聲波精準',dial:'翡翠儀表',moon:'月夜同步'};
 function setCalibrationStyle(value,{persist=true}={}){
-  state.calibrationStyle=['wave','dial','moon'].includes(value)?value:'moon';
-  document.body.dataset.calibrationStyle=state.calibrationStyle;
-  document.querySelectorAll('[data-calibration-style]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.calibrationStyle===state.calibrationStyle)));
-  if(persist)localStorage.setItem('pinetree-calibration-style',state.calibrationStyle);
+  state.calibrationStyle=Object.prototype.hasOwnProperty.call(CALIBRATION_ART,value)?value:'moon';
+  const style=state.calibrationStyle;
+  document.body.dataset.calibrationStyle=style;
+  const src='./themes/forest-reading/assets/calibration-'+style+'.webp';
+  for(const id of ['offsetArtwork','calibrationPreviewImage']){
+    const img=$(id);if(img)img.setAttribute('src',src);
+  }
+  for(const b of document.querySelectorAll('button.calibration-choice')){
+    const active=b.dataset.calibrationStyle===style;
+    b.setAttribute('aria-pressed',String(active));
+    b.querySelector('.calibration-selected').textContent=active?'✓ 已選用':'選用';
+  }
+  if($('calibrationCurrentName'))$('calibrationCurrentName').textContent=CALIBRATION_ART[style];
+  if(persist)localStorage.setItem('pinetree-calibration-style',style);
+  renderOffsetLabel();
 }
 function setFireflyTrails(value,{persist=true}={}){
   state.fireflyTrails=!!value;document.body.dataset.fireflyTrails=state.fireflyTrails?'on':'off';
@@ -817,7 +829,8 @@ function renderOffsetLabel(){
   const value=state.delay;
   const abs=Math.abs(value).toFixed(1);
   const compact=`${value>0?'+':value<0?'−':''}${abs}s`;
-  el.textContent=compact;
+  if($('offsetValue'))$('offsetValue').textContent=compact;else el.textContent=compact;
+  if($('calibrationPreviewValue'))$('calibrationPreviewValue').textContent=compact;
   el.dataset.adjusted=String(value!==0);
   el.dataset.zero=String(value===0);
   el.setAttribute('aria-label',`LRC 字幕校準：${value===0?'零秒':value>0?'延後':'提前'}${abs} 秒`);
@@ -1469,7 +1482,7 @@ function setupEvents(){
   $('themeMotion').addEventListener('change',event=>setThemeMotion(event.target.checked));
   $('fireflyIntensity')?.addEventListener('change',event=>setFireflyIntensity(event.target.value));
   $('fireflyTrails')?.addEventListener('change',event=>setFireflyTrails(event.target.checked));
-  document.querySelectorAll('[data-calibration-style]').forEach(b=>b.addEventListener('click',()=>setCalibrationStyle(b.dataset.calibrationStyle)));
+  $('calibrationPicker').addEventListener('click',event=>{const choice=event.target.closest('button.calibration-choice');if(choice)setCalibrationStyle(choice.dataset.calibrationStyle);});
   $('keepAwake').addEventListener('change',e=>setKeepAwake(e.target.checked));
   $('sleepOpen').addEventListener('click',()=>{updateSleepUI();openDialog('sleepDialog');});
   $('lockScreenOpen').addEventListener('click',()=>{refreshLockScreenControls();openDialog('lockScreenDialog');});
@@ -1641,7 +1654,7 @@ function updateImmersiveUI(force=false){
   const percent=duration>0?Math.max(0,Math.min(100,current/duration*100)):0;
   const slider=$('imSeek');
   if(slider.dataset.dragging!=='1')slider.value=String(Math.round(percent*10));
-  slider.style.setProperty('--im-percent',percent.toFixed(3)+'%');
+  if(slider.dataset.dragging!=='1'){slider.style.setProperty('--im-percent',percent.toFixed(3)+'%');$('imProgressScene').style.setProperty('--im-percent',percent.toFixed(3)+'%');}
   const playing=!audio.paused&&!audio.ended;
   $('imPlay').dataset.playing=String(playing);
   $('imPlay').setAttribute('aria-label',playing?'暫停':'播放');
@@ -1655,6 +1668,7 @@ function updateImmersiveUI(force=false){
 }
 function setupImmersiveEvents(){
   $('immersiveEnter').addEventListener('click',()=>setImmersiveMode(true));
+  $('mobileImmersiveEnter').addEventListener('click',()=>setImmersiveMode(true));
   $('immersiveEnterSecondary').addEventListener('click',()=>setImmersiveMode(true));
   $('imExit').addEventListener('click',()=>setImmersiveMode(false));
   $('imChapters').addEventListener('click',()=>{setImmersiveMode(false);setMobileTab('chapters',true);requestAnimationFrame(jumpToCurrent);});
@@ -1669,7 +1683,7 @@ function setupImmersiveEvents(){
   $('imNext').addEventListener('click',()=>adjacentTrack(1));
   $('imBack').addEventListener('click',()=>skipSeconds(-15));
   $('imAhead').addEventListener('click',()=>skipSeconds(15));
-  $('imSeek').addEventListener('input',event=>{event.target.dataset.dragging='1';const d=audio.duration||0;$('imElapsed').textContent=formatTime(d*Number(event.target.value)/1000);event.target.style.setProperty('--im-percent',(Number(event.target.value)/10)+'%');});
+  $('imSeek').addEventListener('input',event=>{event.target.dataset.dragging='1';const d=audio.duration||0;$('imElapsed').textContent=formatTime(d*Number(event.target.value)/1000);event.target.style.setProperty('--im-percent',(Number(event.target.value)/10)+'%');$('imProgressScene').style.setProperty('--im-percent',(Number(event.target.value)/10)+'%');});
   const commitSeek=event=>{if(Number.isFinite(audio.duration)&&audio.duration>0)audio.currentTime=audio.duration*Number(event.target.value)/1000;event.target.dataset.dragging='0';updateLyrics(true);updateImmersiveUI(true);saveProgress();};
   $('imSeek').addEventListener('change',commitSeek);
   $('imSpeed').addEventListener('input',event=>{setSpeed(event.target.value);markSettingsChanged();updateImmersiveUI();});
@@ -1707,7 +1721,7 @@ async function start(){
   try{
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
     await syncRestoreTask;await activateLinkedSyncAfterStartup();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.3.7：全頁流光拖尾、三款可選校準徽章；原書庫和 MP3/LRC 完整保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.3.8：校準徽章即時預覽、森夜沉浸旗艦圖標；原書庫和 MP3/LRC 完整保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     const last=state.tracks.find(x=>x.id===localStorage.getItem('lyra-last-id'));
