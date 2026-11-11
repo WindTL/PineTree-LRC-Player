@@ -60,7 +60,8 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4380';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4391';
+window.PineTreeAppRelease='4391';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -644,7 +645,7 @@ function updateMediaSession(force=false){
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
       title:info.title,artist:info.artist,album:info.album,
-      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4380',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4391',document.baseURI).href,sizes:'512x512',type:'image/png'}]
     });
     state.lockScreenMetaKey=info.key;
     state.lockScreenLastText=info.title;
@@ -655,7 +656,7 @@ function updateMediaSession(force=false){
       try{
         navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
           artist:'PineTree 有聲書',album:info.album,
-          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4380',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4391',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
         state.lockScreenMetaKey=info.key;
         state.lockScreenLastAt=now;
         return;
@@ -700,9 +701,9 @@ function setCalibrationStyle(value,{persist=true}={}){
   state.calibrationStyle=Object.prototype.hasOwnProperty.call(CALIBRATION_ART,value)?value:'moon';
   const style=state.calibrationStyle;
   document.body.dataset.calibrationStyle=style;
-  const src='./themes/forest-reading/assets/calibration-'+style+'.png?v=4390';
+  const src=document.querySelector('button.calibration-choice[data-calibration-style="'+style+'"] img')?.getAttribute('src');
   for(const id of ['offsetArtwork','calibrationPreviewImage']){
-    const img=$(id);if(img)img.setAttribute('src',src);
+    const img=$(id);if(img&&src)img.setAttribute('src',src);
   }
   for(const b of document.querySelectorAll('button.calibration-choice')){
     const active=b.dataset.calibrationStyle===style;
@@ -830,7 +831,7 @@ function renderOffsetLabel(){
   const abs=Math.abs(value).toFixed(1);
   const compact=`${value>0?'+':value<0?'−':''}${abs}s`;
   if($('offsetValue'))$('offsetValue').textContent=compact;
-  if($('offsetLabel'))$('offsetLabel').dataset.adjusted = state.offset===0 ? 'false' : 'true';else el.textContent=compact;
+  else el.textContent=compact;
   if($('calibrationPreviewValue'))$('calibrationPreviewValue').textContent=compact;
   el.dataset.adjusted=String(value!==0);
   el.dataset.zero=String(value===0);
@@ -1698,7 +1699,12 @@ function setupImmersiveEvents(){
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&state.immersive&&!document.querySelector('dialog[open]'))setImmersiveMode(false);});
 }
 
-async function registerSW(){if(!('serviceWorker'in navigator)||!isSecureContext)return;try{navigator.serviceWorker.addEventListener('controllerchange',()=>toast('PineTree 版本已更新；關閉再開啟 App 可使用最新版',5000));await navigator.serviceWorker.register('./sw.js',{scope:'./'});}catch(error){console.warn('离线缓存不可用：',error);}}
+async function registerSW(){ /* resource bootstrap owns service worker registration */ }
+window.PineTreeBeforeResourceReload=async function(manual){
+ if(state.importJob||state.episodeDeleteRunning||state.suppressProgressWrites)return false;
+ if(!audio.paused){if(!manual||!confirm('刷新資源需要暫停播放。儲存目前進度後重新載入？'))return false;audio.pause();}
+ await saveProgress();return true;
+};
 async function start(){
   syncRestoreTask=restoreSyncFolder().catch(error=>console.warn("恢復同步資料夾授權失敗",error));
   setupEvents();setupImmersiveEvents();requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setCalibrationStyle(state.calibrationStyle,{persist:false});setFireflyTrails(state.fireflyTrails,{persist:false});setPlayButtonVisual(false);
@@ -1722,7 +1728,7 @@ async function start(){
   try{
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
     await syncRestoreTask;await activateLinkedSyncAfterStartup();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.3.8：校準徽章即時預覽、森夜沉浸旗艦圖標；原書庫和 MP3/LRC 完整保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.3.9.1：安全資源刷新、內嵌校準及沉浸旗艦圖標；原書庫完整保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     const last=state.tracks.find(x=>x.id===localStorage.getItem('lyra-last-id'));

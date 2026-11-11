@@ -1,78 +1,16 @@
-/* PineTree v4.3.8 · atomic shell and locally cached Phase 3 art; original IndexedDB untouched. */
-const CACHE='lyra-shell-v4390-pngfix-immersive';
-const ASSETS=[
-  './','./index.html','./styles.css?v=4390','./themes/forest-reading/theme.css?v=4390','./themes/forest-reading/flagship-v439.css?v=4390','./app.js?v=4390',
-  './manifest.webmanifest','./icon-192.png?v=4390','./icon-512.png?v=4390',
-  './apple-touch-icon.png?v=4390',
-  './assets/scene-christmas.webp',
-  './assets/scene-newyear.webp',
-  './assets/scene-forest.webp',
-  './assets/scene-tea.webp',
-  './assets/forest-immersive.webp',
-  './assets/forest-ultimate-v42.webp',
-  './assets/pinecone-thumb-v42.svg',
-  './assets/forest-scene-phase2.webp',
-  './assets/emerald-facets-phase2.svg',
-  './assets/botanical-border-phase2.svg',
-  './assets/pine-garland-phase2.svg',
-  './themes/forest-reading/assets/forest-desktop.png',
-  './themes/forest-reading/assets/forest-mobile.png',
-  './themes/forest-reading/assets/play.webp',
-  './themes/forest-reading/assets/pause.webp',
-  './themes/forest-reading/assets/prev.webp',
-  './themes/forest-reading/assets/next.webp',
-  './themes/forest-reading/assets/back15.webp',
-  './themes/forest-reading/assets/forward15.webp',
-  './themes/forest-reading/assets/pinecone.png',
-  './themes/forest-reading/assets/speed.png',
-  './themes/forest-reading/assets/bookmark.webp',
-  './themes/forest-reading/assets/squirrel-running.webp',
-  './themes/forest-reading/assets/ahead-v434.webp',
-  './themes/forest-reading/assets/ahead-v434.png',
-  './themes/forest-reading/assets/back-v434.webp',
-  './themes/forest-reading/assets/back-v434.png',
-  './themes/forest-reading/assets/next-v434.webp',
-  './themes/forest-reading/assets/next-v434.png',
-  './themes/forest-reading/assets/play-v434.webp',
-  './themes/forest-reading/assets/play-v434.png',
-  './themes/forest-reading/assets/prev-v434.webp',
-  './themes/forest-reading/assets/prev-v434.png',
-  './themes/forest-reading/assets/speed-frame-v434.webp',
-  './themes/forest-reading/assets/speed-frame-v434.png',
-  './themes/forest-reading/assets/badge-chip-border.webp',
-  './themes/forest-reading/assets/extra-bookmarks-border.webp',
-  './themes/forest-reading/assets/extra-delete-border.webp',
-  './themes/forest-reading/assets/extra-lock-border.webp',
-  './themes/forest-reading/assets/extra-save-border.webp',
-  './themes/forest-reading/assets/extra-sleep-border.webp',
-  './themes/forest-reading/assets/lrc-center-border.webp',
-  './themes/forest-reading/assets/lrc-expand-border.webp',
-  './themes/forest-reading/assets/lrc-focus-border.webp',
-  './themes/forest-reading/assets/lrc-fontminus-border.webp',
-  './themes/forest-reading/assets/lrc-fontplus-border.webp',
-  './themes/forest-reading/assets/lrc-offsetminus-border.webp',
-  './themes/forest-reading/assets/lrc-offsetplus-border.webp',
-  './themes/forest-reading/assets/top-appearance-border.webp',
-  './themes/forest-reading/assets/top-cloud-border.webp',
-  './themes/forest-reading/assets/top-immersive-border.webp',
-  './themes/forest-reading/assets/top-library-border.webp',
-  './themes/forest-reading/assets/top-resume-border.webp',
-  './themes/forest-reading/assets/squirrel-run-4.webp',
-  './themes/forest-reading/assets/squirrel-run-4.png',
-  './themes/forest-reading/assets/firefly-overlay.webp',
-  './themes/forest-reading/assets/pause.png',
-  './themes/forest-reading/assets/calibration-wave.png',
-  './themes/forest-reading/assets/calibration-dial.png',
-  './themes/forest-reading/assets/calibration-moon.png',
-  './themes/forest-reading/assets/offset-badge-v436.png',
-];
-self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));});
-self.addEventListener('activate',event=>{event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('lyra-shell-')&&k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})());});
-self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;const url=new URL(event.request.url);if(url.origin!==self.location.origin)return;event.respondWith((async()=>{
-  if(event.request.mode==='navigate'){
-    try{const fresh=await fetch(event.request,{cache:'no-cache'});if(fresh.ok){const shell=await caches.open(CACHE);await shell.put('./index.html',fresh.clone());}return fresh;}
-    catch{const offline=await caches.match('./index.html');return offline||Response.error();}
-  }
-  const cached=await caches.match(event.request);if(cached)return cached;
-  try{return await fetch(event.request);}catch{return Response.error();}
-})());});
+/* PineTree 4.3.9.1 - verified, scope-specific shell. Never touches IndexedDB. */
+'use strict';
+const VERSION='4391', SCOPE=new URL(self.registration.scope), PREFIX='pinetree-shell-'+encodeURIComponent(SCOPE.pathname)+'-', CACHE=PREFIX+VERSION;
+const absolute=p=>new URL(p,SCOPE).href;
+function safe(p){if(typeof p!=='string'||!p||p.startsWith('/')||p.includes('..')||p.includes('\\')||p.includes('#')||/^[a-z]+:/i.test(p))throw Error('invalid path');const u=new URL(p,SCOPE);if(u.origin!==SCOPE.origin||!u.pathname.startsWith(SCOPE.pathname))throw Error('outside scope');return u;}
+async function fresh(p,nonce){const u=safe(p);u.searchParams.set('pt_refresh',nonce);const r=await fetch(u.href,{cache:'no-store',credentials:'same-origin'});if(!r.ok)throw Error(p+' HTTP '+r.status);return r;}
+async function hash(b){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',b)),v=>v.toString(16).padStart(2,'0')).join('');}
+async function installShell(){const nonce=Date.now().toString(36);const m=await (await fresh('version.json',nonce)).json();if(m.format!=='pinetree-shell-v1'||m.version!==VERSION||!m.files?.['index.html']||!m.files?.['app.js']||!m.files?.['sw.js'])throw Error('release mismatch');const entries=Object.entries(m.files);if(entries.length>300)throw Error('manifest too large');const verified=[];for(let i=0;i<entries.length;i+=6){verified.push(...await Promise.all(entries.slice(i,i+6).map(async([p,h])=>{if(!/^[a-f0-9]{64}$/.test(h))throw Error('invalid hash');const r=await fresh(p,nonce),b=await r.arrayBuffer();if(await hash(b)!==h)throw Error('hash mismatch '+p);return [absolute(p),new Response(b,{headers:{'Content-Type':r.headers.get('Content-Type')||'application/octet-stream'}})];})));}const c=await caches.open(CACHE);for(const [url,r]of verified)await c.put(url,r);await c.put(absolute('./'),(await c.match(absolute('index.html'))).clone());}
+self.addEventListener('install',event=>event.waitUntil(installShell().then(()=>self.skipWaiting())));
+self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
+self.addEventListener('message',event=>{if(event.data?.type==='PINETREE_VERSION')event.ports[0]?.postMessage({version:VERSION});});
+self.addEventListener('fetch',event=>{if(event.request.method!=='GET')return;const u=new URL(event.request.url);if(u.origin!==SCOPE.origin||!u.pathname.startsWith(SCOPE.pathname))return;
+ // Explicit version and repair requests always go to the network, never a stale shell cache.
+ if(u.searchParams.has('pt_refresh')||u.pathname===new URL('version.json',SCOPE).pathname||u.pathname===new URL('repair.html',SCOPE).pathname){event.respondWith(fetch(event.request,{cache:'no-store'}));return;}
+ event.respondWith((async()=>{const c=await caches.open(CACHE);if(event.request.mode==='navigate'&&(u.pathname===SCOPE.pathname||u.pathname===new URL('index.html',SCOPE).pathname)){const shell=await c.match(absolute('index.html'));if(shell)return shell;return fetch(event.request,{cache:'no-store'});}const hit=await c.match(event.request);if(hit)return hit;return fetch(event.request);})());
+});
