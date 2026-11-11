@@ -1,7 +1,7 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PineTree 資源修復</title><style>body{background:#08231a;color:#f8e5ae;font:16px/1.6 system-ui,sans-serif;max-width:650px;margin:50px auto;padding:20px}button,a{font:inherit;color:#ffe2a0}button{padding:12px 18px;background:#174d38;border:1px solid #e3c573;border-radius:10px}p{overflow-wrap:anywhere}#resourceRepairStatus{padding:14px;border:1px solid #799c74;border-radius:10px}</style></head><body data-repair-page="true"><h1>🌲 PineTree 資源修復</h1><p>獨立修復頁 · 不依賴舊版 app.js 或樣式。請先在原播放器暫停並儲存進度。只會更新同一網站路徑的 PineTree 網頁快取，保留原有書庫及播放資料。</p><p id="resourceRepairStatus" role="status">按下按鈕開始驗證最新版資源。</p><button id="resourceRepairBtn" type="button">↻ 強制刷新資源</button><p><a href="./index.html">返回 PineTree</a></p><script>/* Independent, versioned recovery bootstrap. Never clears IndexedDB or storage. */
 (()=>{
 'use strict';
-const RELEASE='4391', scope=new URL('./',location.href), recovery=document.body.dataset.repairPage==='true';
+const RELEASE='4392', scope=new URL('./',location.href), recovery=document.body.dataset.repairPage==='true';
 const prefix='pinetree-shell-'+encodeURIComponent(scope.pathname)+'-';
 const status=document.getElementById('resourceRepairStatus'), btn=document.getElementById('resourceRepairBtn');
 let busy=false;

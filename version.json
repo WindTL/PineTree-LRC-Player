@@ -1,9 +1,9 @@
 {
   "format": "pinetree-shell-v1",
-  "version": "4391",
-  "displayVersion": "4.3.9.1",
+  "version": "4392",
+  "displayVersion": "4.3.9.2",
   "files": {
-    "app.js": "52c9b2ca8a55185b37b1db9c118ca452c46c1d53b161816f803fe7daced8fb1b",
+    "app.js": "7ac7631d9b22b792512ce6bd68049bfb5cf9de027c20d7c50e75b2970425ab54",
     "apple-touch-icon.png": "ac067a317711224c414bbc45925a318f5f1f197e55804eac1bfcb81cfb5c631f",
     "assets/botanical-border-phase2.svg": "cde203825a8a6d624285182ce1a35069cbf573b02ac97be3ee9cac460f682802",
     "assets/emerald-facets-phase2.svg": "a915e3096cd2bb652c37bc2bc33458e18e625d54aeb2248f4af93fc63968e05c",
@@ -18,11 +18,11 @@
     "assets/scene-tea.webp": "c2c244f289662d15dfeec77c3a5fa011e9c01795a3238d842a8f1862c6cec630",
     "icon-192.png": "05f8324b3c40ea28898a62ce2d3688f663ef4e7a24c6c4e9c5d389fecd459193",
     "icon-512.png": "dfcafb3f2441bb92e5d0f8b3fcfaa5b7b246646af53ab757a271a5c115a03df9",
-    "index.html": "f9c5f0c03894f8d29c2c8cc736810279284b363df334e17914023f0e3545739f",
-    "manifest.webmanifest": "b4620b740fe57fb43f7d3474eafe0a6e3d40af8ef2f3ea05a33b0b1beab4313a",
-    "repair.html": "d779d6f19911ccfbddf46a3ced73f0fe553843bd1edd9fac99cbc8d670f6b6ba",
+    "index.html": "2c34a813322c281ffe8c7701b6f33313a2e4f7d6fa1938e6b12e43d314bf9eaf",
+    "manifest.webmanifest": "7164d415ab521fa07e0af87796dfc8fa4b490f7c5b15b6ef211e004865b153a8",
+    "repair.html": "e3a29c373606717afc254bb3daf8271a6c045b84dca0d4bed99cc201db2eab24",
     "styles.css": "603e36f04469f571a5159a24477a0f200302eca369e0093da109b9401e1618dc",
-    "sw.js": "ab6b46a3c695732516698f72d07a4a54eb7aad98abc5e02c32a1a0fb14ff22b6",
+    "sw.js": "a2b3e925d69ff605c29351ec58783cc00f1587ce63fd74ebaddb9bb0c0f8fc0c",
     "themes/forest-reading/assets/ahead-v434.webp": "b4d6161bb6120268141a960af329ae249c885a70fab753e047ebbec6af7f58a6",
     "themes/forest-reading/assets/back-v434.webp": "72cf5f691b3556cd194dd743d3cc7dbf1018c9681552f895f1e9482b2fbed0ff",
     "themes/forest-reading/assets/back15.webp": "7077a578372013bf9a25c16e9aacf4ae0e15e521aeca5c7704c730a68b7399e2",
@@ -69,12 +69,12 @@
     "themes/forest-reading/assets/top-library-border.webp": "bc8c939128a000a44e2d73c849c3e93d451902ad1a991f1424fe8b8dd78dbb86",
     "themes/forest-reading/assets/top-resume-border.webp": "6869acbdefd98f49256a5fd99c582a0bd864af3e53e4b497a627e3b6319a7f88",
     "themes/forest-reading/theme.css": "34545d9c2cb23422f2cb5a981b8404567e7d8ea5127cdb00d87ec6d6b02cca48",
-    "styles.css?v=4391": "603e36f04469f571a5159a24477a0f200302eca369e0093da109b9401e1618dc",
-    "themes/forest-reading/theme.css?v=4391": "34545d9c2cb23422f2cb5a981b8404567e7d8ea5127cdb00d87ec6d6b02cca48",
-    "app.js?v=4391": "52c9b2ca8a55185b37b1db9c118ca452c46c1d53b161816f803fe7daced8fb1b",
-    "icon-192.png?v=4391": "05f8324b3c40ea28898a62ce2d3688f663ef4e7a24c6c4e9c5d389fecd459193",
-    "icon-512.png?v=4391": "dfcafb3f2441bb92e5d0f8b3fcfaa5b7b246646af53ab757a271a5c115a03df9",
-    "apple-touch-icon.png?v=4391": "ac067a317711224c414bbc45925a318f5f1f197e55804eac1bfcb81cfb5c631f",
-    "manifest.webmanifest?v=4391": "b4620b740fe57fb43f7d3474eafe0a6e3d40af8ef2f3ea05a33b0b1beab4313a"
+    "styles.css?v=4392": "603e36f04469f571a5159a24477a0f200302eca369e0093da109b9401e1618dc",
+    "themes/forest-reading/theme.css?v=4392": "34545d9c2cb23422f2cb5a981b8404567e7d8ea5127cdb00d87ec6d6b02cca48",
+    "app.js?v=4392": "7ac7631d9b22b792512ce6bd68049bfb5cf9de027c20d7c50e75b2970425ab54",
+    "icon-192.png?v=4392": "05f8324b3c40ea28898a62ce2d3688f663ef4e7a24c6c4e9c5d389fecd459193",
+    "icon-512.png?v=4392": "dfcafb3f2441bb92e5d0f8b3fcfaa5b7b246646af53ab757a271a5c115a03df9",
+    "apple-touch-icon.png?v=4392": "ac067a317711224c414bbc45925a318f5f1f197e55804eac1bfcb81cfb5c631f",
+    "manifest.webmanifest?v=4392": "7164d415ab521fa07e0af87796dfc8fa4b490f7c5b15b6ef211e004865b153a8"
   }
 }

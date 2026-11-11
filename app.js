@@ -44,6 +44,7 @@ const state = {
   lockScreenMode:localStorage.getItem('pinetree-lockscreen-mode-v37')==='lyrics'?'lyrics':'standard',
   lockScreenSpeed:['fast','balanced','quiet'].includes(localStorage.getItem('pinetree-lockscreen-speed-v371'))?localStorage.getItem('pinetree-lockscreen-speed-v371'):'fast',
   lockScreenMetaKey:'',lockScreenLastAt:0,lockScreenLastText:'',lockScreenMediaError:false,
+  lockScreenHeadphonePriority:localStorage.getItem('pinetree-lockscreen-headphone-priority-v4392')!=='0',
   calibrationStyle:['wave','dial','moon'].includes(localStorage.getItem('pinetree-calibration-style')||'')?localStorage.getItem('pinetree-calibration-style'):'moon',
   fireflyTrails:localStorage.getItem('pinetree-firefly-trails')!=='0',
   fireflyIntensity:['soft','medium','high','cinematic'].includes(localStorage.getItem('pinetree-firefly-intensity-v436')||'')?localStorage.getItem('pinetree-firefly-intensity-v436'):'high',
@@ -60,7 +61,7 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4391';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4392';
 window.PineTreeAppRelease='4391';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
@@ -578,6 +579,7 @@ const LOCKSCREEN_MODE_KEY='pinetree-lockscreen-mode-v37';
 // exceptionally short lines. iOS controls final lock-screen paint latency.
 const LOCKSCREEN_SPEED_KEY='pinetree-lockscreen-speed-v371';
 const LOCKSCREEN_INTERVALS=Object.freeze({fast:650,balanced:1500,quiet:3500});
+const LOCKSCREEN_BG_MIN_INTERVAL=8000; // experimental only; background JS can still be suspended by WebKit
 function safeLyricTitle(text){
   // Prevent very long/wrapped metadata and control characters in the lock screen.
   return Array.from(String(text||'').replace(/[\u0000-\u001F\u007F]+/g,' ').replace(/\s+/g,' ').trim()).slice(0,64).join('');
@@ -587,13 +589,16 @@ function lockScreenLineIndex(){
   return lyricIndex((Number(audio.currentTime)||0)-state.delay);
 }
 function lockScreenInfo(){
-  const chapter=state.current?.name||'未選擇章節';
+  const chapter=chapterDisplayName(state.current?.name||'未選擇章節');
   const book=state.current?bookTitle(state.current.book):'PineTree 有聲書';
-  const index=state.lockScreenMode==='lyrics'?lockScreenLineIndex():-1;
+  // When stable headphone control is prioritized, publish one fixed chapter
+  // while backgrounded instead of repeatedly replacing iOS Now Playing metadata.
+  const lyricsAllowed=state.lockScreenMode==='lyrics' && !(document.hidden && state.lockScreenHeadphonePriority);
+  const index=lyricsAllowed?lockScreenLineIndex():-1;
   const lyric=index>=0?safeLyricTitle(state.lines[index]?.text):'';
-  const active=state.lockScreenMode==='lyrics'&&!!lyric;
+  const active=lyricsAllowed&&!!lyric;
   return {title:active?lyric:chapter,artist:active?chapter:'PineTree 有聲書',album:book,
-    key:`${state.current?.id||''}|${state.lockScreenMode}|${active?index:'chapter'}|${active?lyric:''}`,active};
+    key:`${state.current?.id||''}|${state.lockScreenMode}|${active?index:'chapter'}|${active?lyric:''}|${document.hidden&&state.lockScreenHeadphonePriority?'stable':''}`,active};
 }
 function refreshLockScreenControls(){
   const experimental=state.lockScreenMode==='lyrics';
@@ -612,6 +617,8 @@ function refreshLockScreenControls(){
       :'目前使用標準模式：顯示章節標題與 PineTree 名稱。';
   for(const input of document.querySelectorAll('input[name="lockScreenMode"]'))input.checked=input.value===state.lockScreenMode;
   for(const input of document.querySelectorAll('input[name="lockScreenSpeed"]'))input.checked=input.value===state.lockScreenSpeed;
+  const stable=$('lockScreenHeadphonePriority');if(stable)stable.checked=state.lockScreenHeadphonePriority;
+  if($('lockScreenPriorityStatus'))$('lockScreenPriorityStatus').textContent=state.lockScreenHeadphonePriority?'耳機優先：鎖屏時固定章節資訊，避免反覆更改系統媒體資訊；回到 App 仍顯示同步 LRC。':'實驗性字幕優先：鎖屏播放中會嘗試低頻更新 LRC，但 iOS 可能凍結更新，耳機續播可能較不穩定。';
 }
 function setLockScreenMode(mode,{persist=true}={}){
   if(mode!=='standard'&&mode!=='lyrics')return;
@@ -620,6 +627,13 @@ function setLockScreenMode(mode,{persist=true}={}){
   state.lockScreenLastAt=0;
   state.lockScreenMediaError=false;
   if(persist){localStorage.setItem(LOCKSCREEN_MODE_KEY,mode);markSettingsChanged();}
+  refreshLockScreenControls();
+  updateMediaSession(true);
+}
+function setLockScreenHeadphonePriority(value,{persist=true}={}){
+  state.lockScreenHeadphonePriority=!!value;
+  if(persist){localStorage.setItem('pinetree-lockscreen-headphone-priority-v4392',state.lockScreenHeadphonePriority?'1':'0');markSettingsChanged();}
+  state.lockScreenMetaKey='';
   refreshLockScreenControls();
   updateMediaSession(true);
 }
@@ -634,13 +648,14 @@ function setLockScreenSpeed(speed,{persist=true}={}){
 }
 function updateMediaSession(force=false){
   if(!state.current||!('mediaSession' in navigator)||typeof MediaMetadata!=='function'||state.lockScreenMediaError)return;
-  // Avoid frequent MediaMetadata changes once iOS has backgrounded the PWA. This is a mitigation, not a guaranteed lock-screen recovery fix.
-  if(document.hidden&&state.lockScreenMode==='lyrics'&&!force)return;
   const info=lockScreenInfo();
-  if(info.key===state.lockScreenMetaKey&&!force)return;
+  // Do not churn MediaMetadata while paused/locked. A stable media session
+  // is more important than displaying a stale single LRC line.
+  if(document.hidden&&audio.paused&&state.lockScreenMetaKey)return;
+  if(info.key===state.lockScreenMetaKey)return;
   const now=Date.now();
-  // A metadata change can make iOS redraw Now Playing; avoid flashing every few hundred ms.
-  if(!force && state.lockScreenMetaKey && now-state.lockScreenLastAt<LOCKSCREEN_INTERVALS[state.lockScreenSpeed])return;
+  const minimum=document.hidden?LOCKSCREEN_BG_MIN_INTERVAL:LOCKSCREEN_INTERVALS[state.lockScreenSpeed];
+  if(!force && state.lockScreenMetaKey && now-state.lockScreenLastAt<minimum)return;
   const book=getBook(state.current.book),url=coverUrl(book);
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
@@ -668,7 +683,14 @@ function updateMediaSession(force=false){
   }
 }
 
-function updateMediaPosition(){if(!('mediaSession' in navigator)||!navigator.mediaSession.setPositionState)return;if(!Number.isFinite(audio.duration)||audio.duration<=0)return;try{navigator.mediaSession.setPositionState({duration:audio.duration,playbackRate:audio.playbackRate,position:Math.max(0,Math.min(audio.duration,audio.currentTime))});}catch(_) {}}
+let lastMediaPositionUpdateAt=0;
+function updateMediaPosition(force=false){
+  if(!('mediaSession' in navigator)||!navigator.mediaSession.setPositionState)return;
+  if(!Number.isFinite(audio.duration)||audio.duration<=0)return;
+  const now=Date.now();
+  if(!force && now-lastMediaPositionUpdateAt<(document.hidden?12000:4000))return;
+  try{navigator.mediaSession.setPositionState({duration:audio.duration,playbackRate:audio.playbackRate,position:Math.max(0,Math.min(audio.duration,audio.currentTime))});lastMediaPositionUpdateAt=now;}catch(_){}
+}
 // iOS Safari/PWA: explicitly use a long-form media playback audio session.
 // This can improve lock-screen media resume, but cannot revive a suspended WebKit process.
 function requestPlaybackAudioSession(){
@@ -758,45 +780,40 @@ function installThemeParticles(){
   }
   host.append(frag);
 }
+const headphoneActionLog=[];
+function logMediaAction(action){
+  const time=new Date().toLocaleTimeString('zh-TW',{hour12:false});
+  headphoneActionLog.push(`${time} ${action} · ${document.hidden?'背景':'前景'} · ${audio.paused?'暫停':'播放'}`);
+  if(headphoneActionLog.length>24)headphoneActionLog.shift();
+  const box=$('headphoneDiagnostic');if(box)box.textContent=headphoneActionLog.slice(-5).join('\n')||'尚未收到耳機媒體操作';
+}
 function playFromMediaControls(){
-  if(!state.current||!audio.src)return false;
+  if(!state.current||!audio.src){logMediaAction('Play 指令：沒有載入章節');return false;}
   requestPlaybackAudioSession();
   try{
-    const promise=audio.play(); // Must be called directly inside the media action callback.
+    // Keep audio.play() directly in the media action handler's user activation.
+    const promise=audio.play();
     if(promise&&typeof promise.then==='function')promise.then(()=>{
-      state.mediaResumeError='';$('playStatus').textContent='正在播放';
+      state.mediaResumeError='';if($('playStatus'))$('playStatus').textContent='正在播放';
+      logMediaAction('Play 成功');
     }).catch(error=>{
-      console.warn('iOS/WebKit 拒絕鎖屏媒體控制續播',error);
       state.mediaResumeError=String(error?.name||error);
-      $('playStatus').textContent='鎖屏續播受系統限制 · 請回到 App 播放';
+      logMediaAction('Play 被系統拒絕：'+state.mediaResumeError);
+      if($('playStatus'))$('playStatus').textContent='鎖屏續播受 iOS 限制 · 請解鎖回到 App';
     });
     return true;
-  }catch(error){state.mediaResumeError=String(error?.name||error);return false;}
-}
-// Some iOS headphone single-button events are dispatched as a redundant 'play' request.
-// This pragmatic fallback applies only while actual audio is playing on iOS, not to desktop.
-let lastIOSHeadphoneMediaAt=0;
-function handleHeadphoneMediaPlay(){
-  const now=Date.now();
-  const isiOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
-  if(isiOS && !audio.paused && !audio.ended && now-lastIOSHeadphoneMediaAt>650){
-    lastIOSHeadphoneMediaAt=now;audio.pause();
-    try{navigator.mediaSession.playbackState='paused';}catch(_){}
-    updateMediaPosition();return true;
-  }
-  lastIOSHeadphoneMediaAt=now;
-  return playFromMediaControls();
+  }catch(error){state.mediaResumeError=String(error?.name||error);logMediaAction('Play 失敗：'+state.mediaResumeError);return false;}
 }
 function setupMediaSession(){if(!('mediaSession' in navigator))return;
- const handlers={play:()=>handleHeadphoneMediaPlay(),pause:()=>{
-   lastIOSHeadphoneMediaAt=Date.now();audio.pause();
-   try{navigator.mediaSession.playbackState='paused';}catch(_){}
-   updateMediaPosition();
- },stop:()=>{audio.pause();updateMediaPosition();},
- previoustrack:()=>adjacentTrack(-1),nexttrack:()=>adjacentTrack(1),
- seekbackward:({seekOffset}={})=>skipSeconds(-(seekOffset||15)),
- seekforward:({seekOffset}={})=>skipSeconds(seekOffset||15),
- seekto:({seekTime})=>{if(Number.isFinite(seekTime))audio.currentTime=seekTime;}};
+ const handlers={
+   play:()=>{logMediaAction('收到耳機/鎖屏 Play');playFromMediaControls();},
+   pause:()=>{logMediaAction('收到耳機/鎖屏 Pause');if(!audio.paused)audio.pause();},
+   stop:()=>{logMediaAction('收到 Stop');if(!audio.paused)audio.pause();},
+   previoustrack:()=>adjacentTrack(-1),nexttrack:()=>adjacentTrack(1),
+   seekbackward:({seekOffset}={})=>skipSeconds(-(seekOffset||15)),
+   seekforward:({seekOffset}={})=>skipSeconds(seekOffset||15),
+   seekto:({seekTime})=>{if(Number.isFinite(seekTime))audio.currentTime=seekTime;}
+ };
  for(const [action,fn]of Object.entries(handlers))try{navigator.mediaSession.setActionHandler(action,fn);}catch(_){}
 }
 function clearCurrent(message='请选择章节'){++state.loadingToken;state.current=null;state.lockScreenMetaKey='';releaseAudio();try{if('mediaSession'in navigator)navigator.mediaSession.metadata=null;}catch(_){}state.lines=[];state.lineIndex=-1;localStorage.removeItem('lyra-last-id');$('currentBook').textContent=state.selectedBook?bookTitle(state.selectedBook):'READY TO LISTEN';$('currentTitle').textContent=message;$('chapterHint').textContent='从章节目录选择一章';$('playBtn').disabled=true;$('seekBar').disabled=true;$('deleteBtn').disabled=true;$('bookmarkAdd').disabled=true;setPlayButtonVisual(false);$('playStatus').textContent='未选章节';$('lrcState').textContent='· 暂无字幕';$('elapsed').textContent='00:00';$('duration').textContent='00:00';displayPlaceholder(message,'MP3 和 LRC 将保存在本机书库');updateStoryArt();updateBookBrand();drawChapterList();}
@@ -1173,7 +1190,7 @@ async function makeSyncSnapshot(){
     selectedBook:state.selectedBook||'',
     settings:{speed:state.speed,fontSize:state.fontSize,delay:state.delay,
       bg:state.bgColor,panel:state.panelColor,accent:state.accentColor,artTheme:state.artTheme,uiTheme:state.uiTheme,themeMotion:state.themeMotion,fireflyIntensity:state.fireflyIntensity,
-      linked:state.panelLinked,lyricsMax:state.lyricsMax,lyricsCentered:state.lyricsCentered,focusMode:state.focusMode,lineSpacing:state.lineSpacing,keepAwake:state.keepAwake,lockScreenMode:state.lockScreenMode,lockScreenSpeed:state.lockScreenSpeed},
+      linked:state.panelLinked,lyricsMax:state.lyricsMax,lyricsCentered:state.lyricsCentered,focusMode:state.focusMode,lineSpacing:state.lineSpacing,keepAwake:state.keepAwake,lockScreenMode:state.lockScreenMode,lockScreenSpeed:state.lockScreenSpeed,lockScreenHeadphonePriority:state.lockScreenHeadphonePriority},
     note:'僅書庫名稱、封面、播放進度及介面設定；不包含 MP3/LRC 音訊檔',
     skippedLargeCovers:skipped};
 }
@@ -1277,6 +1294,7 @@ async function importICloudState(file,{autoConfirm=false,quiet=false}={}){
         if(typeof cfg.fireflyIntensity==='string')setFireflyIntensity(cfg.fireflyIntensity,{persist:false});
         if(cfg.lockScreenMode==='standard'||cfg.lockScreenMode==='lyrics')setLockScreenMode(cfg.lockScreenMode,{persist:false});
         if(['fast','balanced','quiet'].includes(cfg.lockScreenSpeed))setLockScreenSpeed(cfg.lockScreenSpeed,{persist:false});
+        if(typeof cfg.lockScreenHeadphonePriority==='boolean')setLockScreenHeadphonePriority(cfg.lockScreenHeadphonePriority,{persist:false});
         if(snapshot.settingsUpdatedAt)localStorage.setItem(SETTINGS_UPDATED_KEY,String(snapshot.settingsUpdatedAt));
       }
       const prefer=typeof snapshot.selectedBook==='string'&&snapshot.books.some(b=>b.id===snapshot.selectedBook)?snapshot.selectedBook:state.selectedBook;
@@ -1490,6 +1508,8 @@ function setupEvents(){
   $('lockScreenOpen').addEventListener('click',()=>{refreshLockScreenControls();openDialog('lockScreenDialog');});
   $('lockScreenClose').addEventListener('click',()=>closeDialog('lockScreenDialog'));
   for(const input of document.querySelectorAll('input[name="lockScreenMode"]'))input.addEventListener('change',event=>setLockScreenMode(event.target.value));
+  $('lockScreenHeadphonePriority')?.addEventListener('change',event=>setLockScreenHeadphonePriority(event.target.checked));
+  $('copyHeadphoneDiagnostic')?.addEventListener('click',async()=>{const value=headphoneActionLog.join('\n')||'無耳機媒體事件';try{await navigator.clipboard.writeText('PineTree 4.3.9.2 耳機事件診斷\n'+value);toast('耳機事件診斷已複製');}catch(_){toast('無法使用剪貼簿；請直接查看上方診斷文字');}});
   for(const input of document.querySelectorAll('input[name="lockScreenSpeed"]'))input.addEventListener('change',event=>setLockScreenSpeed(event.target.value));
   $('sleepClose').addEventListener('click',()=>closeDialog('sleepDialog'));
   for(const b of document.querySelectorAll('[data-sleep]'))b.addEventListener('click',()=>chooseSleepTimer(b.dataset.sleep));
@@ -1578,15 +1598,15 @@ function setupEvents(){
   $('lyricsWindow').addEventListener('touchstart',stopFollow,{passive:true});
   $('lyricsWindow').addEventListener('wheel',stopFollow,{passive:true});
   audio.addEventListener('loadedmetadata',()=>{updateProgressDisplay();updateMediaPosition();updateMediaSession();});
-  audio.addEventListener('seeked',()=>{updateMediaSession(true);updateMediaPosition();});
+  audio.addEventListener('seeked',()=>{updateMediaSession(true);updateMediaPosition(true);});
   audio.addEventListener('timeupdate',()=>{checkSleepTimer();updateProgressDisplay();updateLyrics();updateMediaSession();if(!audio.paused&&Date.now()-state.lastSave>2000){state.lastSave=Date.now();saveProgress();}updateMediaPosition();});
-  audio.addEventListener('play',()=>{requestPlaybackAudioSession();setPlayButtonVisual(true);$('playStatus').textContent='正在播放';updateMediaSession();if('mediaSession'in navigator)navigator.mediaSession.playbackState='playing';});
-  audio.addEventListener('pause',()=>{setPlayButtonVisual(false);$('playBtn').setAttribute('aria-label','播放');const skipSync=!!state.skipNextPauseAutoSync;state.skipNextPauseAutoSync=false;let commit=Promise.resolve();const skipProgress=!!state.skipNextPauseProgress;state.skipNextPauseProgress=false;if(state.current){$('playStatus').textContent=audio.ended?'本章已结束':'已暂停';if(!skipProgress)commit=saveProgress(audio.ended);}if(!skipSync&&!state.suppressProgressWrites)Promise.resolve(commit).then(queuePauseSyncExport).catch(e=>console.warn('暫停進度提交失敗',e));if('mediaSession'in navigator)navigator.mediaSession.playbackState='paused';});
+  audio.addEventListener('play',()=>{requestPlaybackAudioSession();setPlayButtonVisual(true);$('playStatus').textContent='正在播放';updateMediaSession();try{if('mediaSession'in navigator)navigator.mediaSession.playbackState='playing';}catch(_){};});
+  audio.addEventListener('pause',()=>{setPlayButtonVisual(false);$('playBtn').setAttribute('aria-label','播放');const skipSync=!!state.skipNextPauseAutoSync;state.skipNextPauseAutoSync=false;let commit=Promise.resolve();const skipProgress=!!state.skipNextPauseProgress;state.skipNextPauseProgress=false;if(state.current){$('playStatus').textContent=audio.ended?'本章已结束':'已暂停';if(!skipProgress)commit=saveProgress(audio.ended);}if(!skipSync&&!state.suppressProgressWrites)Promise.resolve(commit).then(queuePauseSyncExport).catch(e=>console.warn('暫停進度提交失敗',e));try{if('mediaSession'in navigator)navigator.mediaSession.playbackState='paused';}catch(_){};updateMediaPosition(true);});
   audio.addEventListener('ratechange',updateMediaPosition);
   audio.addEventListener('ended',async()=>{if(!state.current)return;await saveProgress(true);if(state.sleepEndChapter){stopSleepTimer('本章播放完成，睡眠定時已停止');return;}const list=sortedBookTracks(state.current.book);const i=list.findIndex(x=>x.id===state.current.id);if(i>=0&&i<list.length-1)await loadTrack(list[i+1],{autoplay:true});else{$('playStatus').textContent='本书已播放完毕';drawChapterList();}});
   audio.addEventListener('error',()=>{if(state.current&&audio.src){$('playStatus').textContent='音频无法播放';toast('MP3 无法播放，请确认音频格式有效');}});
   window.addEventListener('online',updateNetwork);window.addEventListener('offline',updateNetwork);
-  document.addEventListener('visibilitychange',()=>{document.body.dataset.pageVisible=document.hidden?'false':'true';if(document.hidden){saveProgress();releaseWakeLock();}else{checkSleepTimer();requestPlaybackAudioSession();requestWakeLock();setupMediaSession();updateMediaSession();updateMediaPosition();refreshLockScreenControls();syncLyricsViewportPadding();updateLyrics(true);}});window.addEventListener('pagehide',()=>saveProgress());window.addEventListener('pageshow',()=>{requestPlaybackAudioSession();setupMediaSession();updateMediaPosition();});
+  document.addEventListener('visibilitychange',()=>{document.body.dataset.pageVisible=document.hidden?'false':'true';if(document.hidden){updateMediaSession(true);updateMediaPosition(true);saveProgress();releaseWakeLock();}else{checkSleepTimer();requestPlaybackAudioSession();requestWakeLock();setupMediaSession();updateMediaSession();updateMediaPosition();refreshLockScreenControls();syncLyricsViewportPadding();updateLyrics(true);}});window.addEventListener('pagehide',()=>saveProgress());window.addEventListener('pageshow',()=>{requestPlaybackAudioSession();setupMediaSession();updateMediaPosition();});
   window.addEventListener('resize',()=>requestAnimationFrame(()=>{syncLyricsViewportPadding();updateLyrics(true);if(window.innerWidth>850&&!document.body.classList.contains('lyrics-maximized'))scrollActiveChapter();}));
   if(typeof ResizeObserver!=='undefined'){
     let lastHeight=0;
@@ -1712,7 +1732,7 @@ async function start(){
   setImmersiveMode(state.immersive,{persist:false});
   setLineSpacing(state.lineSpacing,false);setKeepAwake(state.keepAwake,false);setFocusMode(state.focusMode,false);setLyricsCentered(state.lyricsCentered,false);updateSleepUI();
   setSpeed(state.speed);
-  setLockScreenMode(state.lockScreenMode,{persist:false});
+  setLockScreenMode(state.lockScreenMode,{persist:false});setLockScreenHeadphonePriority(state.lockScreenHeadphonePriority,{persist:false});
   migrateForestThemeOnce();
   const legacyBg=localStorage.getItem('lyra-bg-color');
   const savedPanel=localStorage.getItem('lyra-panel-color');
@@ -1728,7 +1748,7 @@ async function start(){
   try{
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
     await syncRestoreTask;await activateLinkedSyncAfterStartup();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.3.9.1：安全資源刷新、內嵌校準及沉浸旗艦圖標；原書庫完整保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.3.9.2：鎖屏耳機事件修正、字幕穩定模式、媒體事件診斷；書庫完整保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     const last=state.tracks.find(x=>x.id===localStorage.getItem('lyra-last-id'));
