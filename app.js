@@ -44,6 +44,7 @@ const state = {
   lockScreenMode:localStorage.getItem('pinetree-lockscreen-mode-v37')==='lyrics'?'lyrics':'standard',
   lockScreenSpeed:['fast','balanced','quiet'].includes(localStorage.getItem('pinetree-lockscreen-speed-v371'))?localStorage.getItem('pinetree-lockscreen-speed-v371'):'fast',
   lockScreenMetaKey:'',lockScreenLastAt:0,lockScreenLastText:'',lockScreenMediaError:false,
+  iosSingleButtonCompatibility:localStorage.getItem('pinetree-ios-earphone-onebutton-v4394')!=='0',
   calibrationStyle:['wave','dial','moon'].includes(localStorage.getItem('pinetree-calibration-style')||'')?localStorage.getItem('pinetree-calibration-style'):'moon',
   fireflyTrails:localStorage.getItem('pinetree-firefly-trails')!=='0',
   fireflyIntensity:['soft','medium','high','cinematic'].includes(localStorage.getItem('pinetree-firefly-intensity-v436')||'')?localStorage.getItem('pinetree-firefly-intensity-v436'):'high',
@@ -60,8 +61,8 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4393';
-window.PineTreeAppRelease='4391';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4394';
+window.PineTreeAppRelease='4394';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -650,7 +651,7 @@ function updateMediaSession(force=false){
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
       title:info.title,artist:info.artist,album:info.album,
-      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4393',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4394',document.baseURI).href,sizes:'512x512',type:'image/png'}]
     });
     state.lockScreenMetaKey=info.key;
     state.lockScreenLastText=info.title;
@@ -660,7 +661,7 @@ function updateMediaSession(force=false){
       try{
         navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
           artist:'PineTree 有聲書',album:info.album,
-          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4393',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4394',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
         state.lockScreenMetaKey=info.key;
         state.lockScreenLastAt=now;
         return;
@@ -792,9 +793,44 @@ function playFromMediaControls(){
     return true;
   }catch(error){state.mediaResumeError=String(error?.name||error);logMediaAction('Play 失敗：'+state.mediaResumeError);return false;}
 }
+// Some iOS headphone controls deliver a `play` action for the same physical
+// single-button press even while audio is already playing. In that case a
+// literal audio.play() is a no-op and makes the headset Pause appear broken.
+// This *opt-out*, iOS-only fallback must not change LRC metadata updates.
+let lastHeadphonePlayActionAt=0;
+function isIOSHeadphoneEnvironment(){
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent||'') ||
+    (/Macintosh/i.test(navigator.userAgent||'') && navigator.maxTouchPoints>1);
+}
+function setIOSSingleButtonCompatibility(enabled,{persist=true}={}){
+  state.iosSingleButtonCompatibility=!!enabled;
+  const control=$('iosSingleButtonCompatibility');
+  if(control)control.checked=state.iosSingleButtonCompatibility;
+  if(persist)localStorage.setItem('pinetree-ios-earphone-onebutton-v4394',enabled?'1':'0');
+  logMediaAction('耳機單鍵相容模式：'+(enabled?'開啟':'關閉'));
+}
+function handleHeadphonePlayAction(){
+  const now=Date.now();
+  const compatible=isIOSHeadphoneEnvironment()&&state.iosSingleButtonCompatibility;
+  // Avoid two near-simultaneous `play` callbacks undoing a single tap.
+  if(compatible && now-lastHeadphonePlayActionAt<440){
+    logMediaAction('Play 重複事件已略過');
+    return;
+  }
+  lastHeadphonePlayActionAt=now;
+  if(compatible && state.current && audio.src && !audio.paused && !audio.ended){
+    // Immediate pause inside the system media action. No metadata refresh,
+    // URL revocation, new Audio instance or timers: protect LRC and resume.
+    logMediaAction('iOS 單鍵相容：播放中的 Play → Pause');
+    audio.pause();
+    return;
+  }
+  logMediaAction('收到耳機/鎖屏 Play → 播放');
+  playFromMediaControls();
+}
 function setupMediaSession(){if(!('mediaSession' in navigator))return;
  const handlers={
-   play:()=>{logMediaAction('收到耳機/鎖屏 Play');playFromMediaControls();},
+   play:()=>handleHeadphonePlayAction(),
    pause:()=>{logMediaAction('收到耳機/鎖屏 Pause');if(!audio.paused)audio.pause();},
    stop:()=>{logMediaAction('收到 Stop');if(!audio.paused)audio.pause();},
    previoustrack:()=>adjacentTrack(-1),nexttrack:()=>adjacentTrack(1),
@@ -1495,6 +1531,7 @@ function setupEvents(){
   $('lockScreenOpen').addEventListener('click',()=>{refreshLockScreenControls();openDialog('lockScreenDialog');});
   $('lockScreenClose').addEventListener('click',()=>closeDialog('lockScreenDialog'));
   for(const input of document.querySelectorAll('input[name="lockScreenMode"]'))input.addEventListener('change',event=>setLockScreenMode(event.target.value));
+  $('iosSingleButtonCompatibility')?.addEventListener('change',e=>setIOSSingleButtonCompatibility(e.target.checked));
   $('copyHeadphoneDiagnostic')?.addEventListener('click',async()=>{const value=headphoneActionLog.join('\n')||'無耳機媒體事件';try{await navigator.clipboard.writeText('PineTree 4.3.9.2 耳機事件診斷\n'+value);toast('耳機事件診斷已複製');}catch(_){toast('無法使用剪貼簿；請直接查看上方診斷文字');}});
   for(const input of document.querySelectorAll('input[name="lockScreenSpeed"]'))input.addEventListener('change',event=>setLockScreenSpeed(event.target.value));
   $('sleepClose').addEventListener('click',()=>closeDialog('sleepDialog'));
@@ -1713,6 +1750,7 @@ window.PineTreeBeforeResourceReload=async function(manual){
 };
 async function start(){
   syncRestoreTask=restoreSyncFolder().catch(error=>console.warn("恢復同步資料夾授權失敗",error));
+  const oneButton=$('iosSingleButtonCompatibility');if(oneButton)oneButton.checked=state.iosSingleButtonCompatibility;
   setupEvents();setupImmersiveEvents();requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setCalibrationStyle(state.calibrationStyle,{persist:false});setFireflyTrails(state.fireflyTrails,{persist:false});setPlayButtonVisual(false);
   setMobileTab(localStorage.getItem('lyra-mobile-tab')==='chapters'?'chapters':'player');
   setImmersiveMode(state.immersive,{persist:false});
@@ -1734,7 +1772,7 @@ async function start(){
   try{
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
     await syncRestoreTask;await activateLinkedSyncAfterStartup();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.3.9.3：還原 v4.3.3 鎖屏 LRC 更新節奏、保留耳機事件診斷；書庫完整保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.3.9.4：還原 v4.3.3 鎖屏 LRC 更新節奏、保留耳機事件診斷；書庫完整保留',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     const last=state.tracks.find(x=>x.id===localStorage.getItem('lyra-last-id'));
