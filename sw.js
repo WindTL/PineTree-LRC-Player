@@ -1,6 +1,6 @@
-/* PineTree 4.3.9.8 - verified, scope-specific shell. Never touches IndexedDB. */
+/* PineTree 4.3.9.9 - verified, scope-specific shell. Never touches IndexedDB. */
 'use strict';
-const VERSION='4398', SCOPE=new URL(self.registration.scope), PREFIX='pinetree-shell-'+encodeURIComponent(SCOPE.pathname)+'-', CACHE=PREFIX+VERSION;
+const VERSION='4399', SCOPE=new URL(self.registration.scope), PREFIX='pinetree-shell-'+encodeURIComponent(SCOPE.pathname)+'-', CACHE=PREFIX+VERSION;
 const absolute=p=>new URL(p,SCOPE).href;
 function safe(p){if(typeof p!=='string'||!p||p.startsWith('/')||p.includes('..')||p.includes('\\')||p.includes('#')||/^[a-z]+:/i.test(p))throw Error('invalid path');const u=new URL(p,SCOPE);if(u.origin!==SCOPE.origin||!u.pathname.startsWith(SCOPE.pathname))throw Error('outside scope');return u;}
 async function fresh(p,nonce){const u=safe(p);u.searchParams.set('pt_refresh',nonce);const r=await fetch(u.href,{cache:'no-store',credentials:'same-origin'});if(!r.ok)throw Error(p+' HTTP '+r.status);return r;}
