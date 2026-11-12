@@ -1,4 +1,4 @@
-/* PineTree v4.3.9.6 — BASE CONTROLS ONLY for NON-Forest Reading themes.
+/* PineTree v4.3.9.8 — BASE CONTROLS ONLY for NON-Forest Reading themes.
    Every selector below explicitly excludes forest-reading. No audio, LRC, SW or data logic changes. */
 :root {
   --pt-basic-prev: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22white%22%3E%3Cpath%20d%3D%22M11%2014h5v36h-5zM40%2013%2018%2032l22%2019V13zm19%200L37%2032l22%2019V13z%22%2F%3E%3C%2Fsvg%3E");
@@ -187,3 +187,6 @@ body:not([data-ui-theme="forest-reading"]) #offsetValue {font-size:11px!importan
    flex:0 0 auto!important;font-size:10px!important;min-height:29px!important;padding:5px 7px!important;
  }
 }
+
+/* Build sentinel for quality checks. */
+:root{--pt-standard-controls-version:4398}
