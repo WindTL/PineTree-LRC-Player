@@ -1,4 +1,4 @@
-/* PineTree v4.3.9.9 — shared mirrored pairs. Chapter: one image. Skip15: one numberless image, two directions. */
+/* PineTree v4.4.0 — mirrored chapter pair; the two uploaded skip-15 artworks contain their own upright numerals. */
 /* In all other themes use the existing base-controls masks. */
 .pt-mirror-icon,.pt-mirror-numeral{display:none;pointer-events:none;user-select:none;-webkit-user-select:none;}
 body[data-ui-theme="forest-reading"] .transport :is(#prevBtn,#nextBtn,#backBtn,#aheadBtn),
@@ -21,21 +21,22 @@ body[data-ui-theme="forest-reading"] .transport :is(#prevBtn,#nextBtn)>.pt-mirro
 }
 body[data-ui-theme="forest-reading"] .transport #nextBtn>.pt-mirror-icon,
 #immersiveMode .im-transport #imNext>.pt-mirror-icon{transform:scaleX(-1)!important;}
-/* One digit-free art source for both 15 s controls; digits are separate non-mirrored DOM text. */
-body[data-ui-theme="forest-reading"] .transport :is(#backBtn,#aheadBtn)>.pt-mirror-icon,
-#immersiveMode .im-transport :is(#imBack,#imAhead)>.pt-mirror-icon{
-  background-image:url('./assets/skip15-base-v4399.webp')!important;
+/* True uploaded skip-15 artwork: independent BACK / FORWARD images, each with a centered, upright "15".
+   The legacy numeral overlay is disabled to prevent double or oversized numbers. */
+body[data-ui-theme="forest-reading"] .transport #backBtn>.pt-mirror-icon,
+#immersiveMode .im-transport #imBack>.pt-mirror-icon{
+  background-image:url('./assets/back15-v4400.webp')!important;
+  transform:none!important;
 }
 body[data-ui-theme="forest-reading"] .transport #aheadBtn>.pt-mirror-icon,
-#immersiveMode .im-transport #imAhead>.pt-mirror-icon{transform:scaleX(-1)!important;}
+#immersiveMode .im-transport #imAhead>.pt-mirror-icon{
+  background-image:url('./assets/forward15-v4400.webp')!important;
+  transform:none!important;
+}
+/* Images include exactly one correctly centered "15"; do not add HTML numerals on top. */
 body[data-ui-theme="forest-reading"] .transport :is(#backBtn,#aheadBtn)>.pt-mirror-numeral,
 #immersiveMode .im-transport :is(#imBack,#imAhead)>.pt-mirror-numeral{
-  position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;
-  z-index:2!important;pointer-events:none!important;
-  padding-top:7%!important;font-family:Georgia,'Times New Roman',serif!important;
-  font-size:clamp(17px,2.5vw,35px)!important;line-height:1!important;font-weight:900!important;
-  color:#fff0ad!important;-webkit-text-stroke:.35px #b87d24;
-  text-shadow:0 1px 0 #9b5b06,0 0 3px #fef4b1,0 0 11px #f8d56d8c,0 2px 2px #281506;
+  display:none!important;
 }
 /* Hide the original SVG and baked-in small numerals ONLY for forest artwork. */
 body[data-ui-theme="forest-reading"] .transport :is(#prevBtn,#nextBtn,#backBtn,#aheadBtn)>:is(svg,small),
@@ -43,12 +44,4 @@ body[data-ui-theme="forest-reading"] .transport :is(#prevBtn,#nextBtn,#backBtn,#
 #immersiveMode .im-transport :is(#imPrev,#imNext,#imBack,#imAhead)>.pt-mirror-numeral{
   font-size:clamp(17px,2.7vw,39px)!important;
 }
-@media(max-width:850px){
-  body[data-ui-theme="forest-reading"] .transport :is(#backBtn,#aheadBtn)>.pt-mirror-numeral,
-  #immersiveMode .im-transport :is(#imBack,#imAhead)>.pt-mirror-numeral{font-size:clamp(13px,3.2vw,23px)!important;}
-}
-@media(max-width:540px){
-  body[data-ui-theme="forest-reading"] .transport :is(#backBtn,#aheadBtn)>.pt-mirror-numeral,
-  #immersiveMode .im-transport :is(#imBack,#imAhead)>.pt-mirror-numeral{font-size:clamp(12px,3.9vw,17px)!important;}
-}
-:root{--pt-mirror-controls-version:4399}
+:root{--pt-mirror-controls-version:4400}

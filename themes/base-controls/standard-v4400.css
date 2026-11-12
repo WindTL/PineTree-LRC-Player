@@ -187,4 +187,4 @@ body:not([data-ui-theme="forest-reading"]) #offsetValue {font-size:11px!importan
 }
 
 /* Build sentinel for quality checks. */
-:root{--pt-standard-controls-version:4399}
+:root{--pt-standard-controls-version:4400}
