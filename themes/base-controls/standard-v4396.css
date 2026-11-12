@@ -1,0 +1,189 @@
+/* PineTree v4.3.9.6 — BASE CONTROLS ONLY for NON-Forest Reading themes.
+   Every selector below explicitly excludes forest-reading. No audio, LRC, SW or data logic changes. */
+:root {
+  --pt-basic-prev: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22white%22%3E%3Cpath%20d%3D%22M11%2014h5v36h-5zM40%2013%2018%2032l22%2019V13zm19%200L37%2032l22%2019V13z%22%2F%3E%3C%2Fsvg%3E");
+  --pt-basic-next: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22white%22%3E%3Cpath%20d%3D%22M48%2014h5v36h-5zM24%2013l22%2019-22%2019V13zM5%2013l22%2019L5%2051V13z%22%2F%3E%3C%2Fsvg%3E");
+  --pt-basic-back: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22white%22%3E%3Cpath%20d%3D%22M14%2021v-11L2%2024l12%2012V26a20%2020%200%201%201-4%2021l-7%202a27%2027%200%201%200%2011-28z%22%2F%3E%3C%2Fsvg%3E");
+  --pt-basic-ahead: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22white%22%3E%3Cpath%20d%3D%22M50%2021v-11l12%2014-12%2012V26a20%2020%200%201%200%204%2021l7%202a27%2027%200%201%201-11-28z%22%2F%3E%3C%2Fsvg%3E");
+  --pt-basic-play: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22white%22%3E%3Cpath%20d%3D%22M22%2011.5c0-2.8%203-4.6%205.5-3l28.2%2019c3.4%202.3%203.4%206.7%200%209l-28.2%2019c-2.5%201.6-5.5-.2-5.5-3V11.5z%22%2F%3E%3C%2Fsvg%3E");
+  --pt-basic-pause: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%20fill%3D%22white%22%3E%3Crect%20x%3D%2215%22%20y%3D%2212%22%20width%3D%2213%22%20height%3D%2240%22%20rx%3D%223%22%2F%3E%3Crect%20x%3D%2236%22%20y%3D%2212%22%20width%3D%2213%22%20height%3D%2240%22%20rx%3D%223%22%2F%3E%3C%2Fsvg%3E");
+}
+/* Forest-only scenery and animated progress ornament must not leak into other themes. */
+body:not([data-ui-theme="forest-reading"]) .forest-signature,
+body:not([data-ui-theme="forest-reading"]) .forest-top-title,
+body:not([data-ui-theme="forest-reading"]) .forest-atmosphere,
+body:not([data-ui-theme="forest-reading"]) .forest-frame-art,
+body:not([data-ui-theme="forest-reading"]) .forest-garland-art,
+body:not([data-ui-theme="forest-reading"]) .forest-firefly-field,
+body:not([data-ui-theme="forest-reading"]) .squirrel-chase,
+body:not([data-ui-theme="forest-reading"]) .forest-delete-shortcut {display:none!important;}
+body:not([data-ui-theme="forest-reading"]) .forest-seek-scene {background:none!important;border:0!important;box-shadow:none!important;}
+body:not([data-ui-theme="forest-reading"]) .forest-seek-scene::before,
+body:not([data-ui-theme="forest-reading"]) .forest-seek-scene::after {content:none!important;display:none!important;}
+/* Restore a complete, responsive, neutral transport instead of the forest-only physical images. */
+body:not([data-ui-theme="forest-reading"]) .playbar {
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:clamp(10px,1.8vw,24px)!important;padding:14px 12px!important;
+  min-height:104px!important;border:1px solid var(--border)!important;
+  border-radius:20px!important;background:linear-gradient(155deg,var(--panel-alt),var(--panel))!important;
+  box-shadow:inset 0 1px 0 #ffffff13,0 7px 24px #0000001a!important;
+}
+body:not([data-ui-theme="forest-reading"]) .playbar::before,
+body:not([data-ui-theme="forest-reading"]) .playbar::after {content:none!important;display:none!important;}
+body:not([data-ui-theme="forest-reading"]) .transport {
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  flex:1 1 auto!important;min-width:0!important;gap:clamp(6px,1.5vw,16px)!important;
+}
+body:not([data-ui-theme="forest-reading"]) .transport .control {
+  appearance:none!important;-webkit-appearance:none!important;position:relative!important;
+  display:grid!important;place-items:center!important;flex-shrink:0!important;
+  padding:0!important;overflow:visible!important;isolation:isolate!important;
+  border:1px solid var(--flag-control-border,var(--border))!important;
+  border-radius:50%!important;
+  background:var(--flag-control-bg,linear-gradient(155deg,var(--panel-alt),var(--field)))!important;
+  color:var(--flag-icon-color,var(--text))!important;
+  box-shadow:inset 0 1px 1px #ffffff25,0 4px 14px #0003!important;
+  filter:none!important;transform:none!important;
+  transition:background-color .15s,border-color .15s,transform .15s,box-shadow .15s!important;
+}
+body:not([data-ui-theme="forest-reading"]) .transport .control.minor {
+  width:clamp(42px,4vw,54px)!important;height:clamp(42px,4vw,54px)!important;
+  flex:0 0 clamp(42px,4vw,54px)!important;
+}
+body:not([data-ui-theme="forest-reading"]) .transport #playBtn.forest-crystal {
+  width:clamp(65px,5.5vw,77px)!important;height:clamp(65px,5.5vw,77px)!important;
+  flex:0 0 clamp(65px,5.5vw,77px)!important;
+  border:2px solid var(--accent)!important;
+  color:var(--flag-play-glyph,var(--accent-text))!important;
+  background:var(--flag-play-core,var(--flag-accent-bg,var(--accent)))!important;
+  box-shadow:inset 0 2px 4px #ffffff36,0 6px 22px #0005!important;
+}
+/* All old forest SVG/facets are present in the shared HTML. Hide them outside forest. */
+body:not([data-ui-theme="forest-reading"]) .transport .control > svg,
+body:not([data-ui-theme="forest-reading"]) .transport #playBtn > .im-gem-inner {display:none!important;}
+body:not([data-ui-theme="forest-reading"]) .transport .control::before {
+  content:''!important;display:block!important;position:absolute!important;
+  inset:50% auto auto 50%!important;transform:translate(-50%,-50%)!important;
+  width:54%!important;height:54%!important;background:currentColor!important;
+  -webkit-mask-position:center!important;mask-position:center!important;
+  -webkit-mask-size:contain!important;mask-size:contain!important;
+  -webkit-mask-repeat:no-repeat!important;mask-repeat:no-repeat!important;
+  pointer-events:none!important;z-index:2!important;
+}
+body:not([data-ui-theme="forest-reading"]) .transport .control::after {content:none!important;display:none!important;}
+body:not([data-ui-theme="forest-reading"]) #prevBtn::before {-webkit-mask-image:var(--pt-basic-prev)!important;mask-image:var(--pt-basic-prev)!important;}
+body:not([data-ui-theme="forest-reading"]) #nextBtn::before {-webkit-mask-image:var(--pt-basic-next)!important;mask-image:var(--pt-basic-next)!important;}
+body:not([data-ui-theme="forest-reading"]) #backBtn::before {-webkit-mask-image:var(--pt-basic-back)!important;mask-image:var(--pt-basic-back)!important;}
+body:not([data-ui-theme="forest-reading"]) #aheadBtn::before {-webkit-mask-image:var(--pt-basic-ahead)!important;mask-image:var(--pt-basic-ahead)!important;}
+body:not([data-ui-theme="forest-reading"]) #playBtn::before {
+  content:''!important;-webkit-mask-image:var(--pt-basic-play)!important;mask-image:var(--pt-basic-play)!important;
+  width:48%!important;height:48%!important;
+}
+body:not([data-ui-theme="forest-reading"]) #playBtn[data-playing="true"]::before {
+  -webkit-mask-image:var(--pt-basic-pause)!important;mask-image:var(--pt-basic-pause)!important;
+}
+body:not([data-ui-theme="forest-reading"]) .transport .skip-control small {
+  display:block!important;position:absolute!important;right:4px!important;bottom:3px!important;
+  min-width:18px!important;border:1px solid var(--border)!important;border-radius:8px!important;
+  background:var(--panel)!important;color:var(--accent)!important;font-size:9px!important;
+  font-weight:750!important;line-height:1.3!important;padding:0 2px!important;z-index:3!important;
+}
+body:not([data-ui-theme="forest-reading"]) .transport .control:hover:not(:disabled) {
+  transform:translateY(-2px)!important;border-color:var(--accent)!important;
+  box-shadow:inset 0 1px 1px #ffffff2b,0 6px 16px #0005,0 0 10px var(--accent-faint)!important;
+}
+body:not([data-ui-theme="forest-reading"]) .transport .control:focus-visible {outline:2px solid var(--accent)!important;outline-offset:3px!important;}
+/* Restore a proper speed selector, including the six presets that were bare text. */
+body:not([data-ui-theme="forest-reading"]) .speed-settings {
+  flex:0 0 clamp(172px,18vw,252px)!important;min-width:172px!important;max-width:252px!important;
+  padding:10px 12px!important;margin:0!important;border-radius:15px!important;
+  border:1px solid var(--border)!important;background:var(--panel-alt)!important;
+  box-shadow:inset 0 1px 0 #ffffff17!important;
+}
+body:not([data-ui-theme="forest-reading"]) .speed-settings::before,
+body:not([data-ui-theme="forest-reading"]) .speed-settings::after,
+body:not([data-ui-theme="forest-reading"]) .speed-settings label::before {content:none!important;display:none!important;}
+body:not([data-ui-theme="forest-reading"]) .speed-settings label {
+  display:flex!important;gap:8px!important;justify-content:space-between!important;
+  align-items:center!important;font-size:12px!important;color:var(--soft)!important;
+}
+body:not([data-ui-theme="forest-reading"]) .speed-settings output {font-size:12px!important;color:var(--accent)!important;font-variant-numeric:tabular-nums!important;}
+body:not([data-ui-theme="forest-reading"]) .speed-settings input {display:block!important;width:100%!important;margin:8px 0 3px!important;accent-color:var(--accent)!important;}
+body:not([data-ui-theme="forest-reading"]) .speed-settings .speed-ends {display:none!important;}
+body:not([data-ui-theme="forest-reading"]) .forest-speed-presets {
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:4px!important;align-items:stretch!important;margin:5px 0 0!important;padding:0!important;
+  overflow:visible!important;
+}
+body:not([data-ui-theme="forest-reading"]) .forest-speed-presets button {
+  min-width:0!important;min-height:28px!important;padding:4px 2px!important;
+  border:1px solid transparent!important;border-radius:8px!important;
+  background:transparent!important;color:var(--muted)!important;
+  font-size:10px!important;font-weight:650!important;white-space:nowrap!important;
+}
+body:not([data-ui-theme="forest-reading"]) .forest-speed-presets button:hover {background:var(--field)!important;color:var(--text)!important;}
+body:not([data-ui-theme="forest-reading"]) .forest-speed-presets button[aria-pressed="true"] {
+  background:var(--accent-faint)!important;border-color:var(--accent)!important;
+  color:var(--accent)!important;font-weight:800!important;box-shadow:inset 0 0 0 1px #ffffff18!important;
+}
+body:not([data-ui-theme="forest-reading"]) .forest-speed-presets button:focus-visible {outline:2px solid var(--accent)!important;outline-offset:1px!important;}
+/* A neutral calibration readout: forest emerald jewels only within Forest Reading. */
+body:not([data-ui-theme="forest-reading"]) #offsetLabel {
+  display:inline-flex!important;align-items:center!important;gap:4px!important;
+  height:28px!important;min-width:58px!important;padding:3px 8px!important;
+  border-radius:9px!important;background:var(--panel-alt)!important;
+  border:1px solid var(--border)!important;box-shadow:none!important;
+  color:var(--accent)!important;font-variant-numeric:tabular-nums!important;
+}
+body:not([data-ui-theme="forest-reading"]) #offsetArtwork,
+body:not([data-ui-theme="forest-reading"]) #offsetLabel::before {display:none!important;content:none!important;}
+body:not([data-ui-theme="forest-reading"]) #offsetValue {font-size:11px!important;color:var(--accent)!important;white-space:nowrap!important;}
+/* Keep the immersive screen opt-in; it retains its own bespoke art and core playback. */
+@media(max-width:1100px){
+ body:not([data-ui-theme="forest-reading"]) .playbar{gap:8px!important;padding:10px 8px!important;}
+ body:not([data-ui-theme="forest-reading"]) .speed-settings{flex-basis:175px!important;min-width:165px!important;}
+ body:not([data-ui-theme="forest-reading"]) .transport{gap:5px!important;}
+ body:not([data-ui-theme="forest-reading"]) .transport .control.minor{width:41px!important;height:41px!important;flex-basis:41px!important;}
+ body:not([data-ui-theme="forest-reading"]) .transport #playBtn.forest-crystal{width:65px!important;height:65px!important;flex-basis:65px!important;}
+}
+@media(max-width:850px){
+ body:not([data-ui-theme="forest-reading"]) .playbar{display:flex!important;flex-direction:column!important;gap:6px!important;padding:8px!important;}
+ body:not([data-ui-theme="forest-reading"]) .transport{flex:0 0 auto!important;justify-content:space-evenly!important;width:100%!important;}
+ body:not([data-ui-theme="forest-reading"]) .speed-settings {flex:0 0 auto!important;width:min(100%,410px)!important;max-width:100%!important;min-width:0!important;padding:7px 12px!important;}
+ body:not([data-ui-theme="forest-reading"]) .forest-speed-presets {grid-template-columns:repeat(6,minmax(0,1fr))!important;}
+}
+@media(max-width:420px){
+ body:not([data-ui-theme="forest-reading"]) .transport .control.minor{width:39px!important;height:39px!important;flex-basis:39px!important;}
+ body:not([data-ui-theme="forest-reading"]) .transport #playBtn.forest-crystal{width:63px!important;height:63px!important;flex-basis:63px!important;}
+ body:not([data-ui-theme="forest-reading"]) .transport{gap:4px!important;}
+}
+@media(prefers-reduced-motion:reduce){
+ body:not([data-ui-theme="forest-reading"]) .transport .control {transition:none!important;}
+}
+/* The legacy mobile layout turns the speed card into a horizontal flex row.
+   Override that only for non-forest themes so labels, slider and presets never overlap. */
+@media(max-width:540px){
+ body:not([data-ui-theme="forest-reading"]) .speed-settings {
+   display:block!important;height:auto!important;min-height:88px!important;
+   padding:7px 10px!important;overflow:visible!important;
+ }
+ body:not([data-ui-theme="forest-reading"]) .speed-settings label {
+   display:flex!important;width:100%!important;flex:none!important;margin:0 0 2px!important;
+ }
+ body:not([data-ui-theme="forest-reading"]) .speed-settings input {
+   display:block!important;width:100%!important;min-height:14px!important;margin:3px 0 1px!important;
+ }
+ body:not([data-ui-theme="forest-reading"]) .speed-settings .forest-speed-presets {
+   display:grid!important;width:100%!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:3px!important;margin:2px 0 0!important;
+ }
+ body:not([data-ui-theme="forest-reading"]) .speed-settings .forest-speed-presets button {
+   min-height:22px!important;padding:2px 0!important;font-size:9px!important;
+ }
+ body:not([data-ui-theme="forest-reading"]) .lyrics-tools {
+   display:flex!important;flex:1 1 auto!important;flex-wrap:wrap!important;justify-content:flex-end!important;
+   gap:4px!important;min-width:0!important;
+ }
+ body:not([data-ui-theme="forest-reading"]) .lyrics-tools .tiny-action {
+   flex:0 0 auto!important;font-size:10px!important;min-height:29px!important;padding:5px 7px!important;
+ }
+}
