@@ -1,12 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" fill="none">
 <defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f5dd83" stop-opacity=".95"/><stop offset=".55" stop-color="#9e8035" stop-opacity=".36"/><stop offset="1" stop-color="#f6ecba" stop-opacity=".85"/></linearGradient><radialGradient id="dew"><stop stop-color="#ffffff" stop-opacity=".9"/><stop offset=".45" stop-color="#d2ffd3" stop-opacity=".6"/><stop offset="1" stop-color="#86bd80" stop-opacity="0"/></radialGradient></defs>
 <g stroke="url(#gold)" stroke-linecap="round" stroke-linejoin="round" opacity=".76">
-<path d="M12 154 Q17 37 152 14 H357 M1044 14h5 Q1176 18 1188 150 M12 606 Q18 732 149 746 H340 M1054 746 Q1187 735 1188 601" stroke-width="2"/>
+<path d="M12 154 Q17 37 152 14 H357 M12 606 Q18 732 149 746 H340 M1054 746 Q1187 735 1188 601" stroke-width="2"/>
 <path d="M14 93Q60 46 151 39 M16 92Q48 94 69 110 M52 51L45 29M67 45l5-24M85 41l17-23M104 35l28-16M33 65l-14-14" stroke-width="1.6"/>
-<path d="M1187 93Q1134 45 1047 38 M1182 89Q1160 98 1137 113 M1156 55l10-27M1138 47l-2-30M1122 42l-17-23M1097 37l-31-16" stroke-width="1.6"/>
 <path d="M14 675Q58 720 148 724 M14 674l45-11 M49 718l-1 25 M79 723l12 24 M115 720l22 20" stroke-width="1.5"/>
 <path d="M1187 675Q1140 720 1050 724 M1183 681l-36-15 M1152 720l6 26 M1117 725l-13 22" stroke-width="1.5"/>
 </g>
-<g fill="#d0f1a8" opacity=".7"><path d="M69 110q-20-32-44-21 11 23 44 21M103 35q13-28 40-28-3 23-40 28M1156 54q-18-28-38-29 3 21 38 29M1137 113q19-33 47-23-8 22-47 23M55 669q6-28 36-34-1 23-36 34M1145 670q-6-28-36-34 1 23 36 34"/></g>
-<circle cx="154" cy="14" r="12" fill="url(#dew)"/><circle cx="1048" cy="15" r="12" fill="url(#dew)"/><circle cx="149" cy="746" r="9" fill="url(#dew)"/><circle cx="1055" cy="746" r="9" fill="url(#dew)"/>
+<g fill="#d0f1a8" opacity=".7"><path d="M69 110q-20-32-44-21 11 23 44 21M103 35q13-28 40-28-3 23-40 28M55 669q6-28 36-34-1 23-36 34M1145 670q-6-28-36-34 1 23 36 34"/></g>
+<circle cx="154" cy="14" r="12" fill="url(#dew)"/><circle cx="149" cy="746" r="9" fill="url(#dew)"/><circle cx="1055" cy="746" r="9" fill="url(#dew)"/>
 </svg>

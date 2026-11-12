@@ -1,0 +1,181 @@
+
+/* Moon-sky cleanup: remove straight UI separator rules drawn across the
+   moon and forest sky. Keep the illustrated natural moonlight untouched. */
+body[data-ui-theme="forest-reading"] .forest-moon-rays{display:none!important;}
+body[data-ui-theme="forest-reading"] .now-playing{
+  border-bottom:0!important;outline:0!important;
+  box-shadow:none!important;
+}
+body[data-ui-theme="forest-reading"] .now-playing::after{
+  display:none!important;content:none!important;
+}
+body[data-ui-theme="forest-reading"] .lyrics-toolbar{
+  border-top:0!important;border-bottom:0!important;
+  box-shadow:none!important;
+}
+body[data-ui-theme="forest-reading"] .lyrics-window{
+  border-top-color:transparent!important;
+  box-shadow:0 7px 25px rgba(0,10,7,.13)!important;
+}
+
+/* PineTree v4.3.9.5 — touch landscape LRC-first layout.
+   Applies only to SHORT LANDSCAPE + COARSE POINTER; never changes audio, Media Session or DB.
+   Original portrait and desktop screens remain unchanged. */
+@media (orientation:landscape) and (max-height:820px) and (pointer:coarse) {
+  body[data-ui-theme="forest-reading"]{overflow:hidden!important;}
+  body[data-ui-theme="forest-reading"] .app-shell{
+    height:100dvh!important;min-height:0!important;max-height:100dvh!important;
+    padding:0 max(5px,env(safe-area-inset-right)) max(4px,env(safe-area-inset-bottom)) max(5px,env(safe-area-inset-left))!important;
+    gap:3px!important;overflow:hidden!important;
+  }
+  body[data-ui-theme="forest-reading"] .topbar{
+    height:46px!important;min-height:46px!important;flex:0 0 46px!important;
+    gap:7px!important;padding:2px 6px!important;
+  }
+  body[data-ui-theme="forest-reading"] .brand-mark{width:35px!important;height:35px!important;flex-basis:35px!important;}
+  body[data-ui-theme="forest-reading"] .brand-copy .forest-brandname{font-size:21px!important;max-width:31vw!important;}
+  body[data-ui-theme="forest-reading"] .brand-copy span{display:none!important;}
+  body[data-ui-theme="forest-reading"] .forest-top-title{display:none!important;}
+  body[data-ui-theme="forest-reading"] .header-actions{gap:4px!important;margin-left:auto!important;}
+  body[data-ui-theme="forest-reading"] .header-actions .top-action{
+    height:32px!important;min-height:32px!important;padding:2px 8px!important;
+    font-size:11px!important;white-space:nowrap!important;
+  }
+  body[data-ui-theme="forest-reading"] .header-actions #cloudOpen,
+  body[data-ui-theme="forest-reading"] .header-actions #bookManagerOpen,
+  body[data-ui-theme="forest-reading"] .header-actions #themeOpen{display:none!important;}
+  body[data-ui-theme="forest-reading"] .mobile-switch{
+    display:grid!important;flex:0 0 32px!important;height:32px!important;min-height:32px!important;
+    grid-template-columns:1fr 1fr .65fr!important;gap:5px!important;
+    padding:2px 5px!important;margin:0!important;border-radius:13px!important;
+  }
+  body[data-ui-theme="forest-reading"] .mobile-tab{font-size:11px!important;line-height:24px!important;min-width:0!important;}
+  body[data-ui-theme="forest-reading"] .layout{display:block!important;flex:1 1 auto!important;min-height:0!important;height:auto!important;}
+  body[data-ui-theme="forest-reading"] .layout>.library,
+  body[data-ui-theme="forest-reading"] .layout>.reader{height:100%!important;min-height:0!important;}
+  body[data-ui-theme="forest-reading"].mobile-view-player .layout>.library{display:none!important;}
+  body[data-ui-theme="forest-reading"].mobile-view-chapters .layout>.reader{display:none!important;}
+  body[data-ui-theme="forest-reading"] .layout>.reader{
+    display:flex!important;flex-direction:column!important;
+    padding:5px 10px 5px!important;gap:0!important;overflow:hidden!important;border-radius:14px!important;
+  }
+  body[data-ui-theme="forest-reading"] .reader::before{background-position:center 38%!important;}
+  body[data-ui-theme="forest-reading"] .now-playing{
+    height:51px!important;min-height:0!important;max-height:51px!important;
+    flex:0 0 51px!important;overflow:hidden!important;
+    padding:0 5px 2px!important;gap:0!important;align-items:center!important;
+  }
+  body[data-ui-theme="forest-reading"] .now-playing-text{text-align:center!important;max-width:100%!important;}
+  body[data-ui-theme="forest-reading"] .forest-signature{display:none!important;}
+  body[data-ui-theme="forest-reading"] .now-kicker{margin:0!important;font-size:9px!important;justify-content:center!important;line-height:1.15!important;}
+  body[data-ui-theme="forest-reading"] .now-playing h1{
+    font-size:clamp(15px,1.9vw,22px)!important;line-height:1.2!important;
+    margin:2px 0 0!important;max-height:1.3em!important;
+    overflow:hidden!important;white-space:nowrap!important;text-overflow:ellipsis!important;
+  }
+  body[data-ui-theme="forest-reading"] .now-playing #chapterHint,
+  body[data-ui-theme="forest-reading"] .now-playing-actions{display:none!important;}
+  body[data-ui-theme="forest-reading"] .lyrics-toolbar{
+    flex:0 0 33px!important;min-height:33px!important;height:33px!important;
+    display:flex!important;align-items:center!important;flex-wrap:nowrap!important;
+    gap:8px!important;padding:2px 0!important;margin:0 0 3px!important;
+    border-top:0!important;
+  }
+  body[data-ui-theme="forest-reading"] .lyrics-heading{font-size:11px!important;flex:0 0 auto!important;white-space:nowrap!important;}
+  body[data-ui-theme="forest-reading"] .lyrics-heading small{font-size:9px!important;}
+  body[data-ui-theme="forest-reading"] .lyrics-tools{
+    flex:1 1 auto!important;display:flex!important;align-items:center!important;
+    flex-wrap:nowrap!important;justify-content:flex-end!important;gap:4px!important;
+    min-width:0!important;max-height:31px!important;overflow-x:auto!important;overflow-y:hidden!important;
+    scrollbar-width:none!important;-webkit-overflow-scrolling:touch;
+  }
+  body[data-ui-theme="forest-reading"] .lyrics-tools::-webkit-scrollbar{display:none!important;}
+  body[data-ui-theme="forest-reading"] .lyrics-tools .tiny-action{
+    flex:0 0 auto!important;height:26px!important;min-height:26px!important;min-width:30px!important;
+    padding:2px 7px!important;font-size:10px!important;white-space:nowrap!important;
+  }
+  body[data-ui-theme="forest-reading"] .lyrics-tools .offset-label{
+    flex:0 0 auto!important;height:27px!important;min-height:27px!important;padding:2px 5px!important;
+  }
+  body[data-ui-theme="forest-reading"] .lyrics-window{
+    flex:1 1 auto!important;min-height:95px!important;max-height:none!important;
+    width:100%!important;overflow-y:auto!important;overflow-x:hidden!important;
+    padding-right:13px!important;padding-left:13px!important;
+    border-radius:15px!important;margin:0 0 2px!important;
+  }
+  body[data-ui-theme="forest-reading"] .lyric-line{
+    padding:6px 5px!important;line-height:1.35!important;
+    font-size:clamp(15px,1.85vw,23px)!important;
+  }
+  body[data-ui-theme="forest-reading"] .lyric-line.active{font-size:clamp(18px,2.1vw,27px)!important;}
+  body[data-ui-theme="forest-reading"] .player-bottom{
+    margin:0!important;padding:0!important;flex:0 0 auto!important;min-height:0!important;
+  }
+  body[data-ui-theme="forest-reading"] .listen-extras,
+  body[data-ui-theme="forest-reading"] #sleepStatus,
+  body[data-ui-theme="forest-reading"] .storage-hint,
+  body[data-ui-theme="forest-reading"] #syncResultSummary{display:none!important;}
+  body[data-ui-theme="forest-reading"] .time-line{
+    height:16px!important;max-height:16px!important;min-height:16px!important;
+    padding:0!important;margin:0!important;font-size:10px!important;line-height:16px!important;
+  }
+  body[data-ui-theme="forest-reading"] .time-line>span{font-size:10px!important;}
+  body[data-ui-theme="forest-reading"] .forest-seek-scene{
+    padding-top:3px!important;margin:0 2px!important;height:15px!important;min-height:15px!important;
+  }
+  body[data-ui-theme="forest-reading"] .squirrel-chase{display:none!important;}
+  body[data-ui-theme="forest-reading"] .forest-seek-scene .seek-bar{
+    width:100%!important;height:6px!important;margin:3px 0!important;
+  }
+  body[data-ui-theme="forest-reading"] .forest-seek-scene .seek-bar::-webkit-slider-thumb{
+    width:24px!important;height:24px!important;
+  }
+  body[data-ui-theme="forest-reading"] .playbar{
+    display:flex!important;flex-direction:row!important;align-items:center!important;
+    min-height:62px!important;max-height:62px!important;height:62px!important;
+    padding:2px 10px!important;gap:8px!important;border-radius:17px!important;
+  }
+  body[data-ui-theme="forest-reading"] .transport{
+    flex:1 1 auto!important;width:auto!important;min-width:0!important;
+    flex-wrap:nowrap!important;gap:clamp(4px,1.6vw,14px)!important;justify-content:center!important;
+  }
+  body[data-ui-theme="forest-reading"] .control.minor{
+    width:40px!important;height:40px!important;flex:0 0 40px!important;
+  }
+  body[data-ui-theme="forest-reading"] .control.play.forest-crystal{
+    width:54px!important;height:54px!important;flex:0 0 54px!important;
+  }
+  body[data-ui-theme="forest-reading"] .speed-settings{
+    display:flex!important;flex-direction:column!important;justify-content:center!important;
+    flex:0 0 min(22vw,205px)!important;width:min(22vw,205px)!important;
+    min-width:120px!important;min-height:0!important;height:53px!important;
+    padding:5px 9px!important;gap:0!important;border-radius:14px!important;
+  }
+  body[data-ui-theme="forest-reading"] .speed-settings label{font-size:10px!important;line-height:15px!important;}
+  body[data-ui-theme="forest-reading"] .speed-settings label::before{display:none!important;}
+  body[data-ui-theme="forest-reading"] .speed-settings output{font-size:10px!important;}
+  body[data-ui-theme="forest-reading"] .speed-settings input{width:100%!important;margin:1px 0 0!important;min-height:12px!important;}
+  body[data-ui-theme="forest-reading"] .speed-ends,
+  body[data-ui-theme="forest-reading"] .forest-speed-presets{display:none!important;}
+  body[data-ui-theme="forest-reading"] .chapter-list{flex:1 1 auto!important;overflow-y:auto!important;}
+  body[data-ui-theme="forest-reading"] .library .sidebar-top{padding:5px 9px!important;}
+  body[data-ui-theme="forest-reading"] .library .import-help,
+  body[data-ui-theme="forest-reading"] .library .import-options{display:none!important;}
+  body[data-ui-theme="forest-reading"] .library .chapter-tools{padding:7px!important;}
+  /* Keep fullscreen LRC available even in this landscape layout. */
+  body[data-ui-theme="forest-reading"].lyrics-maximized .reader{
+    position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;
+    max-height:100dvh!important;padding:6px max(8px,env(safe-area-inset-right)) 5px max(8px,env(safe-area-inset-left))!important;
+  }
+  body[data-ui-theme="forest-reading"].lyrics-maximized .lyrics-window{min-height:100px!important;}
+}
+@media (orientation:landscape) and (max-height:500px) and (pointer:coarse){
+  body[data-ui-theme="forest-reading"] .topbar{height:39px!important;min-height:39px!important;flex-basis:39px!important;}
+  body[data-ui-theme="forest-reading"] .brand-copy .forest-brandname{font-size:17px!important;}
+  body[data-ui-theme="forest-reading"] .now-playing{height:40px!important;min-height:0!important;max-height:40px!important;flex-basis:40px!important;}
+  body[data-ui-theme="forest-reading"] .now-playing h1{font-size:15px!important;}
+  body[data-ui-theme="forest-reading"] .playbar{height:53px!important;min-height:53px!important;max-height:53px!important;}
+  body[data-ui-theme="forest-reading"] .control.minor{width:34px!important;height:34px!important;flex-basis:34px!important;}
+  body[data-ui-theme="forest-reading"] .control.play.forest-crystal{width:47px!important;height:47px!important;flex-basis:47px!important;}
+  body[data-ui-theme="forest-reading"] .speed-settings{height:46px!important;}
+}
