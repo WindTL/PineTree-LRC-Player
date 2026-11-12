@@ -58,7 +58,7 @@ body[data-ui-theme="forest-reading"] .transport .control.minor{width:clamp(56px,
 body[data-ui-theme="forest-reading"] .transport #prevBtn{background-image:url('./assets/prev.webp')!important;}
 body[data-ui-theme="forest-reading"] .transport #backBtn{background-image:url('./assets/back15.webp')!important;}
 body[data-ui-theme="forest-reading"] .transport #nextBtn{background-image:url('./assets/next.webp')!important;}
-body[data-ui-theme="forest-reading"] .transport #aheadBtn{background-image:url('./assets/forward15.webp')!important;}
+body[data-ui-theme="forest-reading"] .transport #aheadBtn{background-image:url('./assets/forward15-v4397.webp?v=4397')!important;}
 body[data-ui-theme="forest-reading"] .transport #playBtn.forest-crystal {
   width:clamp(104px,9vw,148px)!important;height:clamp(104px,9vw,148px)!important;flex:0 0 clamp(104px,9vw,148px)!important;
   background:url('./assets/play.webp') center/contain no-repeat!important;
@@ -284,7 +284,7 @@ body[data-ui-theme="forest-reading"] .sidebar-kicker{color:#ffdf91!important;tex
 /* Transport controls cropped from the new matched medallion artwork. */
 body[data-ui-theme="forest-reading"] .transport #prevBtn{background-image:url('./assets/prev-v434.webp')!important;}
 body[data-ui-theme="forest-reading"] .transport #backBtn{background-image:url('./assets/back-v434.webp')!important;}
-body[data-ui-theme="forest-reading"] .transport #aheadBtn{background-image:url('./assets/ahead-v434.webp')!important;}
+body[data-ui-theme="forest-reading"] .transport #aheadBtn{background-image:url('./assets/forward15-v4397.webp?v=4397')!important;}
 body[data-ui-theme="forest-reading"] .transport #nextBtn{background-image:url('./assets/next-v434.webp')!important;}
 body[data-ui-theme="forest-reading"] .transport #playBtn.forest-crystal{background-image:url('./assets/play-v434.webp')!important;}
 body[data-ui-theme="forest-reading"] .transport #playBtn.forest-crystal[data-playing="true"]{background-image:url('./assets/pause.webp')!important;}
@@ -475,4 +475,4 @@ body[data-ui-theme="forest-reading"] #offsetLabel::before{
 body[data-ui-theme="forest-reading"].focus-reading #offsetLabel{display:none!important;}
 @media(max-width:540px){body[data-ui-theme="forest-reading"] #offsetLabel{min-width:62px!important;height:28px!important;padding:2px 5px 2px 25px!important;font-size:10px!important;}body[data-ui-theme="forest-reading"] #offsetLabel::before{width:21px!important;height:21px!important;left:2px!important;}}
 
-:root{--pt-theme-release:4396;}
+:root{--pt-theme-release:4397;}
