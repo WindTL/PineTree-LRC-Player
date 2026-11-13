@@ -121,9 +121,14 @@ body[data-ui-theme="forest-reading"] .lyrics-window{
   }
   body[data-ui-theme="forest-reading"] .time-line>span{font-size:10px!important;}
   body[data-ui-theme="forest-reading"] .forest-seek-scene{
-    padding-top:3px!important;margin:0 2px!important;height:15px!important;min-height:15px!important;
+    padding-top:22px!important;margin:0 2px!important;height:34px!important;min-height:34px!important;
   }
-  body[data-ui-theme="forest-reading"] .squirrel-chase{display:none!important;}
+  body[data-ui-theme="forest-reading"] .squirrel-chase{
+    width:44px!important;height:28px!important;bottom:6px!important;
+    /* Anchor the squirrel along the track while keeping both endpoints in view. */
+    left:var(--seek-progress,0%);
+    transform:translateX(calc(0% - var(--seek-progress,0%)))!important;
+  }
   body[data-ui-theme="forest-reading"] .forest-seek-scene .seek-bar{
     width:100%!important;height:6px!important;margin:3px 0!important;
   }
@@ -178,4 +183,7 @@ body[data-ui-theme="forest-reading"] .lyrics-window{
   body[data-ui-theme="forest-reading"] .control.minor{width:34px!important;height:34px!important;flex-basis:34px!important;}
   body[data-ui-theme="forest-reading"] .control.play.forest-crystal{width:47px!important;height:47px!important;flex-basis:47px!important;}
   body[data-ui-theme="forest-reading"] .speed-settings{height:46px!important;}
+}
+@media (orientation:landscape) and (max-height:390px) and (pointer:coarse){
+  body[data-ui-theme="forest-reading"]:not(.lyrics-maximized) .lyrics-window{min-height:0!important;}
 }
