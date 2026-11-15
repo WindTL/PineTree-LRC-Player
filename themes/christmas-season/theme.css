@@ -1,0 +1,468 @@
+/* Christmas assets and overrides apply to the selected Christmas theme only. */
+:root { --pt-christmas-release: 4403; }
+.christmas-snow, .christmas-sleigh, .christmas-copy, #immersiveEnter .christmas-copy { display: none; }
+.brand-copy :is(.forest-copy,.christmas-copy) { font: inherit; }
+
+body[data-ui-theme="christmas-season"] {
+  --christmas-scene: url('./assets/winter-desktop.webp');
+  --christmas-gold: #f9df9f;
+  --christmas-ink: #0b1920;
+  --christmas-glass: linear-gradient(155deg,#1b3b3be8,#101c27dc 64%,#231824e8);
+  --christmas-rim: #cba76d8c;
+  --christmas-sleigh: url('./assets/sleigh.webp');
+  --christmas-star: url('./assets/star.svg');
+  --christmas-tree: url('./assets/chapter-tree.svg');
+  --christmas-skip: url('./assets/skip.svg');
+  --christmas-gift: url('./assets/gift.svg');
+  --christmas-flake: url('./assets/snowflake.svg');
+  background: radial-gradient(ellipse at 15% 0%,#1d3d36,transparent 55%), #101e25;
+}
+body[data-ui-theme="christmas-season"] .christmas-copy,
+body[data-ui-theme="christmas-season"] #immersiveEnter .christmas-copy { display: inline; }
+body[data-ui-theme="christmas-season"] .forest-copy { display: none; }
+body[data-ui-theme="christmas-season"] .reader {
+  background: var(--christmas-ink);
+  border: 1px solid var(--christmas-rim);
+  border-radius: 20px;
+  box-shadow: 0 12px 35px #050b13a3;
+}
+body[data-ui-theme="christmas-season"] .reader::before {
+  inset: 0;
+  height: auto;
+  opacity: 1;
+  background: linear-gradient(180deg,#08111b16,#0c151d27 55%,#090d15a0),var(--christmas-scene) center / cover no-repeat;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+body[data-ui-theme="christmas-season"] .library,
+body[data-ui-theme="christmas-season"] .drawer-dialog {
+  background: var(--christmas-glass),#11242a;
+  border-color: var(--christmas-rim);
+}
+body[data-ui-theme="christmas-season"] .topbar { border-bottom-color: #ccaf7a40; }
+body[data-ui-theme="christmas-season"] .forest-brandname,
+body[data-ui-theme="christmas-season"] .now-kicker {
+  color: var(--christmas-gold);
+}
+body[data-ui-theme="christmas-season"] .forest-brandname small { color: #d1b885; }
+body[data-ui-theme="christmas-season"] .now-playing {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+body[data-ui-theme="christmas-season"] .now-playing-text { flex: 1; min-width: 0; }
+body[data-ui-theme="christmas-season"] .now-kicker {
+  display: flex;
+  justify-content: center;
+}
+body[data-ui-theme="christmas-season"] .now-playing h1 {
+  color: #fff4d9;
+  text-shadow: 0 3px 15px #030a13, 0 0 28px #e4bb7550;
+}
+body[data-ui-theme="christmas-season"] .now-playing #chapterHint { color: #e2d5bf; }
+body[data-ui-theme="christmas-season"] .lyrics-toolbar { border: 0; }
+body[data-ui-theme="christmas-season"] .lyrics-window {
+  background: linear-gradient(180deg,#0a182648,#0a192883 54%,#0a182642);
+  border: 1px solid #e3c28d50;
+  border-radius: 17px;
+  box-shadow: 0 8px 25px #09121c42;
+}
+body[data-ui-theme="christmas-season"] .lyric-line {
+  color: #f9f2e7;
+  text-shadow: 0 2px 6px #010712,0 2px 12px #010712;
+}
+body[data-ui-theme="christmas-season"] .lyric-line.active,
+body[data-ui-theme="christmas-season"] #immersiveMode .im-lyric.active {
+  background: linear-gradient(90deg,#48213520,#7134489e 30%,#7134489e 70%,#48213520);
+  color: #ffe6ab;
+  box-shadow: inset 0 1px #edbf775e,inset 0 -1px #edbf775e;
+}
+body[data-ui-theme="christmas-season"] .player-bottom .theme-particles { display: none; }
+body[data-ui-theme="christmas-season"] .reader :is(.tiny-action,#offsetLabel),
+body[data-ui-theme="christmas-season"] .header-actions :is(.top-action,.status-chip),
+body[data-ui-theme="christmas-season"] #immersiveMode .im-glass {
+  color: #fae9c6 !important;
+  background: linear-gradient(170deg,#325446ed,#10252aef) !important;
+  border: 1px solid var(--christmas-rim) !important;
+  box-shadow: inset 0 1px #f0d6a626,0 3px 8px #080b1660 !important;
+  border-radius: 999px;
+}
+body[data-ui-theme="christmas-season"] .reader :is(.tiny-action,#offsetLabel):hover,
+body[data-ui-theme="christmas-season"] .header-actions .top-action:hover,
+body[data-ui-theme="christmas-season"] #immersiveMode .im-glass:hover {
+  background: linear-gradient(170deg,#623343,#2d232d) !important;
+  border-color: #f6cf8b !important;
+}
+body[data-ui-theme="christmas-season"] .time-line,
+body[data-ui-theme="christmas-season"] .time-line > span { color: #f7e8cd; text-shadow: 0 1px 6px #000; }
+body[data-ui-theme="christmas-season"].lyrics-maximized .now-playing h1 { font-size: clamp(20px,2.6vw,37px); }
+body[data-ui-theme="christmas-season"].lyrics-maximized .now-playing-actions { display: none; }
+
+/* Reuse the existing range value and accessible controls. The sled stays within both endpoints. */
+body[data-ui-theme="christmas-season"] :is(#seekScene,#imProgressScene) {
+  --sled-width: clamp(115px,12vw,172px);
+  --sled-lane: clamp(68px,6.8vw,99px);
+  --sled-position: var(--seek-progress,0%);
+  position: relative;
+  overflow: visible;
+}
+body[data-ui-theme="christmas-season"] #imProgressScene {
+  --sled-position: var(--im-percent,0%);
+  margin-top: var(--sled-lane);
+}
+body[data-ui-theme="christmas-season"] #seekScene {
+  display: flex;
+  align-items: flex-end;
+  min-height: var(--sled-lane);
+  margin-bottom: 5px;
+}
+body[data-ui-theme="christmas-season"] :is(#seekScene,#imProgressScene):has(input:not(:disabled)) .christmas-sleigh {
+  display: block;
+  position: absolute;
+  pointer-events: none;
+  z-index: 3;
+  left: var(--sled-position);
+  bottom: 18px;
+  width: var(--sled-width);
+  aspect-ratio: 489 / 225;
+  transform: translateX(calc(0% - var(--sled-position)));
+}
+body[data-ui-theme="christmas-season"] .christmas-sleigh::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--christmas-sleigh) center / contain no-repeat;
+  transform-origin: 67% 75%;
+  filter: drop-shadow(0 3px 4px #010711d9);
+}
+body[data-ui-theme="christmas-season"][data-theme-motion="on"][data-playing="true"] .christmas-sleigh::before {
+  animation: christmas-sleigh-gallop .8s ease-in-out infinite;
+}
+@keyframes christmas-sleigh-gallop {
+  0%,100% { transform: translateY(0) rotate(-1deg); }
+  45% { transform: translateY(-4px) rotate(1.5deg); }
+}
+body[data-ui-theme="christmas-season"] #seekBar,
+body[data-ui-theme="christmas-season"] #immersiveMode #imSeek {
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 24px !important;
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+body[data-ui-theme="christmas-season"] #seekBar { --christmas-fill: var(--seek-progress,0%); }
+body[data-ui-theme="christmas-season"] #imSeek { --christmas-fill: var(--im-percent,0%); }
+body[data-ui-theme="christmas-season"] :is(#seekBar,#immersiveMode #imSeek)::-webkit-slider-runnable-track {
+  height: 8px;
+  background: linear-gradient(90deg,#97536b,#f4d99c var(--christmas-fill),#213c45 var(--christmas-fill),#0b1824);
+  border-radius: 999px;
+  border: 1px solid var(--christmas-rim);
+  box-shadow: 0 0 8px #e3a65c36;
+}
+body[data-ui-theme="christmas-season"] :is(#seekBar,#immersiveMode #imSeek)::-moz-range-track {
+  height: 6px;
+  background: linear-gradient(90deg,#97536b,#f4d99c var(--christmas-fill),#213c45 var(--christmas-fill),#0b1824);
+  border-radius: 999px;
+  border: 1px solid var(--christmas-rim);
+  box-shadow: 0 0 8px #e3a65c36;
+}
+body[data-ui-theme="christmas-season"] :is(#seekBar,#immersiveMode #imSeek)::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 27px !important;
+  height: 27px !important;
+  margin-top: -10.5px;
+  background: var(--christmas-gift) center / contain no-repeat !important;
+  border: 0 !important;
+  border-radius: 0;
+  box-shadow: none !important;
+}
+body[data-ui-theme="christmas-season"] :is(#seekBar,#immersiveMode #imSeek)::-moz-range-thumb {
+  width: 27px !important;
+  height: 27px !important;
+  background: var(--christmas-gift) center / contain no-repeat !important;
+  border: 0 !important;
+  border-radius: 0;
+  box-shadow: none !important;
+}
+body[data-ui-theme="christmas-season"] :is(#seekBar,#imSeek):disabled { cursor: default; }
+body[data-ui-theme="christmas-season"] :is(#seekBar,#imSeek):focus-visible { outline: 2px solid #f9dfa9; outline-offset: 2px; }
+
+/* The chapter and skip artwork use exact mirrored pairs. The numeric labels stay upright. */
+body[data-ui-theme="christmas-season"] :is(.playbar,#immersiveMode .im-transport-card) {
+  background: var(--christmas-glass) !important;
+  border: 1px solid var(--christmas-rim) !important;
+  box-shadow: inset 0 1px #eed6ae33,0 6px 28px #060c157a !important;
+  border-radius: 20px !important;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+body[data-ui-theme="christmas-season"] .playbar { padding: 9px 11px !important; min-height: 0 !important; }
+body[data-ui-theme="christmas-season"] .transport { justify-content: space-evenly !important; }
+body[data-ui-theme="christmas-season"] :is(.transport .control,#immersiveMode .im-transport button),
+body[data-ui-theme="christmas-season"] :is(.transport #playBtn.forest-crystal,#immersiveMode #imPlay.im-play) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  filter: drop-shadow(0 3px 7px #030814ba) !important;
+}
+body[data-ui-theme="christmas-season"] :is(.transport .control.minor,#immersiveMode .im-transport .im-small) {
+  --ornament-size: clamp(48px,5vw,72px);
+  width: var(--ornament-size) !important;
+  height: var(--ornament-size) !important;
+  flex: 0 0 var(--ornament-size) !important;
+}
+body[data-ui-theme="christmas-season"] :is(.transport #playBtn.forest-crystal,#immersiveMode #imPlay.im-play) {
+  --star-size: clamp(77px,8vw,116px);
+  width: var(--star-size) !important;
+  height: var(--star-size) !important;
+  flex: 0 0 var(--star-size) !important;
+}
+body[data-ui-theme="christmas-season"] :is(#prevBtn,#nextBtn,#imPrev,#imNext) { --ornament: var(--christmas-tree); }
+body[data-ui-theme="christmas-season"] :is(#backBtn,#aheadBtn,#imBack,#imAhead) { --ornament: var(--christmas-skip); }
+body[data-ui-theme="christmas-season"] :is(#playBtn,#imPlay) { --ornament: var(--christmas-star); }
+body[data-ui-theme="christmas-season"] :is(.transport .control,#immersiveMode .im-transport button)::after {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  background: var(--ornament) center / contain no-repeat !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+  pointer-events: none;
+  z-index: 0;
+}
+body[data-ui-theme="christmas-season"] :is(.transport #nextBtn,.transport #aheadBtn,#immersiveMode #imNext,#immersiveMode #imAhead)::after {
+  transform: scaleX(-1) !important;
+}
+body[data-ui-theme="christmas-season"] :is(.transport .control.minor,#immersiveMode .im-transport .im-small)::before {
+  display: none !important;
+  content: none !important;
+}
+body[data-ui-theme="christmas-season"] :is(.transport #playBtn,#immersiveMode #imPlay)::before {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  inset: 50% auto auto 50% !important;
+  width: 31% !important;
+  height: 31% !important;
+  transform: translate(-50%,-50%) !important;
+  background: linear-gradient(#fff7d4,#edbd69) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-mask: var(--pt-basic-play) center / contain no-repeat !important;
+  mask: var(--pt-basic-play) center / contain no-repeat !important;
+  pointer-events: none;
+  z-index: 2 !important;
+}
+body[data-ui-theme="christmas-season"] :is(.transport #playBtn,#immersiveMode #imPlay)[data-playing="true"]::before {
+  -webkit-mask-image: var(--pt-basic-pause) !important;
+  mask-image: var(--pt-basic-pause) !important;
+}
+body[data-ui-theme="christmas-season"] :is(.transport .skip-control,#immersiveMode .im-skip-control) small {
+  display: grid !important;
+  place-items: center;
+  position: absolute !important;
+  inset: 50% auto auto 50% !important;
+  transform: translate(-50%,-50%);
+  min-width: 0 !important;
+  margin: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  font: 800 clamp(10px,1.14vw,16px)/1 system-ui,sans-serif !important;
+  color: #fff2c0 !important;
+  text-shadow: 0 1px 3px #1f0c19;
+  pointer-events: none;
+  z-index: 3 !important;
+}
+body[data-ui-theme="christmas-season"] :is(.transport .control,#immersiveMode .im-transport button):disabled {
+  opacity: .64;
+}
+body[data-ui-theme="christmas-season"] :is(.transport .control,#immersiveMode .im-transport button):focus-visible {
+  outline: 2px solid #f9dfa9;
+  outline-offset: 4px;
+}
+body[data-ui-theme="christmas-season"][data-theme-motion="on"] :is(.transport #playBtn,#immersiveMode #imPlay)[data-playing="true"]::after {
+  animation: christmas-star-turn 16s linear infinite;
+  transform-origin: center;
+}
+@keyframes christmas-star-turn { to { transform: rotate(1turn); } }
+body[data-ui-theme="christmas-season"] :is(.speed-settings,#immersiveMode .im-speed) {
+  background: linear-gradient(155deg,#132d31e8,#21222eee) !important;
+  border: 1px solid var(--christmas-rim) !important;
+  box-shadow: inset 0 1px #ffe2a925 !important;
+}
+body[data-ui-theme="christmas-season"] .speed-settings { flex-basis: clamp(160px,18vw,250px) !important; min-width: 156px !important; }
+body[data-ui-theme="christmas-season"] :is(.speed-settings label,#immersiveMode .im-speed label)::before {
+  content: "" !important;
+  display: block !important;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  background: var(--christmas-flake) center / contain no-repeat;
+}
+body[data-ui-theme="christmas-season"] :is(.speed-settings label,#immersiveMode .im-speed label) { color: #f7e5c1 !important; justify-content: flex-start !important; gap: 6px !important; }
+body[data-ui-theme="christmas-season"] :is(.speed-settings output,#immersiveMode .im-speed output) { color: var(--christmas-gold) !important; margin-left: auto; }
+body[data-ui-theme="christmas-season"] :is(#speedRange,#imSpeed) { accent-color: #efc980 !important; }
+body[data-ui-theme="christmas-season"] :is(.forest-speed-presets,.im-speed-presets) button[aria-pressed="true"] {
+  background: #64354a !important;
+  border-color: #d7ab70 !important;
+  color: #fff2c6 !important;
+  box-shadow: none !important;
+}
+
+/* The separate immersive view shares the same Christmas art and transport. */
+body[data-ui-theme="christmas-season"] #immersiveMode {
+  --im-gold: #fae1a8;
+  --im-green: #dfaa76;
+  --im-mint: #e8ddc5;
+  --im-border: var(--christmas-rim);
+  background: var(--christmas-ink);
+}
+body[data-ui-theme="christmas-season"] #immersiveMode .im-background {
+  background: linear-gradient(180deg,#08111b26,#0c151d40 55%,#090d159e),var(--christmas-scene) center / cover no-repeat;
+  filter: none;
+}
+body[data-ui-theme="christmas-season"] #immersiveMode :is(.im-atmosphere,.im-fireflies,.im-squirrel,.im-progress-shimmer,.im-speed-icon),
+body[data-ui-theme="christmas-season"] #immersiveMode::before,
+body[data-ui-theme="christmas-season"] #immersiveMode::after,
+body[data-ui-theme="christmas-season"] #immersiveMode :is(.im-speed,.im-glass,.im-lyrics)::before,
+body[data-ui-theme="christmas-season"] #immersiveMode .im-lyrics::after { display: none; }
+body[data-ui-theme="christmas-season"] #immersiveMode .im-lyrics {
+  border-color: #e3c28d50;
+  background: linear-gradient(180deg,#0a182648,#0a192880);
+}
+body[data-ui-theme="christmas-season"] #immersiveMode .im-heading h1 { color: #fff1ce; text-shadow: 0 4px 18px #060e19,0 0 28px #d9aa5c50; }
+body[data-ui-theme="christmas-season"] #immersiveMode .im-progress-labels { color: #f7e5be; }
+body[data-ui-theme="christmas-season"] #immersiveMode .im-transport-card { min-height: 0; }
+body[data-ui-theme="christmas-season"] #immersiveMode #imPlay { animation: none; }
+
+body[data-ui-theme="christmas-season"][data-theme-motion="on"] .christmas-snow {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 75;
+  overflow: hidden;
+  pointer-events: none;
+}
+body[data-ui-theme="christmas-season"] .christmas-snow > span {
+  position: absolute;
+  top: 0;
+  left: var(--flake-x);
+  width: var(--flake-size);
+  height: var(--flake-size);
+  border-radius: 50%;
+  background: #eff8ff;
+  box-shadow: 0 0 5px #d4eaff75;
+  opacity: 0;
+  animation: christmas-snowfall var(--flake-time) linear var(--flake-delay) infinite;
+}
+body[data-ui-theme="christmas-season"][data-page-visible="false"] .christmas-snow > span {
+  animation-play-state: paused;
+}
+@keyframes christmas-snowfall {
+  0% { opacity: 0; transform: translate3d(-12px,-8px,0); }
+  13% { opacity: var(--flake-opacity); }
+  50% { transform: translate3d(var(--flake-drift),50vh,0); }
+  87% { opacity: var(--flake-opacity); }
+  100% { opacity: 0; transform: translate3d(calc(var(--flake-drift) * .35),103vh,0); }
+}
+@media (max-width: 850px) and (orientation: portrait) {
+  body[data-ui-theme="christmas-season"] { --christmas-scene: url('./assets/winter-portrait.webp'); }
+}
+@media (max-width: 850px) {
+  body[data-ui-theme="christmas-season"] .reader { padding: 13px 11px max(9px,env(safe-area-inset-bottom)); }
+  body[data-ui-theme="christmas-season"].lyrics-maximized .reader {
+    padding: max(12px,env(safe-area-inset-top)) 11px max(9px,env(safe-area-inset-bottom));
+  }
+  body[data-ui-theme="christmas-season"] .lyrics-toolbar { padding-top: 2px; margin-bottom: 6px; gap: 3px; }
+  body[data-ui-theme="christmas-season"] .lyrics-tools { flex-wrap: wrap; max-width: 100%; justify-content: flex-end; }
+  body[data-ui-theme="christmas-season"] .playbar { padding: 5px 7px !important; gap: 4px !important; }
+  body[data-ui-theme="christmas-season"] .speed-settings { display: block; flex: 0 0 auto !important; min-width: 0 !important; }
+  body[data-ui-theme="christmas-season"] .speed-settings input { margin-top: 3px !important; }
+  body[data-ui-theme="christmas-season"] .forest-speed-presets { margin-top: 2px !important; }
+  body[data-ui-theme="christmas-season"] :is(#seekScene,#imProgressScene) { --sled-width: 105px; --sled-lane: 66px; }
+  body[data-ui-theme="christmas-season"] :is(.transport .control.minor,#immersiveMode .im-transport .im-small) { --ornament-size: clamp(40px,12vw,52px); }
+  body[data-ui-theme="christmas-season"] :is(.transport #playBtn.forest-crystal,#immersiveMode #imPlay.im-play) { --star-size: clamp(60px,17vw,74px); }
+}
+@media (max-width: 540px) {
+  body[data-ui-theme="christmas-season"] .header-actions { gap: 4px; }
+  body[data-ui-theme="christmas-season"] .header-actions .top-action { width: 34px; height: 35px; }
+  body[data-ui-theme="christmas-season"] .now-playing-actions { display: none; }
+  body[data-ui-theme="christmas-season"] .now-playing { padding-bottom: 6px; }
+  body[data-ui-theme="christmas-season"] .lyrics-tools { justify-content: flex-start; gap: 3px; }
+  body[data-ui-theme="christmas-season"] .speed-settings label { flex-basis: auto; }
+  body[data-ui-theme="christmas-season"] .speed-settings label::before { width: 17px; height: 17px; flex-basis: 17px; }
+  body[data-ui-theme="christmas-season"] .reader .time-line { margin-top: 0; }
+}
+@media (orientation: landscape) and (max-height: 650px) and (pointer: coarse) {
+  body[data-ui-theme="christmas-season"] { overflow: hidden; }
+  body[data-ui-theme="christmas-season"] .app-shell {
+    min-height: 0;
+    padding: 0 max(6px,env(safe-area-inset-right)) max(3px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));
+    gap: 4px;
+  }
+  body[data-ui-theme="christmas-season"] .topbar { height: 38px; flex-basis: 38px; }
+  body[data-ui-theme="christmas-season"] .brand-mark { width: 30px; height: 30px; flex-basis: 30px; }
+  body[data-ui-theme="christmas-season"] .brand-copy > span { display: none; }
+  body[data-ui-theme="christmas-season"] .header-actions .top-action { min-height: 29px; padding: 3px 8px; }
+  body[data-ui-theme="christmas-season"] .mobile-switch { display: grid; height: 30px; flex: 0 0 30px; padding: 2px; }
+  body[data-ui-theme="christmas-season"].lyrics-maximized .mobile-switch { display: none; }
+  body[data-ui-theme="christmas-season"] .layout { display: block; }
+  body[data-ui-theme="christmas-season"] .layout > :is(.library,.reader) { height: 100%; }
+  body[data-ui-theme="christmas-season"].mobile-view-player .library,
+  body[data-ui-theme="christmas-season"].mobile-view-chapters:not(.lyrics-maximized) .reader { display: none; }
+  body[data-ui-theme="christmas-season"] .reader { padding: 4px 9px; }
+  body[data-ui-theme="christmas-season"].lyrics-maximized .reader {
+    padding: 4px max(9px,env(safe-area-inset-right)) max(4px,env(safe-area-inset-bottom)) max(9px,env(safe-area-inset-left));
+  }
+  body[data-ui-theme="christmas-season"] .now-playing { padding: 0 0 3px; }
+  body[data-ui-theme="christmas-season"] .now-playing h1 { font-size: 17px; line-height: 1.15; margin: 2px 0; }
+  body[data-ui-theme="christmas-season"] .now-kicker { font-size: 10px; }
+  body[data-ui-theme="christmas-season"] :is(.now-playing-actions,#chapterHint,.listen-extras,.storage-hint,#syncLiveIndicator) { display: none; }
+  body[data-ui-theme="christmas-season"] .lyrics-toolbar { gap: 3px; margin: 0 0 3px; padding: 0; }
+  body[data-ui-theme="christmas-season"] .lyrics-tools .tiny-action { min-height: 25px; padding: 2px 6px; font-size: 10px; }
+  body[data-ui-theme="christmas-season"] .lyric-line { padding-block: 4px; line-height: 1.45; }
+  body[data-ui-theme="christmas-season"] .player-bottom { padding-top: 2px; }
+  body[data-ui-theme="christmas-season"] :is(#seekScene,#imProgressScene) { --sled-width: 74px; --sled-lane: 52px; }
+  body[data-ui-theme="christmas-season"] #seekScene { margin-bottom: 1px; }
+  body[data-ui-theme="christmas-season"] .playbar { flex-direction: row !important; padding: 2px 8px !important; }
+  body[data-ui-theme="christmas-season"] .transport { flex: 1 1 auto !important; width: auto !important; }
+  body[data-ui-theme="christmas-season"] :is(.transport .control.minor,#immersiveMode .im-transport .im-small) { --ornament-size: 40px; }
+  body[data-ui-theme="christmas-season"] :is(.transport #playBtn.forest-crystal,#immersiveMode #imPlay.im-play) { --star-size: 51px; }
+  body[data-ui-theme="christmas-season"] .speed-settings { display: block; flex: 0 0 136px !important; width: 136px !important; padding: 4px 7px !important; }
+  body[data-ui-theme="christmas-season"] .speed-settings input { margin: 0 !important; }
+  body[data-ui-theme="christmas-season"] .speed-settings label::before { display: none !important; }
+  body[data-ui-theme="christmas-season"] .forest-speed-presets { display: none !important; }
+  body[data-ui-theme="christmas-season"] #immersiveMode .im-heading h1 { font-size: 24px; }
+  body[data-ui-theme="christmas-season"] #immersiveMode .im-eng { margin: 0 0 3px; }
+  body[data-ui-theme="christmas-season"] #immersiveMode .im-speed-presets { display: none; }
+  body[data-ui-theme="christmas-season"] #immersiveMode .im-lyrics { min-height: 100px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-ui-theme="christmas-season"][data-theme-motion="on"] .christmas-snow { display: none; }
+  body[data-ui-theme="christmas-season"] .christmas-sleigh::before,
+  body[data-ui-theme="christmas-season"][data-theme-motion="on"] :is(.transport #playBtn,#immersiveMode #imPlay)[data-playing="true"]::after { animation: none; }
+}
+
+@media (min-width: 851px) and (max-width: 1050px) {
+  body[data-ui-theme="christmas-season"] .transport .control.minor { --ornament-size: 42px; }
+  body[data-ui-theme="christmas-season"] .transport #playBtn.forest-crystal { --star-size: 68px; }
+}

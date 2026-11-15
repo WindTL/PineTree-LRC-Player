@@ -61,8 +61,8 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4402';
-window.PineTreeAppRelease='4402';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4403';
+window.PineTreeAppRelease='4403';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -651,7 +651,7 @@ function updateMediaSession(force=false){
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
       title:info.title,artist:info.artist,album:info.album,
-      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4402',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4403',document.baseURI).href,sizes:'512x512',type:'image/png'}]
     });
     state.lockScreenMetaKey=info.key;
     state.lockScreenLastText=info.title;
@@ -661,7 +661,7 @@ function updateMediaSession(force=false){
       try{
         navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
           artist:'PineTree 有聲書',album:info.album,
-          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4402',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4403',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
         state.lockScreenMetaKey=info.key;
         state.lockScreenLastAt=now;
         return;
@@ -863,7 +863,9 @@ async function startPlayback({fromLockScreen=false}={}){
 }
 function skipSeconds(n){if(!state.current||!Number.isFinite(audio.duration))return;audio.currentTime=Math.max(0,Math.min(audio.duration,audio.currentTime+n));updateProgressDisplay();updateLyrics();saveProgress();}
 function adjacentTrack(delta){const list=state.current?sortedBookTracks(state.current.book):[];const i=list.findIndex(t=>t.id===state.current?.id);if(i<0||!list[i+delta]){toast(delta>0?'这已是本书最后一章':'这已是本书第一章');return;}return loadTrack(list[i+delta],{autoplay:true});}
-function updateProgressDisplay(){const cur=Number(audio.currentTime)||0,d=Number(audio.duration)||0;$('elapsed').textContent=formatTime(cur);$('duration').textContent=formatTime(d);const pct=d>0?Math.max(0,Math.min(100,cur/d*100)):0;const seekScene=$('seekScene');if(seekScene)seekScene.style.setProperty('--seek-progress',pct+'%');$('seekBar').style.setProperty('--seek-progress',pct+'%');if(!state.seeking)$('seekBar').value=d>0?String(Math.min(1000,Math.round(cur/d*1000))):'0';}
+function updateProgressDisplay(){
+  if(state.uiTheme==='christmas-season'&&state.seeking)return;
+  const cur=Number(audio.currentTime)||0,d=Number(audio.duration)||0;$('elapsed').textContent=formatTime(cur);$('duration').textContent=formatTime(d);const pct=d>0?Math.max(0,Math.min(100,cur/d*100)):0;const seekScene=$('seekScene');if(seekScene)seekScene.style.setProperty('--seek-progress',pct+'%');$('seekBar').style.setProperty('--seek-progress',pct+'%');if(!state.seeking)$('seekBar').value=d>0?String(Math.min(1000,Math.round(cur/d*1000))):'0';}
 async function deleteCurrent(){if(!state.current)return;await deleteEpisodes([state.current.id]);}
 function changeFont(delta){state.fontSize=bounded(state.fontSize+delta,14,38,21);document.documentElement.style.setProperty('--font-size',`${state.fontSize}px`);localStorage.setItem('lyra-font',state.fontSize);markSettingsChanged();requestAnimationFrame(()=>{syncLyricsViewportPadding();updateLyrics(true);});}
 function renderOffsetLabel(){
@@ -909,11 +911,47 @@ function setArtTheme(id,persist=true){
   if(persist)localStorage.setItem('pinetree-art-theme-v380',state.artTheme);
   refreshThemePresetButtons();
 }
+function updateChristmasTheme(active){
+  const snow=$('christmasSnow');
+  if(active && !snow.childElementCount){
+    const flakes=document.createDocumentFragment();
+    for(let i=0;i<30;i++){
+      const flake=document.createElement('span');
+      flake.style.setProperty('--flake-x',`${(i*37.63)%100}%`);
+      flake.style.setProperty('--flake-size',`${1.8+i%5*.58}px`);
+      flake.style.setProperty('--flake-time',`${10+i%9*1.35}s`);
+      flake.style.setProperty('--flake-delay',`${-(i*1.37%17)}s`);
+      flake.style.setProperty('--flake-drift',`${(i%2?1:-1)*(11+i%6*5)}px`);
+      flake.style.setProperty('--flake-opacity',String(.2+i%6*.09));
+      flakes.append(flake);
+    }
+    snow.append(flakes);
+  }
+  const theme=active?'聖誕':'森夜';
+  $('immersiveMode').setAttribute('aria-label',active?'聖誕季沉浸播放器':'森夜閱讀沉浸播放器');
+  const entryLabels=[
+    ['immersiveEnter','開啟森夜沉浸播放器','切換至森夜閱讀旗艦沉浸播放模式'],
+    ['mobileImmersiveEnter','進入森夜沉浸',''],
+    ['immersiveEnterSecondary','開啟森夜沉浸播放','開啟森夜沉浸播放器']
+  ];
+  for(const [id,label,title] of entryLabels){
+    const button=$(id);
+    button.setAttribute('aria-label',label.replace('森夜',theme));
+    if(title)button.title=active?'開啟聖誕季沉浸播放器':title;
+  }
+}
 function setUITheme(id,persist=true){
+  const wasChristmas=document.body.dataset.uiTheme==='christmas-season';
   state.uiTheme=UI_THEME_IDS.has(id)?id:'';
   if(state.uiTheme)document.body.dataset.uiTheme=state.uiTheme;
   else delete document.body.dataset.uiTheme;
   if(persist)localStorage.setItem('pinetree-ui-theme-v380',state.uiTheme);
+  const isChristmas=state.uiTheme==='christmas-season';
+  if(isChristmas || wasChristmas){
+    updateChristmasTheme(isChristmas);
+    if(state.immersive)updateImmersiveInfo();
+    else requestAnimationFrame(()=>{syncLyricsViewportPadding();updateLyrics(true);});
+  }
   refreshThemePresetButtons();
 }
 function setTheme(page,panel,accent,{linked=state.panelLinked}={}){
@@ -1661,7 +1699,8 @@ function setImmersiveMode(enabled,{persist=true}={}){
 function updateImmersiveInfo(){
   const book=state.current?.book||state.selectedBook;
   $('imBookTitle').textContent=book?bookTitle(book):'請先從書庫匯入或選擇小說';
-  $('imChapterTitle').textContent=state.current?chapterDisplayName(state.current.name):'在月光與松林之間，聽見故事';
+  const emptyTitle=state.uiTheme==='christmas-season'?'選擇章節，在雪夜裡聽故事':'在月光與松林之間，聽見故事';
+  $('imChapterTitle').textContent=state.current?chapterDisplayName(state.current.name):emptyTitle;
   const ready=!!state.current&&!!state.fileUrl&&!!audio.src;
   for(const id of ['imPlay','imPrev','imNext','imBack','imAhead','imSeek'])$(id).disabled=!ready;
 }
@@ -1772,7 +1811,7 @@ async function start(){
   try{
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
     await syncRestoreTask;await activateLinkedSyncAfterStartup();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.4.2：森夜閱讀背景已清除舊裝飾框與松枝線稿',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.4.3：在外觀選擇「聖誕季」即可切換至雪夜旗艦版',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     const last=state.tracks.find(x=>x.id===localStorage.getItem('lyra-last-id'));

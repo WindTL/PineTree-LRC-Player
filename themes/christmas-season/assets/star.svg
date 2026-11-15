@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <defs>
+    <linearGradient id="rim" x1="18" y1="9" x2="102" y2="105" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff0b3"/><stop offset=".27" stop-color="#e9be68"/><stop offset=".56" stop-color="#805324"/><stop offset=".77" stop-color="#ffe8a1"/><stop offset="1" stop-color="#b07a3f"/>
+    </linearGradient>
+    <radialGradient id="ruby" cx=".34" cy=".25" r=".8">
+      <stop stop-color="#f8b0ad"/><stop offset=".23" stop-color="#a33748"/><stop offset=".67" stop-color="#65182d"/><stop offset="1" stop-color="#2f101d"/>
+    </radialGradient>
+    <linearGradient id="shine" x2="1" y2="1">
+      <stop stop-color="#fff1c7" stop-opacity=".75"/><stop offset="1" stop-color="#eec892" stop-opacity=".08"/>
+    </linearGradient>
+  </defs>
+  <path d="M60 6 76 38 112 44 86 70 92 107 60 91 27 107 33 70 8 44 44 38Z" fill="#240b17" stroke="#3a2119" stroke-width="3" stroke-linejoin="round" transform="translate(0 3)"/>
+  <path d="M60 6 76 38 112 44 86 70 92 107 60 91 27 107 33 70 8 44 44 38Z" fill="url(#rim)" stroke="#ffdfa0" stroke-width=".85" stroke-linejoin="round"/>
+  <path d="M60 14 73 42 104 47 82 69 87 100 60 86 32 100 37 69 16 47 47 42Z" fill="url(#ruby)" stroke="#6b3c28" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M60 14 60 44 47 42ZM16 47 43 51 37 69ZM32 100 49 78 60 86ZM82 69 77 53 104 47ZM87 100 70 78 82 69Z" fill="url(#shine)" opacity=".5"/>
+  <path d="M60 15 74 43 103 47M17 47l21 21-5 31M60 86l27 14" stroke="#ffe5a6" stroke-opacity=".65" stroke-linecap="round"/>
+  <path d="M60 22v10m-5-5h10M29 50v6m-3-3h6m62-4v6m-3-3h6" stroke="#fff2c5" stroke-width="1.25" stroke-linecap="round"/>
+  <circle cx="60" cy="60" r="25" fill="#430e23" fill-opacity=".56" stroke="url(#rim)" stroke-opacity=".85"/>
+  <circle cx="60" cy="60" r="22.7" stroke="#fff0b2" stroke-opacity=".17"/>
+</svg>

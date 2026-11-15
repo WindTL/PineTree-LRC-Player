@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 88" fill="none">
+  <defs>
+    <linearGradient id="metal" x1="18" y1="7" x2="73" y2="83" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff0bc"/><stop offset=".39" stop-color="#dda65c"/><stop offset=".59" stop-color="#8c5d36"/><stop offset=".84" stop-color="#ffe19d"/><stop offset="1" stop-color="#8b532e"/>
+    </linearGradient>
+    <radialGradient id="ruby" cx=".29" cy=".23" r=".82">
+      <stop stop-color="#9d394c"/><stop offset=".5" stop-color="#542235"/><stop offset="1" stop-color="#271722"/>
+    </radialGradient>
+  </defs>
+  <circle cx="44" cy="45" r="39.7" fill="#27131d" stroke="#16161b" stroke-width="4"/>
+  <circle cx="44" cy="44" r="39" fill="url(#ruby)" stroke="url(#metal)" stroke-width="2.1"/>
+  <circle cx="44" cy="44" r="35" stroke="#ffe6b0" stroke-opacity=".35"/>
+  <circle cx="44" cy="44" r="31.6" stroke="#110e18" stroke-opacity=".6"/>
+  <path d="M22 38a22.6 22.6 0 1 1 6 22" stroke="#27131d" stroke-width="6" stroke-linecap="round"/>
+  <path d="M22 38a22.6 22.6 0 1 1 6 22m-3-32-4 11 11-3" stroke="url(#metal)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M44 10v5m-2.5-2.5h5M44 73v5m-2.5-2.5h5" stroke="#fff0bf" stroke-width="1.1" stroke-linecap="round"/>
+</svg>
