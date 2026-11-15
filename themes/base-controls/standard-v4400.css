@@ -10,8 +10,6 @@
 body:not([data-ui-theme="forest-reading"]) .forest-signature,
 body:not([data-ui-theme="forest-reading"]) .forest-top-title,
 body:not([data-ui-theme="forest-reading"]) .forest-atmosphere,
-body:not([data-ui-theme="forest-reading"]) .forest-frame-art,
-body:not([data-ui-theme="forest-reading"]) .forest-garland-art,
 body:not([data-ui-theme="forest-reading"]) .forest-firefly-field,
 body:not([data-ui-theme="forest-reading"]) .squirrel-chase,
 body:not([data-ui-theme="forest-reading"]) .forest-delete-shortcut {display:none!important;}

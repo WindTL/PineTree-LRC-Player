@@ -16,8 +16,6 @@ body[data-ui-theme="forest-reading"] .library {
   border-color:rgba(232,210,133,.62)!important;
 }
 body[data-ui-theme="forest-reading"] .library::before{background:radial-gradient(ellipse at 18% 4%,rgba(96,178,123,.14),transparent 57%),linear-gradient(180deg,rgba(3,20,16,.03),rgba(1,13,10,.25))!important;}
-body[data-ui-theme="forest-reading"] .forest-garland-art{opacity:.12!important;pointer-events:none}
-body[data-ui-theme="forest-reading"] .forest-frame-art{opacity:.35!important;pointer-events:none}
 body[data-ui-theme="forest-reading"] .forest-moon-rays{opacity:.30!important}
 body[data-ui-theme="forest-reading"] .forest-mist{opacity:.23!important}
 body[data-ui-theme="forest-reading"] .now-playing{position:relative;}
@@ -467,4 +465,4 @@ body[data-ui-theme="forest-reading"] #offsetLabel::before{
 body[data-ui-theme="forest-reading"].focus-reading #offsetLabel{display:none!important;}
 @media(max-width:540px){body[data-ui-theme="forest-reading"] #offsetLabel{min-width:62px!important;height:28px!important;padding:2px 5px 2px 25px!important;font-size:10px!important;}body[data-ui-theme="forest-reading"] #offsetLabel::before{width:21px!important;height:21px!important;left:2px!important;}}
 
-:root{--pt-theme-release:4401;}
+:root{--pt-theme-release:4402;}
