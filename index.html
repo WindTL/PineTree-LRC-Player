@@ -8,12 +8,12 @@
 <meta content="default" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="PineTree 有聲書" name="apple-mobile-web-app-title"/>
 <meta content="PineTree 有聲書 · 森夜閱讀、離線 MP3/LRC、iCloud Drive 手動同步" name="description"/>
-<link href="./manifest.webmanifest?v=4403" rel="manifest"/>
-<link href="./apple-touch-icon.png?v=4403" rel="apple-touch-icon"/>
-<link href="./icon-192.png?v=4403" rel="icon"/>
-<link href="./styles.css?v=4403" rel="stylesheet"/>
-<link href="./themes/forest-reading/theme.css?v=4403" rel="stylesheet"/>
-<meta name="pinetree-release" content="4403"/>
+<link href="./manifest.webmanifest?v=4404" rel="manifest"/>
+<link href="./apple-touch-icon.png?v=4404" rel="apple-touch-icon"/>
+<link href="./icon-192.png?v=4404" rel="icon"/>
+<link href="./styles.css?v=4404" rel="stylesheet"/>
+<link href="./themes/forest-reading/theme.css?v=4404" rel="stylesheet"/>
+<meta name="pinetree-release" content="4404"/>
 <style id="pinetreeFlagshipStyle">/* v4.3.8 • real image selection and shared forest artwork in immersive mode. */
 body[data-ui-theme="forest-reading"] #offsetLabel{padding:1px 9px 1px 3px!important;gap:5px!important;min-width:78px!important;height:34px!important;}
 body[data-ui-theme="forest-reading"] #offsetLabel::before{content:none!important;display:none!important;}
@@ -94,7 +94,7 @@ body[data-ui-theme="forest-reading"] #immersiveMode .im-fireflies{display:none;}
 #immersiveMode .im-squirrel{height:42px;width:70px;left:clamp(0px,calc(var(--im-percent,0%) - 70px),calc(100% - 74px));}
 @media(max-width:720px){#immersiveMode .im-progress-wrap{margin-top:30px;}#immersiveMode .im-squirrel{width:49px;height:30px;left:clamp(0px,calc(var(--im-percent,0%) - 48px),calc(100% - 50px));}}
 
-:root{--pt-flagship-release:4403;}
+:root{--pt-flagship-release:4404;}
 #resourceRepairBox{padding:10px 12px;margin:10px 0;border:1px solid #ba9e5c88;border-radius:12px;background:#09291f;color:#f0e1ac;}
 #resourceRepairBox p{font-size:12px;margin:6px 0;overflow-wrap:anywhere;}
 #resourceRepairBox button{margin-top:5px;min-height:36px;}
@@ -103,34 +103,34 @@ body[data-ui-theme="forest-reading"] #immersiveMode .im-fireflies{display:none;}
 #resourceRepairBox [data-status="error"]{color:#ffcaab;}
 #resourceRepairBox [data-status="ok"]{color:#d6f4b2;}
 </style>
-<title>PineTree 有聲書 · v4.4.3 聖誕季旗艦版</title>
-<link href="./themes/forest-reading/landscape-v4395.css?v=4403" rel="stylesheet"/>
-<link rel="stylesheet" href="./themes/base-controls/standard-v4400.css?v=4403"/>
-<link rel="stylesheet" href="./themes/forest-reading/transport-mirror-v4400.css?v=4403"/>
-<link rel="stylesheet" href="./themes/christmas-season/theme.css?v=4403"/>
+<title>PineTree 有聲書 · v4.4.4 聖誕季 VIP</title>
+<link href="./themes/forest-reading/landscape-v4395.css?v=4404" rel="stylesheet"/>
+<link rel="stylesheet" href="./themes/base-controls/standard-v4400.css?v=4404"/>
+<link rel="stylesheet" href="./themes/forest-reading/transport-mirror-v4400.css?v=4404"/>
+<link rel="stylesheet" href="./themes/christmas-season/theme.css?v=4404"/>
 </head>
 <body>
 <div class="christmas-snow" id="christmasSnow" aria-hidden="true"></div>
 <div class="app-shell">
 <header class="topbar">
 <div class="brand">
-<div aria-hidden="true" class="brand-mark" id="brandMonogram"><img alt="" src="./apple-touch-icon.png?v=4403"/></div>
-<div class="brand-copy"><strong class="forest-brandname">PineTree <small>v4.4.3</small></strong><span>A U D I O B O O K <b>·</b> <em class="forest-copy">森夜閱讀</em><em class="christmas-copy">聖誕季</em></span><strong class="visually-hidden" id="brandTitle">我的小说书库</strong></div>
+<div aria-hidden="true" class="brand-mark" id="brandMonogram"><img alt="" src="./apple-touch-icon.png?v=4404"/></div>
+<div class="brand-copy"><strong class="forest-brandname">PineTree <small>v4.4.4</small></strong><span>A U D I O B O O K <b>·</b> <em class="forest-copy">森夜閱讀</em><em class="christmas-copy">聖誕季</em></span><strong class="visually-hidden" id="brandTitle">我的小说书库</strong></div>
 </div>
 <div class="forest-top-title" aria-hidden="true"><span class="forest-top-kicker">✦ P I N E T R E E ✦</span><strong>森 夜 閱 讀</strong><span class="forest-top-sub">F O R E S T · R E A D I N G</span></div>
 <nav aria-label="全局操作" class="header-actions">
 <span class="status-chip" id="networkBadge">● 准备就绪</span>
-<button aria-label="開啟森夜沉浸播放器" class="top-action im-enter-action" id="immersiveEnter" title="切換至森夜閱讀旗艦沉浸播放模式" type="button">✦ <span class="forest-copy">森夜沉浸</span><span class="christmas-copy">聖誕沉浸</span></button>
-<button class="top-action resume-action" id="quickResume" title="跳回最近聆聽的章節" type="button">▶ <span>快速續聽</span></button>
+<button aria-label="開啟森夜沉浸播放器" class="top-action im-enter-action" id="immersiveEnter" title="切換至森夜閱讀旗艦沉浸播放模式" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">✦</span> <span class="forest-copy">森夜沉浸</span><span class="christmas-copy">聖誕沉浸</span></button>
+<button class="top-action resume-action" id="quickResume" title="跳回最近聆聽的章節" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">▶</span> <span>快速續聽</span></button>
 <button class="top-action" id="cloudOpen" title="手動同步 iCloud Drive 播放記錄與書架" type="button"><span aria-hidden="true">☁</span><span>iCloud 同步</span></button>
 <button class="top-action" id="themeOpen" title="更换整个界面配色" type="button"><span aria-hidden="true">◐</span><span>外觀</span></button>
 <button class="top-action" id="bookManagerOpen" title="管理小说和封面" type="button"><span aria-hidden="true">▣</span><span>书库管理</span></button>
 </nav>
 </header>
 <nav aria-label="移动端页面切换" class="mobile-switch">
-<button aria-pressed="true" class="mobile-tab active" id="mobileTabPlayer" type="button">♫ 播放 / 字幕</button>
-<button aria-pressed="false" class="mobile-tab" id="mobileTabChapters" type="button">☷ 章节目录</button>
-<button class="mobile-tab mobile-immersive-entry" id="mobileImmersiveEnter" type="button" aria-label="進入森夜沉浸">✦ 沉浸</button>
+<button aria-pressed="true" class="mobile-tab active" id="mobileTabPlayer" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">♫</span> 播放 / 字幕</button>
+<button aria-pressed="false" class="mobile-tab" id="mobileTabChapters" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">☷</span> 章节目录</button>
+<button class="mobile-tab mobile-immersive-entry" id="mobileImmersiveEnter" type="button" aria-label="進入森夜沉浸"><span class="christmas-legacy-glyph" aria-hidden="true">✦</span> 沉浸</button>
 </nav>
 <main class="layout">
 <aside aria-label="章节目录" class="library card" id="libraryPanel">
@@ -188,9 +188,9 @@ body[data-ui-theme="forest-reading"] #immersiveMode .im-fireflies{display:none;}
 <div class="story-fallback" id="storyArtFallback"><span id="storyBookName">书</span></div>
 <img alt="当前小说封面" hidden="" id="currentCover"/>
 </div>
-<button aria-label="開啟森夜沉浸播放" class="tiny-action im-entry-secondary" id="immersiveEnterSecondary" title="開啟森夜沉浸播放器" type="button">✧ 沉浸</button>
-<button class="tiny-action mobile-only" id="libraryJumpBtn" title="打开章节目录" type="button">☷</button>
-<button class="tiny-action" disabled="" id="deleteBtn" title="仅删除当前章节" type="button">⌫</button>
+<button aria-label="開啟森夜沉浸播放" class="tiny-action im-entry-secondary" id="immersiveEnterSecondary" title="開啟森夜沉浸播放器" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">✧</span> 沉浸</button>
+<button class="tiny-action mobile-only" id="libraryJumpBtn" title="打开章节目录" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">☷</span></button>
+<button class="tiny-action" disabled="" id="deleteBtn" title="仅删除当前章节" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">⌫</span></button>
 </div>
 </div>
 <div class="lyrics-toolbar">
@@ -211,7 +211,7 @@ body[data-ui-theme="forest-reading"] #immersiveMode .im-fireflies{display:none;}
 </div>
 <div class="player-bottom">
 <div aria-hidden="true" class="theme-particles" id="themeParticles"></div>
-<div class="listen-extras"><button class="tiny-action" disabled="" id="bookmarkAdd" title="收藏目前時間及文字" type="button">收藏此句</button><button class="tiny-action" id="bookmarkOpen" title="檢視已收藏書籤" type="button">我的書籤</button><button class="tiny-action" id="sleepOpen" title="設定睡眠定時器" type="button">☾ 睡眠定時</button><button class="tiny-action" id="lockScreenOpen" title="設定鎖屏顯示資訊" type="button">🔒 鎖屏字幕 · 實驗</button><button class="tiny-action forest-delete-shortcut" id="forestDeleteShortcut" type="button" title="僅刪除本機目前章節" aria-label="刪除本機目前章節">⌫ 刪除本章</button><span aria-live="polite" id="sleepStatus">定時器未開啟</span></div>
+<div class="listen-extras"><button class="tiny-action" disabled="" id="bookmarkAdd" title="收藏目前時間及文字" type="button">收藏此句</button><button class="tiny-action" id="bookmarkOpen" title="檢視已收藏書籤" type="button">我的書籤</button><button class="tiny-action" id="sleepOpen" title="設定睡眠定時器" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">☾</span> 睡眠定時</button><button class="tiny-action" id="lockScreenOpen" title="設定鎖屏顯示資訊" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">🔒</span> 鎖屏字幕 · 實驗</button><button class="tiny-action forest-delete-shortcut" id="forestDeleteShortcut" type="button" title="僅刪除本機目前章節" aria-label="刪除本機目前章節"><span class="christmas-legacy-glyph" aria-hidden="true">⌫</span> 刪除本章</button><span aria-live="polite" id="sleepStatus">定時器未開啟</span></div>
 <div class="time-line"><time id="elapsed">00:00</time><span id="playStatus">等待播放</span><time id="duration">00:00</time></div>
 <div class="forest-seek-scene" id="seekScene"><span class="christmas-sleigh" aria-hidden="true"></span><span class="squirrel-chase" aria-hidden="true"><img src="./themes/forest-reading/assets/squirrel-running.webp" alt="" loading="eager"/></span><input aria-label="播放进度" class="seek-bar" disabled="" id="seekBar" max="1000" min="0" step="1" type="range" value="0"/></div>
 <div class="playbar">
@@ -239,11 +239,11 @@ body[data-ui-theme="forest-reading"] #immersiveMode .im-fireflies{display:none;}
 </div>
 <div class="im-screen">
 <header class="im-topbar">
-<div class="im-brand"><img alt="" aria-hidden="true" class="im-brand-icon" src="./icon-192.png?v=4403"/><span class="im-brand-type"><b>PineTree</b><small>A U D I O B O O K · v4.4.3</small></span></div>
+<div class="im-brand"><img alt="" aria-hidden="true" class="im-brand-icon" src="./icon-192.png?v=4404"/><span class="im-brand-type"><b>PineTree</b><small>A U D I O B O O K · v4.4.4</small></span></div>
 <nav aria-label="沉浸頁操作" class="im-top-actions">
-<button class="im-glass im-top-button" id="imChapters" title="返回章節目錄" type="button">☷ <span>章節</span></button>
-<button class="im-glass im-top-button" id="imTheme" title="開啟外觀設定" type="button">◐ <span>外觀</span></button>
-<button class="im-glass im-top-button" id="imExit" title="退出沉浸播放並返回書庫" type="button">▦ <span>返回書庫</span></button>
+<button class="im-glass im-top-button" id="imChapters" title="返回章節目錄" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">☷</span> <span>章節</span></button>
+<button class="im-glass im-top-button" id="imTheme" title="開啟外觀設定" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">◐</span> <span>外觀</span></button>
+<button class="im-glass im-top-button" id="imExit" title="退出沉浸播放並返回書庫" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">▦</span> <span>返回書庫</span></button>
 </nav>
 </header>
 <main class="im-main">
@@ -276,11 +276,11 @@ body[data-ui-theme="forest-reading"] #immersiveMode .im-fireflies{display:none;}
 </section>
 </main>
 <footer aria-label="聆聽工具" class="im-footer">
-<button class="im-glass" id="imSleep" title="設定睡眠定時器" type="button">☾ <span>睡眠定時</span></button>
-<button class="im-glass" id="imBookmark" title="收藏目前句子" type="button">☆ <span>收藏此句</span></button>
-<button class="im-glass" id="imBookmarkList" title="查看書籤" type="button">▤ <span>我的書籤</span></button>
-<button class="im-glass" id="imCloud" title="打開 iCloud 手動同步" type="button">☁ <span>同步 iCloud</span></button>
-<button class="im-glass" id="imText" title="返回完整字幕閱讀頁" type="button">☷ <span>完整字幕</span></button>
+<button class="im-glass" id="imSleep" title="設定睡眠定時器" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">☾</span> <span>睡眠定時</span></button>
+<button class="im-glass" id="imBookmark" title="收藏目前句子" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">☆</span> <span>收藏此句</span></button>
+<button class="im-glass" id="imBookmarkList" title="查看書籤" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">▤</span> <span>我的書籤</span></button>
+<button class="im-glass" id="imCloud" title="打開 iCloud 手動同步" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">☁</span> <span>同步 iCloud</span></button>
+<button class="im-glass" id="imText" title="返回完整字幕閱讀頁" type="button"><span class="christmas-legacy-glyph" aria-hidden="true">☷</span> <span>完整字幕</span></button>
 </footer>
 </div>
 </section>
@@ -304,9 +304,9 @@ body[data-ui-theme="forest-reading"] #immersiveMode .im-fireflies{display:none;}
 </dialog>
 <dialog aria-label="书库管理" class="drawer-dialog" id="bookManager">
 <div class="dialog-inner">
-<div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v4.4.3 · 聖誕季旗艦版</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button aria-label="关闭" class="close-action" id="bookManagerClose" type="button">×</button></div>
+<div class="dialog-head"><div><span class="dialog-kicker">LIBRARY</span><h2>管理我的小说</h2><small class="version-line">PineTree v4.4.4 · 聖誕季 VIP</small><p>新建、切换、改名、换封面，或删除整本小说</p></div><button aria-label="关闭" class="close-action" id="bookManagerClose" type="button">×</button></div>
 <form class="create-book" id="createBookForm"><label for="newBookName">新建小说文件夹</label><div class="form-row"><input class="field" id="newBookName" maxlength="90" placeholder="输入书名，例如：拙石衍天" required="" type="text"/><button class="btn btn-accent" type="submit">＋ 新建</button></div></form>
-<div class="manager-icloud-shortcut"><button class="btn btn-quiet" id="releaseOpen" type="button">ⓘ 版本與更新內容 · v4.4.3 聖誕季旗艦版</button><button class="btn btn-quiet" id="cleanupOpen" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button class="btn btn-quiet" id="syncOpenSecondary" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
+<div class="manager-icloud-shortcut"><button class="btn btn-quiet" id="releaseOpen" type="button">ⓘ 版本與更新內容 · v4.4.4 聖誕季 VIP</button><button class="btn btn-quiet" id="cleanupOpen" type="button">▦ 清理已聽 MP3 · 釋放空間</button><button class="btn btn-quiet" id="syncOpenSecondary" type="button">☁ iCloud 同步 / 備份</button><small>MP3/LRC 仍在「檔案」App；同步檔包含書架與續聽設定</small></div>
 <div class="manager-section-head"><strong>全部小说</strong><span class="counter" id="bookCount">0 本</span></div>
 <div aria-label="小说封面书架" class="book-grid" id="bookGrid"></div>
 <div class="book-detail" id="bookDetail">
@@ -332,21 +332,14 @@ body[data-ui-theme="forest-reading"] #immersiveMode .im-fireflies{display:none;}
 </dialog>
 <dialog aria-label="外观与配色" class="drawer-dialog theme-dialog" id="themeDialog">
 <div class="dialog-inner">
-<div class="dialog-head"><div><span class="dialog-kicker">FOREST READING FUSION · 森夜閱讀融合旗艦版</span><h2>護眼閱讀主題</h2><p>森夜閱讀已升級為融合旗艦版：在原本章節列表與字幕工作流上直接套用森林月夜場景、玻璃金邊、翡翠播放鍵與更強的層次光效。聖誕季、新年、墨玉夜讀、松針晨露、暖茶夜燈仍保留主題切換能力。</p></div><button aria-label="关闭" class="close-action" id="themeClose" type="button">×</button></div>
-<div id="resourceRepairBox"><strong>↻ 網頁資源更新 · 4397</strong><p id="resourceRepairStatus" class="repair-state" role="status" aria-live="polite">準備檢查資源版本…</p><button type="button" id="resourceRepairBtn" class="btn btn-quiet">↻ 強制刷新資源</button> <a href="./repair.html?release=4397">獨立修復頁</a><p>只更新 PineTree 網頁快取，不刪除書庫、音訊、字幕、書籤或進度。若部署檔案缺失，會顯示錯誤而非反覆重載。</p></div>
+<div class="dialog-head"><div><h2>閱讀主題</h2><p>選擇旗艦版或經典護眼配色。</p></div><button aria-label="关闭" class="close-action" id="themeClose" type="button">×</button></div>
 <div aria-label="一鍵切換配色" class="color-presets">
-<div class="theme-group-label">✨ 五彩幻光系列 · 全新五款</div>
-<!-- PineTree 3.7.4: gentle iridescence for long listening/reading; Wood+Fire+Earth is ONE unified theme. -->
-<button class="theme-preset art-preset" data-accent="#DFC5FA" data-art-theme="prism-black" data-page="#0C101A" data-panel="#1A202B" data-ui-theme="prism-black" type="button"><i aria-hidden="true" class="prism-swatch prism-swatch-black"></i><span><strong>🌌 五彩斑斕的黑</strong><small>虹曜黑 · 深黑底微光折射</small></span></button>
-<button class="theme-preset art-preset" data-accent="#DBE17D" data-art-theme="prism-green" data-page="#0B241E" data-panel="#173B32" data-ui-theme="prism-green" type="button"><i aria-hidden="true" class="prism-swatch prism-swatch-green"></i><span><strong>🌈 五彩斑斕的綠</strong><small>幻森綠 · 森林綠與彩霧</small></span></button>
-<button class="theme-preset art-preset" data-accent="#F2B58C" data-art-theme="prism-red" data-page="#270F1A" data-panel="#3B1D29" data-ui-theme="prism-red" type="button"><i aria-hidden="true" class="prism-swatch prism-swatch-red"></i><span><strong>🌹 五彩斑斕的紅</strong><small>琉璃紅 · 柔紅與紫金光</small></span></button>
-<button class="theme-preset art-preset" data-accent="#F0D27B" data-art-theme="prism-gold" data-page="#272015" data-panel="#3B3020" data-ui-theme="prism-gold" type="button"><i aria-hidden="true" class="prism-swatch prism-swatch-gold"></i><span><strong>✨ 五彩斑斕的金</strong><small>流光金 · 古金與虹彩寶光</small></span></button>
-<button class="theme-preset art-preset" data-accent="#EBC17B" data-art-theme="wood-fire-earth" data-page="#18271D" data-panel="#302C23" data-ui-theme="wood-fire-earth" type="button"><i aria-hidden="true" class="prism-swatch prism-swatch-elements"></i><span><strong>🌳🔥 木火土 · 三相共生</strong><small>一體融合 · 木青、火赤、土金</small></span></button>
-<div class="theme-group-label">🎄 節日限定系列</div>
-<button class="theme-preset art-preset" data-accent="#EBCB73" data-art-theme="christmas-season" data-page="#10251A" data-panel="#1A3A2B" data-ui-theme="christmas-season" type="button"><i aria-hidden="true" class="prism-swatch prism-swatch-christmas"></i><span><strong>🎄 聖誕季 · 旗艦版</strong><small>雪夜森林 · 五角星 · 馴鹿雪橇</small></span></button>
-<button class="theme-preset art-preset" data-accent="#F3C96F" data-art-theme="new-year-festival" data-page="#230F16" data-panel="#3B2027" data-ui-theme="new-year-festival" type="button"><i aria-hidden="true" class="prism-swatch prism-swatch-newyear"></i><span><strong>🧨 新年華彩</strong><small>瑞歲紅 · 流光金 · 華燈微彩</small></span></button>
-<div class="theme-group-label">🌿 經典護眼系列</div>
-<button class="theme-preset" data-accent="#E0B84F" data-page="#0F2A1F" data-panel="#163427" data-ui-theme="forest-reading" type="button"><i style="background:#163427;border-color:#E0B84F"></i>🌿 森夜閱讀</button>
+<div class="theme-group-label">旗艦版</div>
+<div class="flagship-options" role="group" aria-label="旗艦版主題">
+<button class="theme-preset art-preset flagship-preset flagship-forest" data-accent="#E0B84F" data-page="#0F2A1F" data-panel="#163427" data-ui-theme="forest-reading" type="button"><i aria-hidden="true"></i><span><strong>森夜閱讀</strong><small>月光森林 · 螢火蟲</small></span></button>
+<button class="theme-preset art-preset flagship-preset flagship-christmas" data-accent="#EBCB73" data-art-theme="christmas-season" data-page="#10251A" data-panel="#1A3A2B" data-ui-theme="christmas-season" type="button"><i aria-hidden="true"></i><span><strong>聖誕季 VIP</strong><small>暖窗雪夜 · 雙馴鹿</small></span></button>
+</div>
+<div class="theme-group-label">經典護眼系列</div>
 <button class="theme-preset" data-accent="#F4C678" data-page="#0B1220" data-panel="#182438" type="button"><i style="background:#0B1220;border-color:#F4C678"></i>深夜金</button>
 <button class="theme-preset" data-accent="#EFD58F" data-page="#0C3222" data-panel="#15513A" type="button"><i style="background:#15513A;border-color:#EFD58F"></i>森林绿</button>
 <button class="theme-preset" data-accent="#A5673B" data-page="#F2EEE5" data-panel="#FFFDF8" type="button"><i style="background:#FFFDF8;border-color:#A5673B"></i>暖纸白</button>
@@ -358,6 +351,7 @@ body[data-ui-theme="forest-reading"] #immersiveMode .im-fireflies{display:none;}
 <button class="theme-preset" data-accent="#E5BF73" data-page="#241F20" data-panel="#34292A" data-ui-theme="warm-tea" type="button"><i style="background:#34292A;border-color:#E5BF73"></i>🍂 暖茶夜燈</button>
 <button class="theme-preset" data-accent="#F2C96E" data-page="#171F24" data-panel="#26333A" type="button"><i style="background:#26333A;border-color:#F2C96E"></i>☁️ 雨夜松林</button>
 </div>
+<div id="resourceRepairBox"><strong>↻ 網頁資源更新 · 4404</strong><p id="resourceRepairStatus" class="repair-state" role="status" aria-live="polite">準備檢查資源版本…</p><button type="button" id="resourceRepairBtn" class="btn btn-quiet">↻ 強制刷新資源</button> <a href="./repair.html?release=4404">獨立修復頁</a><p>只更新 PineTree 網頁快取，不刪除書庫、音訊、字幕、書籤或進度。若部署檔案缺失，會顯示錯誤而非反覆重載。</p></div>
 <div class="theme-fields">
 <label class="theme-field" for="bgColor"><span>網頁背景色 <small>頁面外側</small></span><span class="color-input-wrap"><input id="bgColor" type="color" value="#0F2A1F"/><output id="bgColorLabel">#0F2A1F</output></span></label>
 <label class="theme-field" for="panelColor"><span>面板顏色 <small>包含目錄、控制面板、字幕框</small></span><span class="color-input-wrap"><input id="panelColor" type="color" value="#163427"/><output id="panelColorLabel">#163427</output></span></label>
@@ -417,13 +411,13 @@ body[data-ui-theme="forest-reading"] #immersiveMode .im-fireflies{display:none;}
 <div class="import-actions"><button class="btn btn-quiet" id="cleanupPreview" type="button">重新計算</button><button class="btn btn-danger" id="cleanupRun" type="button">確認清理已聽 MP3</button></div>
 <p class="dialog-note">如果清理了 MP3，再次播放該章時需重新從 iCloud Drive 匯入對應音訊。清理操作無法在 PineTree 內撤銷。</p>
 </div></dialog>
-<dialog aria-label="版本更新與說明" class="drawer-dialog" id="releaseDialog"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v4.4.3 · 聖誕季旗艦版</h2><p>森夜閱讀融合旗艦版：保留原有書庫、章節列表、字幕與播放控制，同時把主工作介面升級成月夜森林沉浸式旗艦外觀。</p></div><button aria-label="關閉" class="close-action" id="releaseClose" type="button">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>v4.4.3 加入聖誕季旗艦外觀、全頁飄雪與馴鹿雪橇。v4.4.2 移除森夜閱讀背景上的舊裝飾框與松枝線稿。v4.4.1 恢復森夜閱讀手機橫屏的小松鼠進度動畫。v4.4.0 使用新上傳的 Back 15／Forward 15 對稱徽章，中央 15 字已由素材繪製、避免數字重疊；保留原有 LRC 與耳機處理。此前版本對照 v4.3.3 恢復 LRC 字幕鎖屏更新節奏，移除後續版本的 8 秒背景限制與固定章節覆蓋；保留耳機指令事件診斷。仍保留三款校準 PNG 與沉浸旗艦樣式、啟動版本檢查和安全資源刷新。另保留：螢火蟲改為真正的全頁動態粒子，且可在外觀面板調整柔和／標準／濃郁／電影級強度；字幕偏移區可選三款校準徽章，螢火蟲可開關流光拖尾。保留既有森夜獨立素材命名空間、松鼠跑步進度動畫、章節工作流、書籤、睡眠定時與 iCloud / Edge 同步橋接。</p><p>Windows Edge 可連結資料夾後自動寫入同步檔；iPhone 仍須手動匯出並挑選 JSON；iOS 系統檔案選取器及鎖屏背景播放限制依然存在；如鎖屏暫停後無法從系統面板續播，請改用標準章節資訊模式，必要時開啟 App 恢復。</p></div><button class="btn btn-accent" id="releaseDismiss" type="button">知道了</button></div></dialog>
+<dialog aria-label="版本更新與說明" class="drawer-dialog" id="releaseDialog"><div class="dialog-inner"><div class="dialog-head"><div><span class="dialog-kicker">RELEASE NOTES</span><h2>PineTree v4.4.4 · 聖誕季 VIP</h2><p>森夜閱讀融合旗艦版：保留原有書庫、章節列表、字幕與播放控制，同時把主工作介面升級成月夜森林沉浸式旗艦外觀。</p></div><button aria-label="關閉" class="close-action" id="releaseClose" type="button">×</button></div><div class="sync-guide"><strong>本次更新</strong><p>v4.4.4 更新聖誕 VIP 的暖窗雪景、寶石按鍵與四格雙馴鹿雪橇，並將森夜閱讀與聖誕季置於旗艦主題區。v4.4.3 加入聖誕季旗艦外觀、全頁飄雪與馴鹿雪橇。v4.4.2 移除森夜閱讀背景上的舊裝飾框與松枝線稿。v4.4.1 恢復森夜閱讀手機橫屏的小松鼠進度動畫。v4.4.0 使用新上傳的 Back 15／Forward 15 對稱徽章，中央 15 字已由素材繪製、避免數字重疊；保留原有 LRC 與耳機處理。此前版本對照 v4.3.3 恢復 LRC 字幕鎖屏更新節奏，移除後續版本的 8 秒背景限制與固定章節覆蓋；保留耳機指令事件診斷。仍保留三款校準 PNG 與沉浸旗艦樣式、啟動版本檢查和安全資源刷新。另保留：螢火蟲改為真正的全頁動態粒子，且可在外觀面板調整柔和／標準／濃郁／電影級強度；字幕偏移區可選三款校準徽章，螢火蟲可開關流光拖尾。保留既有森夜獨立素材命名空間、松鼠跑步進度動畫、章節工作流、書籤、睡眠定時與 iCloud / Edge 同步橋接。</p><p>Windows Edge 可連結資料夾後自動寫入同步檔；iPhone 仍須手動匯出並挑選 JSON；iOS 系統檔案選取器及鎖屏背景播放限制依然存在；如鎖屏暫停後無法從系統面板續播，請改用標準章節資訊模式，必要時開啟 App 恢復。</p></div><button class="btn btn-accent" id="releaseDismiss" type="button">知道了</button></div></dialog>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-<script defer="" src="./app.js?v=4403"></script>
+<script defer="" src="./app.js?v=4404"></script>
 <script>/* Independent, versioned recovery bootstrap. Never clears IndexedDB or storage. */
 (()=>{
 'use strict';
-const RELEASE='4403', scope=new URL('./',location.href), recovery=document.body.dataset.repairPage==='true';
+const RELEASE='4404', scope=new URL('./',location.href), recovery=document.body.dataset.repairPage==='true';
 const prefix='pinetree-shell-'+encodeURIComponent(scope.pathname)+'-';
 const status=document.getElementById('resourceRepairStatus'), btn=document.getElementById('resourceRepairBtn');
 let busy=false;
@@ -439,7 +433,7 @@ async function stage(m,verified){if(!('caches'in window))return;const target=awa
 async function cleanOld(version){if(!('caches'in window))return 0;let count=0;for(const key of await caches.keys()){if(key===prefix+version)continue;if(key.startsWith(prefix)){await caches.delete(key);count++;continue;}if(!key.startsWith('lyra-shell-'))continue;const c=await caches.open(key),requests=await c.keys();if(requests.length&&requests.every(r=>new URL(r.url).origin===scope.origin&&new URL(r.url).pathname.startsWith(scope.pathname))&&requests.some(r=>[canonical('index.html'),canonical('./')].includes(r.url))&&requests.every(r=>{const p=new URL(r.url).pathname;return !(p.endsWith('/')||p.endsWith('/index.html'))||[canonical('index.html'),canonical('./')].includes(r.url)})){await caches.delete(key);count++;}}return count;}
 function workerVersion(worker){return new Promise(resolve=>{if(!worker)return resolve('');const chan=new MessageChannel(),timer=setTimeout(()=>{chan.port1.close();resolve('');},500);chan.port1.onmessage=e=>{clearTimeout(timer);chan.port1.close();resolve(e.data?.version||'');};try{worker.postMessage({type:'PINETREE_VERSION'},[chan.port2]);}catch{clearTimeout(timer);resolve('');}});}
 async function ensureWorker(version,wait){if(!('serviceWorker'in navigator)||!isSecureContext)return false;const reg=await navigator.serviceWorker.register(canonical('sw.js'),{scope:scope.pathname,updateViaCache:'none'});try{await reg.update();}catch(e){if(wait)throw e;}if(!wait)return true;for(let i=0;i<24;i++){if(await workerVersion(navigator.serviceWorker.controller)===version||await workerVersion(reg.active)===version)return true;await new Promise(r=>setTimeout(r,250));}throw Error('新版離線服務尚未啟用；保留舊快取，請稍後重試');}
-function localHealth(){const css=getComputedStyle(document.documentElement), values=['--pt-base-release','--pt-theme-release','--pt-flagship-release','--pt-christmas-release'].map(k=>css.getPropertyValue(k).trim());const pictures=[...document.querySelectorAll('#calibrationPicker img,#offsetArtwork')];const imagesOK=pictures.length===5&&pictures.every(i=>i.complete&&i.naturalWidth>0);const imPlay=document.getElementById('imPlay');const immersiveOK=document.body.dataset.uiTheme==='christmas-season'?getComputedStyle(imPlay,'::after').backgroundImage.includes('/themes/christmas-season/assets/star.svg'):getComputedStyle(imPlay).backgroundImage.startsWith('url("data:image/');return {ok:window.PineTreeAppRelease===RELEASE&&values.every(v=>v===RELEASE)&&imagesOK&&immersiveOK,values,imagesOK,immersiveOK};}
+function localHealth(){const css=getComputedStyle(document.documentElement), values=['--pt-base-release','--pt-theme-release','--pt-flagship-release','--pt-christmas-release'].map(k=>css.getPropertyValue(k).trim());const pictures=[...document.querySelectorAll('#calibrationPicker img,#offsetArtwork')];const imagesOK=pictures.length===5&&pictures.every(i=>i.complete&&i.naturalWidth>0);const imPlay=document.getElementById('imPlay');const immersiveOK=document.body.dataset.uiTheme==='christmas-season'?getComputedStyle(imPlay,'::after').backgroundImage.includes('/themes/christmas-season/assets/star.webp'):getComputedStyle(imPlay).backgroundImage.startsWith('url("data:image/');return {ok:window.PineTreeAppRelease===RELEASE&&values.every(v=>v===RELEASE)&&imagesOK&&immersiveOK,values,imagesOK,immersiveOK};}
 async function run(force=false){if(busy)return;busy=true;if(btn)btn.disabled=true;try{
  const token=bust();note('正在檢查網站上的最新版…');let m;try{m=await latest(token);}catch(e){note('無法核對線上版本：'+e.message+'。保留現有離線資料與快取。','error');return;}
  const health=recovery?{ok:false}:localHealth();

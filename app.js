@@ -8,6 +8,10 @@ const DB_VERSION = 2;
 const DEFAULT_BG = '#0F2A1F';
 const DEFAULT_PANEL = '#163427';
 const DEFAULT_ACCENT = '#E0B84F';
+const ART_THEME_IDS=new Set(['christmas-season']);
+const UI_THEME_IDS=new Set(['forest-reading','jade-night','pine-morning','warm-tea','christmas-season']);
+const storedArtTheme=localStorage.getItem('pinetree-art-theme-v380')||localStorage.getItem('pinetree-art-theme-v374');
+const storedUITheme=localStorage.getItem('pinetree-ui-theme-v380');
 const FOREST_MIGRATION_KEY = 'lyra-forest-theme-v31-applied';
 const PRE_FOREST_BACKUP_KEY = 'lyra-theme-before-forest-v31';
 const $ = id => document.getElementById(id);
@@ -27,8 +31,8 @@ const state = {
   panelLinked:localStorage.getItem('lyra-panel-linked')!=='0',
   panelColor:/^#[0-9a-fA-F]{6}$/.test(localStorage.getItem('lyra-panel-color')||'') ? localStorage.getItem('lyra-panel-color') : DEFAULT_PANEL,
   accentColor:/^#[0-9a-fA-F]{6}$/.test(localStorage.getItem('lyra-accent-color')||'') ? localStorage.getItem('lyra-accent-color') : DEFAULT_ACCENT,
-  artTheme:['prism-black','prism-green','prism-red','prism-gold','wood-fire-earth','christmas-season','new-year-festival'].includes(localStorage.getItem('pinetree-art-theme-v380')||localStorage.getItem('pinetree-art-theme-v374'))?(localStorage.getItem('pinetree-art-theme-v380')||localStorage.getItem('pinetree-art-theme-v374')):'',
-  uiTheme:['forest-reading','jade-night','pine-morning','warm-tea','christmas-season','new-year-festival','prism-black','prism-green','prism-red','prism-gold','wood-fire-earth'].includes(localStorage.getItem('pinetree-ui-theme-v380')||'')?localStorage.getItem('pinetree-ui-theme-v380'):'',
+  artTheme:ART_THEME_IDS.has(storedArtTheme)?storedArtTheme:'',
+  uiTheme:UI_THEME_IDS.has(storedUITheme)?storedUITheme:'',
   chapterQuery:'', mobileTab:'player', listDrawBook:null, listDrawQuery:'',
   importJob:null, suppressProgressWrites:false, importReport:[],
   episodeSelectionMode:false,selectedEpisodeIds:new Set(),episodeDeleteRunning:false,
@@ -61,8 +65,8 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4403';
-window.PineTreeAppRelease='4403';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4404';
+window.PineTreeAppRelease='4404';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -97,15 +101,19 @@ function updateBookBrand(){
   $('brandTitle').title=name;
   document.title=`${name} · PineTree 有聲書`;
 }
-function updateLyricsCenterButton(){const btn=$('lyricsCenterToggle');if(!btn)return;btn.setAttribute('aria-pressed',String(state.lyricsCentered));btn.textContent=state.lyricsCentered?'◎ 置中':'≋ 自由';btn.title=state.lyricsCentered?'播放時自動將當前字幕置中':'目前為自由滾動，不會自動拉回正中央';}
+function updateLyricsCenterButton(){const btn=$('lyricsCenterToggle');if(!btn)return;btn.setAttribute('aria-pressed',String(state.lyricsCentered));const symbol=state.lyricsCentered?'◎ ':'≋ ';btn.textContent=(state.uiTheme==='christmas-season'?'':symbol)+(state.lyricsCentered?'置中':'自由');btn.title=state.lyricsCentered?'播放時自動將當前字幕置中':'目前為自由滾動，不會自動拉回正中央';}
 function setLyricsCentered(value,persist=true){state.lyricsCentered=!!value;updateLyricsCenterButton();if(persist){localStorage.setItem('pinetree-lyrics-centered-v372',state.lyricsCentered?'1':'0');markSettingsChanged();}state.userScrollUntil=0;syncLyricsViewportPadding();requestAnimationFrame(()=>updateLyrics(true));}
+function updateLyricsMaxButton(btn){
+  const prefix=state.uiTheme==='christmas-season'?'':state.lyricsMax?'⇲ ':'⛶ ';
+  btn.textContent=prefix+(state.lyricsMax?'返回':'最大化');
+  btn.setAttribute('aria-pressed',String(state.lyricsMax));
+  btn.title=state.lyricsMax?'退出字幕最大化':'字幕最大化';
+}
 function setLyricsMax(value, persist=true){
   state.lyricsMax=!!value;
   document.body.classList.toggle('lyrics-maximized',state.lyricsMax);
   const btn=$('toggleLyricsMax');
-  btn.textContent=state.lyricsMax?'⇲ 返回':'⛶ 最大化';
-  btn.setAttribute('aria-pressed',String(state.lyricsMax));
-  btn.title=state.lyricsMax?'退出字幕最大化':'字幕最大化';
+  updateLyricsMaxButton(btn);
   if(persist){localStorage.setItem('lyra-lyrics-max',state.lyricsMax?'1':'0');markSettingsChanged();}
   requestAnimationFrame(()=>{syncLyricsViewportPadding();updateLyrics(true);});
 }
@@ -651,7 +659,7 @@ function updateMediaSession(force=false){
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
       title:info.title,artist:info.artist,album:info.album,
-      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4403',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4404',document.baseURI).href,sizes:'512x512',type:'image/png'}]
     });
     state.lockScreenMetaKey=info.key;
     state.lockScreenLastText=info.title;
@@ -661,7 +669,7 @@ function updateMediaSession(force=false){
       try{
         navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
           artist:'PineTree 有聲書',album:info.album,
-          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4403',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4404',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
         state.lockScreenMetaKey=info.key;
         state.lockScreenLastAt=now;
         return;
@@ -892,8 +900,6 @@ function luminance(hex){
 function autoPanel(hex){
   return mixColor(hex,luminance(hex)>.46?'#000000':'#ffffff',luminance(hex)>.46?.045:.105);
 }
-const ART_THEME_IDS=new Set(['prism-black','prism-green','prism-red','prism-gold','wood-fire-earth','christmas-season','new-year-festival']);
-const UI_THEME_IDS=new Set(['forest-reading','jade-night','pine-morning','warm-tea','christmas-season','new-year-festival','prism-black','prism-green','prism-red','prism-gold','wood-fire-earth']);
 function refreshThemePresetButtons(){
   for(const button of document.querySelectorAll('.theme-preset')){
     const colorMatch=[['page',state.bgColor],['panel',state.panelColor],['accent',state.accentColor]].every(([key,value])=>button.dataset[key]?.toLowerCase()===value.toLowerCase());
@@ -949,6 +955,10 @@ function setUITheme(id,persist=true){
   const isChristmas=state.uiTheme==='christmas-season';
   if(isChristmas || wasChristmas){
     updateChristmasTheme(isChristmas);
+    updateLyricsCenterButton();
+    updateLyricsMaxButton($('toggleLyricsMax'));
+    updateFocusButton();
+    updateNetwork();
     if(state.immersive)updateImmersiveInfo();
     else requestAnimationFrame(()=>{syncLyricsViewportPadding();updateLyrics(true);});
   }
@@ -1028,7 +1038,12 @@ function setAccentColor(hex){if(isHex(hex)){setArtTheme('');setUITheme('');setTh
 function openDialog(id){const dlg=$(id);if(!dlg.open)dlg.showModal();}
 function closeDialog(id){const dlg=$(id);if(dlg.open)dlg.close();}
 
-function updateNetwork(){$('networkBadge').textContent=navigator.onLine?'● 已就绪 · 可离线':'● 离线书库';}
+function updateNetwork(){
+  const ok=navigator.onLine;
+  $('networkBadge').textContent=state.uiTheme==='christmas-season'
+    ? (ok?'已就緒 · 可離線':'離線書庫')
+    : (ok?'● 已就绪 · 可离线':'● 离线书库');
+}
 // PineTree v4.3.3 - explicit user-granted Windows iCloud folder access.
 // This uses a SEPARATE handle-only IndexedDB; the existing Lyra audiobook database stays untouched.
 const SYNC_HANDLE_DB='pinetree-sync-handles-v1';
@@ -1400,11 +1415,15 @@ async function requestWakeLock(){
   try{state.wakeLock=await navigator.wakeLock.request('screen');}
   catch(err){console.warn('Screen Wake Lock 不可用',err);toast('螢幕常亮被系統拒絕，可在 iPhone 設定內調整自動鎖定');}
 }
+function updateFocusButton(){
+  const btn=$('focusToggle');
+  btn.textContent=(state.uiTheme==='christmas-season'?'':'☘ ')+(state.focusMode?'退出專注':'專注');
+  btn.setAttribute('aria-pressed',String(state.focusMode));
+}
 function setFocusMode(value,mark=true){
   state.focusMode=!!value;
   document.body.classList.toggle('focus-reading',state.focusMode);
-  const btn=$('focusToggle');btn.textContent=state.focusMode?'☘ 退出專注':'☘ 專注';
-  btn.setAttribute('aria-pressed',String(state.focusMode));
+  updateFocusButton();
   localStorage.setItem('pinetree-focus-mode',state.focusMode?'1':'0');
   if(state.focusMode)requestWakeLock();else releaseWakeLock();
   if(mark)markSettingsChanged();
@@ -1811,7 +1830,7 @@ async function start(){
   try{
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
     await syncRestoreTask;await activateLinkedSyncAfterStartup();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.4.3：在外觀選擇「聖誕季」即可切換至雪夜旗艦版',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.4.4：聖誕 VIP 已更新，兩個旗艦主題都在外觀列表最上方',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     const last=state.tracks.find(x=>x.id===localStorage.getItem('lyra-last-id'));
