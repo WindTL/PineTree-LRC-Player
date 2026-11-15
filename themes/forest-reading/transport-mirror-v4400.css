@@ -1,47 +1,47 @@
 /* PineTree v4.4.0 — mirrored chapter pair; the two uploaded skip-15 artworks contain their own upright numerals. */
-/* In all other themes use the existing base-controls masks. */
+/* Christmas has its own immersive artwork. Ordinary non-forest controls use the base masks. */
 .pt-mirror-icon,.pt-mirror-numeral{display:none;pointer-events:none;user-select:none;-webkit-user-select:none;}
 body[data-ui-theme="forest-reading"] .transport :is(#prevBtn,#nextBtn,#backBtn,#aheadBtn),
-#immersiveMode .im-transport :is(#imPrev,#imNext,#imBack,#imAhead){
+body:not([data-ui-theme="christmas-season"]) #immersiveMode .im-transport :is(#imPrev,#imNext,#imBack,#imAhead){
   background-image:none!important;
   position:relative!important;
   isolation:isolate!important;
   overflow:visible!important;
 }
 body[data-ui-theme="forest-reading"] .transport :is(#prevBtn,#nextBtn,#backBtn,#aheadBtn)>.pt-mirror-icon,
-#immersiveMode .im-transport :is(#imPrev,#imNext,#imBack,#imAhead)>.pt-mirror-icon{
+body:not([data-ui-theme="christmas-season"]) #immersiveMode .im-transport :is(#imPrev,#imNext,#imBack,#imAhead)>.pt-mirror-icon{
   position:absolute!important;inset:0!important;display:block!important;z-index:1!important;
   background-position:center!important;background-size:contain!important;background-repeat:no-repeat!important;
   transform:none!important;filter:drop-shadow(0 3px 5px #001d1499);pointer-events:none!important;
 }
 /* One exact source file for both chapter controls. The RIGHT art is a geometric mirror of LEFT. */
 body[data-ui-theme="forest-reading"] .transport :is(#prevBtn,#nextBtn)>.pt-mirror-icon,
-#immersiveMode .im-transport :is(#imPrev,#imNext)>.pt-mirror-icon{
+body:not([data-ui-theme="christmas-season"]) #immersiveMode .im-transport :is(#imPrev,#imNext)>.pt-mirror-icon{
   background-image:url('./assets/prev-v434.webp')!important;
 }
 body[data-ui-theme="forest-reading"] .transport #nextBtn>.pt-mirror-icon,
-#immersiveMode .im-transport #imNext>.pt-mirror-icon{transform:scaleX(-1)!important;}
+body:not([data-ui-theme="christmas-season"]) #immersiveMode .im-transport #imNext>.pt-mirror-icon{transform:scaleX(-1)!important;}
 /* True uploaded skip-15 artwork: independent BACK / FORWARD images, each with a centered, upright "15".
    The legacy numeral overlay is disabled to prevent double or oversized numbers. */
 body[data-ui-theme="forest-reading"] .transport #backBtn>.pt-mirror-icon,
-#immersiveMode .im-transport #imBack>.pt-mirror-icon{
+body:not([data-ui-theme="christmas-season"]) #immersiveMode .im-transport #imBack>.pt-mirror-icon{
   background-image:url('./assets/back15-v4400.webp')!important;
   transform:none!important;
 }
 body[data-ui-theme="forest-reading"] .transport #aheadBtn>.pt-mirror-icon,
-#immersiveMode .im-transport #imAhead>.pt-mirror-icon{
+body:not([data-ui-theme="christmas-season"]) #immersiveMode .im-transport #imAhead>.pt-mirror-icon{
   background-image:url('./assets/forward15-v4400.webp')!important;
   transform:none!important;
 }
 /* Images include exactly one correctly centered "15"; do not add HTML numerals on top. */
 body[data-ui-theme="forest-reading"] .transport :is(#backBtn,#aheadBtn)>.pt-mirror-numeral,
-#immersiveMode .im-transport :is(#imBack,#imAhead)>.pt-mirror-numeral{
+body:not([data-ui-theme="christmas-season"]) #immersiveMode .im-transport :is(#imBack,#imAhead)>.pt-mirror-numeral{
   display:none!important;
 }
 /* Hide the original SVG and baked-in small numerals ONLY for forest artwork. */
 body[data-ui-theme="forest-reading"] .transport :is(#prevBtn,#nextBtn,#backBtn,#aheadBtn)>:is(svg,small),
-#immersiveMode .im-transport :is(#imPrev,#imNext,#imBack,#imAhead)>:is(svg,small){display:none!important;}
-#immersiveMode .im-transport :is(#imPrev,#imNext,#imBack,#imAhead)>.pt-mirror-numeral{
+body:not([data-ui-theme="christmas-season"]) #immersiveMode .im-transport :is(#imPrev,#imNext,#imBack,#imAhead)>:is(svg,small){display:none!important;}
+body:not([data-ui-theme="christmas-season"]) #immersiveMode .im-transport :is(#imPrev,#imNext,#imBack,#imAhead)>.pt-mirror-numeral{
   font-size:clamp(17px,2.7vw,39px)!important;
 }
 :root{--pt-mirror-controls-version:4400}

@@ -65,8 +65,8 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4404';
-window.PineTreeAppRelease='4404';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4405';
+window.PineTreeAppRelease='4405';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -281,7 +281,10 @@ function drawChapterList(){
     const sub=document.createElement('span');sub.className='chapter-subtitle';
     const p=state.progresses.get(t.id);
     sub.textContent=(t.hasLrc?'LRC 同步字幕':'僅 MP3')+(t.audioPresent===false?' · MP3 已清理，需重新匯入':'')+(p?.ended?' · 已聽完':p?.position>1?` · 續聽 ${formatTime(p.position)}`:'');
-    const sym=document.createElement('span');sym.className='note-icon';sym.textContent=t.audioPresent===false?'⇩':state.current?.id===t.id?'▶':t.hasLrc?'♫':'♪';
+    const sym=document.createElement('span');sym.className='note-icon';
+    const mediaStatus=t.audioPresent===false?'download':state.current?.id===t.id?'current':t.hasLrc?'lyrics':'audio';
+    sym.dataset.mediaStatus=mediaStatus;
+    sym.textContent={download:'⇩',current:'▶',lyrics:'♫',audio:'♪'}[mediaStatus];
     info.append(name,sub);
     if(state.episodeSelectionMode){const marker=document.createElement('span');marker.className='episode-checkbox';marker.setAttribute('aria-hidden','true');marker.textContent=chosen?'✓':'';btn.append(marker);}
     btn.append(num,info,sym);
@@ -659,7 +662,7 @@ function updateMediaSession(force=false){
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
       title:info.title,artist:info.artist,album:info.album,
-      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4404',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4405',document.baseURI).href,sizes:'512x512',type:'image/png'}]
     });
     state.lockScreenMetaKey=info.key;
     state.lockScreenLastText=info.title;
@@ -669,7 +672,7 @@ function updateMediaSession(force=false){
       try{
         navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
           artist:'PineTree 有聲書',album:info.album,
-          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4404',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4405',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
         state.lockScreenMetaKey=info.key;
         state.lockScreenLastAt=now;
         return;
@@ -889,7 +892,12 @@ function renderOffsetLabel(){
   el.setAttribute('aria-label',`LRC 字幕校準：${value===0?'零秒':value>0?'延後':'提前'}${abs} 秒`);
 }
 function changeDelay(delta){state.delay=bounded(Math.round((state.delay+delta)*2)/2,-20,20,0);localStorage.setItem('lyra-delay',state.delay);markSettingsChanged();renderOffsetLabel();updateLyrics(true);updateMediaSession(true);}
-function setSpeed(value){state.speed=Math.round(bounded(Number(value),.5,3,1)*20)/20;audio.defaultPlaybackRate=state.speed;audio.playbackRate=state.speed;localStorage.setItem('lyra-speed',state.speed);$('speedRange').value=state.speed;$('speedLabel').textContent=`${state.speed.toFixed(2)}×`;for(const p of document.querySelectorAll('[data-speed-preset]'))p.setAttribute('aria-pressed',String(Math.abs(Number(p.dataset.speedPreset)-state.speed)<.026));updateMediaPosition();}
+function updateChristmasSpeedFill(slider){
+  if(state.uiTheme==='christmas-season'){
+    slider.style.setProperty('--vip-speed-fill',((state.speed-.5)/2.5*100)+'%');
+  }
+}
+function setSpeed(value){state.speed=Math.round(bounded(Number(value),.5,3,1)*20)/20;audio.defaultPlaybackRate=state.speed;audio.playbackRate=state.speed;localStorage.setItem('lyra-speed',state.speed);$('speedRange').value=state.speed;$('speedLabel').textContent=`${state.speed.toFixed(2)}×`;updateChristmasSpeedFill($('speedRange'));for(const p of document.querySelectorAll('[data-speed-preset]'))p.setAttribute('aria-pressed',String(Math.abs(Number(p.dataset.speedPreset)-state.speed)<.026));updateMediaPosition();}
 const isHex=x=>/^#[0-9a-f]{6}$/i.test(x);
 function rgb(hex){return [1,3,5].map(p=>parseInt(hex.slice(p,p+2),16));}
 function mixColor(a,b,weight){const x=rgb(a),y=rgb(b);return '#'+x.map((v,i)=>Math.round(v*(1-weight)+y[i]*weight).toString(16).padStart(2,'0')).join('');}
@@ -959,6 +967,7 @@ function setUITheme(id,persist=true){
     updateLyricsMaxButton($('toggleLyricsMax'));
     updateFocusButton();
     updateNetwork();
+    if(isChristmas)updateChristmasSpeedFill($('speedRange'));
     if(state.immersive)updateImmersiveInfo();
     else requestAnimationFrame(()=>{syncLyricsViewportPadding();updateLyrics(true);});
   }
@@ -1762,6 +1771,7 @@ function updateImmersiveUI(force=false){
   $('imPlay').dataset.playing=String(playing);
   $('imPlay').setAttribute('aria-label',playing?'暫停':'播放');
   $('imSpeed').value=String(state.speed);
+  updateChristmasSpeedFill($('imSpeed'));
   $('imSpeedLabel').textContent=state.speed.toFixed(2)+'×';
   for(const b of document.querySelectorAll('[data-im-speed]')){
     b.setAttribute('aria-pressed',String(Math.abs(Number(b.dataset.imSpeed)-state.speed)<.026));
@@ -1830,7 +1840,7 @@ async function start(){
   try{
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
     await syncRestoreTask;await activateLinkedSyncAfterStartup();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.4.4：聖誕 VIP 已更新，兩個旗艦主題都在外觀列表最上方',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.4.5：已更新聖誕 VIP 的書架、工具列與章節按鍵',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     const last=state.tracks.find(x=>x.id===localStorage.getItem('lyra-last-id'));
