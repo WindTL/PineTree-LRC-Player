@@ -1158,7 +1158,7 @@ body[data-ui-theme="forest-reading"] #playBtn.forest-crystal{
 /* Explicit smooth scrollTo remains animated; forced positioning is instant. */
 body[data-ui-theme="forest-reading"] .lyrics-window{scroll-behavior:auto}
 
-:root{--pt-base-release:4407;}
+:root{--pt-base-release:4408;}
 
 /* Featured theme cards span the picker without changing the classic grid. */
 .flagship-options{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
@@ -1171,3 +1171,13 @@ body[data-ui-theme="forest-reading"] .lyrics-window{scroll-behavior:auto}
 
 /* The symbol remains visible when compact immersive buttons hide their text. */
 @media(max-width:720px){.im-top-button span.christmas-legacy-glyph{display:inline}}
+
+/* iCloud chapter import guide */
+.chapter-sync{display:grid;gap:9px}
+.chapter-sync label{color:var(--muted);font-size:12px}
+.chapter-sync .field{min-width:0;width:100%}
+.chapter-sync p{margin:0}
+.chapter-sync pre{margin:0;padding:10px;max-height:15em;overflow:auto;overscroll-behavior:contain;
+  white-space:pre-wrap;overflow-wrap:anywhere;background:var(--panel);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font:inherit;line-height:1.7}
+.chapter-sync .btn{width:100%;min-height:44px;white-space:normal}
