@@ -1158,7 +1158,77 @@ body[data-ui-theme="forest-reading"] #playBtn.forest-crystal{
 /* Explicit smooth scrollTo remains animated; forced positioning is instant. */
 body[data-ui-theme="forest-reading"] .lyrics-window{scroll-behavior:auto}
 
-:root{--pt-base-release:4408;}
+/* Match the book picker to the active theme while keeping native select behavior. */
+#bookSelect {
+  --book-picker-bg: var(--panel);
+  --book-picker-text: var(--text);
+  --book-picker-rim: var(--border);
+  --book-picker-hover: var(--panel-alt);
+}
+
+body[data-ui-theme="forest-reading"] #bookSelect {
+  --book-picker-bg: #102c23;
+  --book-picker-text: #fff4ce;
+  --book-picker-rim: #b59a58;
+  --book-picker-hover: #24513e;
+}
+
+#bookSelect option {
+  background-color: var(--book-picker-bg);
+  color: var(--book-picker-text);
+}
+
+@supports (appearance: base-select) and selector(::picker(select)) {
+  #bookSelect,
+  #bookSelect::picker(select) {
+    appearance: base-select;
+  }
+
+  #bookSelect {
+    gap: 8px;
+    padding-inline-end: 9px;
+  }
+
+  #bookSelect::picker-icon {
+    color: currentColor;
+  }
+
+  #bookSelect::picker(select) {
+    inline-size: anchor-size(width);
+    max-inline-size: calc(100vw - 16px);
+    margin-block: 4px;
+    padding: 4px;
+    border: 1px solid var(--book-picker-rim);
+    border-radius: 10px;
+    background-color: var(--book-picker-bg);
+    color: var(--book-picker-text);
+    box-shadow: 0 8px 22px #0007;
+  }
+
+  #bookSelect option {
+    min-block-size: 34px;
+    padding: 7px 9px;
+    border-radius: 6px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  #bookSelect option:checked {
+    background-color: var(--accent);
+    color: var(--accent-text);
+  }
+
+  #bookSelect option:not(:checked):is(:hover, :focus-visible) {
+    background-color: var(--book-picker-hover);
+  }
+
+  #bookSelect option:focus-visible {
+    outline: 1px solid currentColor;
+    outline-offset: -1px;
+  }
+}
+
+:root{--pt-base-release:4409;}
 
 /* Featured theme cards span the picker without changing the classic grid. */
 .flagship-options{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
