@@ -1,5 +1,5 @@
 /* Christmas assets and overrides apply to the selected Christmas theme only. */
-:root { --pt-christmas-release: 4409; }
+:root { --pt-christmas-release: 4411; }
 .christmas-snow, .christmas-sleigh, .christmas-copy, .christmas-masthead, #immersiveEnter .christmas-copy { display: none; }
 .brand-copy :is(.forest-copy,.christmas-copy) { font: inherit; }
 
