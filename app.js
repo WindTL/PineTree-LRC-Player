@@ -66,8 +66,8 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4412';
-window.PineTreeAppRelease='4412';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4413';
+window.PineTreeAppRelease='4413';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -295,9 +295,24 @@ function drawChapterList(){
     if(state.episodeSelectionMode){const marker=document.createElement('span');marker.className='episode-checkbox';marker.setAttribute('aria-hidden','true');marker.textContent=chosen?'✓':'';btn.append(marker);}
     btn.append(num,info,sym);
     btn.addEventListener('click',()=>{
-      if(state.episodeSelectionMode)toggleEpisodeSelection(t.id);
-      else if(waiting)openChapterSync(t.book);
-      else loadTrack(t,{autoplay:true});
+      if(state.episodeSelectionMode){
+        toggleEpisodeSelection(t.id);
+        return;
+      }
+      // A desktop update does not invalidate an already imported local MP3.
+      // In particular, do not turn a normal chapter tap into a sync dialog.
+      const localTrack=state.tracks.find(item=>item.id===t.id);
+      if(localTrack&&localTrack.audioPresent!==false){
+        loadTrack(localTrack,{autoplay:true});
+        return;
+      }
+      // A chapter known only from the JSON index, or one with no local MP3,
+      // genuinely requires an import. Keep the existing sync workflow here.
+      if(waiting){
+        openChapterSync(t.book);
+        return;
+      }
+      loadTrack(localTrack||t,{autoplay:true});
     });fragment.append(btn);
   });
   list.append(fragment);
@@ -707,7 +722,7 @@ function updateMediaSession(force=false){
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
       title:info.title,artist:info.artist,album:info.album,
-      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4412',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4413',document.baseURI).href,sizes:'512x512',type:'image/png'}]
     });
     state.lockScreenMetaKey=info.key;
     state.lockScreenLastText=info.title;
@@ -717,7 +732,7 @@ function updateMediaSession(force=false){
       try{
         navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
           artist:'PineTree 有聲書',album:info.album,
-          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4412',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4413',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
         state.lockScreenMetaKey=info.key;
         state.lockScreenLastAt=now;
         return;
@@ -1454,7 +1469,7 @@ async function prepareSyncedResume(){
     drawChapterList();
   }
   const waiting=chapterSyncPlan(book).find(item=>item.entry.id===id);
-  if(waiting||!hasAudio){
+  if(!hasAudio){
     if(state.current)clearCurrent();
     const title=chapterDisplayName(waiting?.entry.name||track?.name||name);
     $('currentTitle').textContent=title;
