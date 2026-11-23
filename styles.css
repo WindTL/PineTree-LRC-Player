@@ -1228,7 +1228,7 @@ body[data-ui-theme="forest-reading"] #bookSelect {
   }
 }
 
-:root{--pt-base-release:4413;}
+:root{--pt-base-release:4416;}
 
 /* Featured theme cards span the picker without changing the classic grid. */
 .flagship-options{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
@@ -1251,3 +1251,22 @@ body[data-ui-theme="forest-reading"] #bookSelect {
   white-space:pre-wrap;overflow-wrap:anywhere;background:var(--panel);border:1px solid var(--border);
   border-radius:8px;color:var(--text);font:inherit;line-height:1.7}
 .chapter-sync .btn{width:100%;min-height:44px;white-space:normal}
+
+/* v4.4.16 · Playback-mode control: same state in standard and immersive layouts. */
+.pt-play-mode{
+  display:flex;justify-content:center;align-items:center;gap:7px;
+  width:100%;min-height:33px;margin-top:7px;padding:5px 8px;
+  border:1px solid #c8b57480;border-radius:999px;
+  background:linear-gradient(160deg,#234e3a,#0a2a23);color:#f9e7ac;
+  font:650 12px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;
+  letter-spacing:.02em;box-shadow:inset 0 1px 0 #ffffff19,0 2px 7px #0005;
+  cursor:pointer;white-space:nowrap;touch-action:manipulation;
+}
+.pt-play-mode:focus-visible{outline:2px solid #f6d482;outline-offset:2px}
+.pt-play-mode:active{transform:scale(.98)}
+.pt-play-mode-icon{display:inline-block;min-width:23px;text-align:center;font-size:18px;line-height:1}
+.pt-play-mode[data-mode="repeat-one"],.pt-play-mode[data-mode="repeat-all"]{
+  border-color:#e8d48c;color:#fff0b8;box-shadow:inset 0 1px 0 #ffffff3a,0 0 13px #d9c47931;
+}
+.im-speed .pt-play-mode{background:linear-gradient(150deg,#345b47d9,#091e1bc9);border-color:#e5d19c83;margin-top:5px;min-height:34px;}
+@media(max-width:850px){.pt-play-mode{min-height:38px;font-size:12px}.im-speed .pt-play-mode{min-height:38px}}

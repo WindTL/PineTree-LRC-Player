@@ -1,4 +1,4 @@
-/* PineTree 4.4.15 targeted regression checks.
+/* PineTree 4.4.16 targeted regression checks.
  * Run: node REGRESSION_TESTS.js <path-to-app.js> <path-to-index.html>
  * Does not touch IndexedDB, audio blobs, iCloud files, or the repository.
  */
@@ -119,5 +119,14 @@ test('After successful import, tapped chapter requires real stored MP3 and loads
   assert(app.includes('await loadTrack(ready,{autoplay:false});'));
   assert(app.includes('if(tappedChapter)pendingChapterTap=null;'));
   assert(app.includes("if(!files.length){pendingChapterTap=null;setImportPickerHint(false);return;}"));
+});
+test('Playback mode UI, persistence and chapter-end handler are installed',()=>{
+  for(const id of ['playModeBtn','imPlayMode'])assert(html.includes('id="'+id+'"'),id+' is missing');
+  assert(app.includes("localStorage.setItem('pinetree-play-mode-v1',mode.id)"));
+  assert(app.includes('setPlayMode(state.playMode,{persist:false})'));
+  assert(app.includes("audio.addEventListener('ended',handleTrackEnded);"));
+  assert(app.includes("state.playMode==='repeat-one'"));
+  assert(app.includes("state.playMode==='repeat-all'"));
+  assert(app.includes("if(state.sleepEndChapter){stopSleepTimer("),'sleep priority missing');
 });
 console.log(`\n${tests.length} targeted regression checks passed.`);
