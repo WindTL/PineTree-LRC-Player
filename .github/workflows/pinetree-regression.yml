@@ -1,0 +1,32 @@
+name: PineTree import & chapter regression
+on:
+  push:
+    paths:
+      - 'app.js'
+      - 'index.html'
+      - 'sw.js'
+      - 'version.json'
+      - 'tests/pinetree-regression.js'
+      - '.github/workflows/pinetree-regression.yml'
+  pull_request:
+    paths:
+      - 'app.js'
+      - 'index.html'
+      - 'sw.js'
+      - 'version.json'
+      - 'tests/pinetree-regression.js'
+      - '.github/workflows/pinetree-regression.yml'
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: node --check app.js
+      - name: Check chapter tap / LRC imports / sync release
+        run: node tests/pinetree-regression.js app.js index.html

@@ -66,8 +66,8 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4414';
-window.PineTreeAppRelease='4414';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4415';
+window.PineTreeAppRelease='4415';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -253,6 +253,8 @@ async function deleteEpisodes(ids,{confirmed=false}={}){
   }
 }
 async function deleteSelectedEpisodes(){await deleteEpisodes([...state.selectedEpisodeIds]);}
+// Pending chapter selected from a JSON-only index. A tap must not open cloud settings.
+let pendingChapterTap=null;
 function drawChapterList(){
   const list=$('chapterList');
   const keepScroll=state.listDrawBook===state.selectedBook&&state.listDrawQuery===state.chapterQuery;
@@ -307,11 +309,18 @@ function drawChapterList(){
         return;
       }
       // A chapter known only from the JSON index, or one with no local MP3,
-      // genuinely requires an import. Keep the existing sync workflow here.
-      if(waiting){
-        openChapterSync(t.book);
-        return;
-      }
+      // genuinely requires local MP3/LRC. Launch the direct import picker here.
+      if(waiting||localTrack?.audioPresent===false){
+         // Open within the original tap to preserve iOS picker user activation.
+         // The picker has no accept filter, so iOS Files allows .lrc files.
+         pendingChapterTap={id:t.id,book:t.book,name:t.name};
+         setImportPickerHint(true);
+         const picker=$('filePicker');
+         picker.value='';
+         picker.removeAttribute('accept');
+         picker.click();
+         return;
+       }
       loadTrack(localTrack||t,{autoplay:true});
     });fragment.append(btn);
   });
@@ -520,6 +529,8 @@ async function importFiles(fileList,{chapterPlan=null, targetBook=state.selected
     $('filePicker').value='';$('folderPicker').value='';
     try{
       await refreshLibrary(book);
+      const tappedChapter=pendingChapterTap?.book===book?pendingChapterTap:null;
+      if(tappedChapter)pendingChapterTap=null;
       if(reloadTrack&&state.current?.id===reloadTrack.meta.id&&state.loadingToken===reloadTrack.token&&audio.paused){
         await loadTrack(reloadTrack.meta,{autoplay:false});
       }
@@ -528,6 +539,17 @@ async function importFiles(fileList,{chapterPlan=null, targetBook=state.selected
         $('syncStatus').textContent=message||'已套用新版檔案及電腦的續聽位置，按播放即可繼續。';
       }
       renderChapterSync();
+      if(tappedChapter){
+        const ready=state.tracks.find(track=>track.id===tappedChapter.id&&track.audioPresent!==false);
+        if(ready&&await hasAudioKey(ready.id)){
+          // iOS may reject autoplay after an async file import; load without autoplay.
+          await loadTrack(ready,{autoplay:false});
+          $('playStatus').textContent='已匯入這一章，請按播放';
+          toast('本章 MP3 已匯入，按播放開始收聽',4500);
+        }else if(!job.cancelled){
+          toast('尚未找到本章 MP3，請選擇同名 MP3；LRC 可一起選取',5500);
+        }
+      }
     }catch(err){console.warn('刷新書庫失敗',err);}
     job.running=false;
     $('closeImport').disabled=false;$('downloadImportReport').disabled=false;
@@ -722,7 +744,7 @@ function updateMediaSession(force=false){
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
       title:info.title,artist:info.artist,album:info.album,
-      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4414',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4415',document.baseURI).href,sizes:'512x512',type:'image/png'}]
     });
     state.lockScreenMetaKey=info.key;
     state.lockScreenLastText=info.title;
@@ -732,7 +754,7 @@ function updateMediaSession(force=false){
       try{
         navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
           artist:'PineTree 有聲書',album:info.album,
-          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4414',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4415',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
         state.lockScreenMetaKey=info.key;
         state.lockScreenLastAt=now;
         return;
@@ -1451,7 +1473,10 @@ function chooseChapterSyncFiles(){
   const plan=chapterSyncPlan(book);
   if(!plan.length){renderChapterSync();return;}
   pendingChapterFileSelection={targetBook:book,chapterPlan:new Map(plan.map(item=>[item.entry.id,item]))};
-  $('chapterSyncFiles').click();
+  const guidedPicker=$('chapterSyncFiles');
+  guidedPicker.value='';
+  guidedPicker.removeAttribute('accept');
+  guidedPicker.click();
 }
 async function importChapterSyncFiles(input){
   const options=pendingChapterFileSelection;
@@ -1935,11 +1960,15 @@ function setupEvents(){
   for(const id of ['bookManager','themeDialog','syncDialog','sleepDialog','bookmarksDialog','cleanupDialog','releaseDialog','lockScreenDialog'])$(id).addEventListener('click',e=>{if(e.target===$(id))closeDialog(id);});
   $('mobileTabChapters').addEventListener('click',()=>{if(state.lyricsMax)setLyricsMax(false);setMobileTab('chapters',true);});
   $('mobileTabPlayer').addEventListener('click',()=>setMobileTab('player',true));
-  $('importBtn').addEventListener('click',()=>{setImportPickerHint(true);$('filePicker').click();navigator.storage?.persist?.().catch(()=>{});});
-  $('folderBtn').addEventListener('click',()=>{setImportPickerHint(true);$('folderPicker').click();navigator.storage?.persist?.().catch(()=>{});});
-  $('filePicker').addEventListener('change',event=>importFiles(event.target.files));
+  $('importBtn').addEventListener('click',()=>{pendingChapterTap=null;setImportPickerHint(true);$('filePicker').click();navigator.storage?.persist?.().catch(()=>{});});
+  $('folderBtn').addEventListener('click',()=>{pendingChapterTap=null;setImportPickerHint(true);$('folderPicker').click();navigator.storage?.persist?.().catch(()=>{});});
+  $('filePicker').addEventListener('change',event=>{
+    const files=Array.from(event.target.files||[]);
+    if(!files.length){pendingChapterTap=null;setImportPickerHint(false);return;}
+    importFiles(files);
+  });
   $('folderPicker').addEventListener('change',event=>importFiles(event.target.files));
-  for(const id of ['filePicker','folderPicker'])$(id).addEventListener('cancel',()=>setImportPickerHint(false));
+  for(const id of ['filePicker','folderPicker'])$(id).addEventListener('cancel',()=>{if(id==='filePicker')pendingChapterTap=null;setImportPickerHint(false);});
   $('cancelImport').addEventListener('click',cancelImport);
   $('closeImport').addEventListener('click',closeImportUI);
   $('downloadImportReport').addEventListener('click',downloadImportReport);
@@ -2137,7 +2166,7 @@ async function start(){
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
     await restoreChapterIndex();
     await syncRestoreTask;await activateLinkedSyncAfterStartup();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.4.14：同步檔已改用 AAudioBook_PineTree_Sync.json',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.4.15：同步檔已改用 AAudioBook_PineTree_Sync.json',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     if(pendingSyncedResumeId()){
