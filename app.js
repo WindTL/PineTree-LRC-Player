@@ -67,8 +67,8 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4416';
-window.PineTreeAppRelease='4416';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4417';
+window.PineTreeAppRelease='4417';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -745,7 +745,7 @@ function updateMediaSession(force=false){
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
       title:info.title,artist:info.artist,album:info.album,
-      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4416',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4417',document.baseURI).href,sizes:'512x512',type:'image/png'}]
     });
     state.lockScreenMetaKey=info.key;
     state.lockScreenLastText=info.title;
@@ -755,7 +755,7 @@ function updateMediaSession(force=false){
       try{
         navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
           artist:'PineTree 有聲書',album:info.album,
-          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4416',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4417',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
         state.lockScreenMetaKey=info.key;
         state.lockScreenLastAt=now;
         return;
@@ -2220,7 +2220,7 @@ async function start(){
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
     await restoreChapterIndex();
     await syncRestoreTask;await activateLinkedSyncAfterStartup();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.4.16：同步檔已改用 AAudioBook_PineTree_Sync.json',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.4.17：卡比巴拉溫泉 9 格活力動畫',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     if(pendingSyncedResumeId()){

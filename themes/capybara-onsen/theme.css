@@ -1,5 +1,5 @@
 /* PineTree · Capybara Onsen */
-:root { --pt-capybara-release: 4416; }
+:root { --pt-capybara-release: 4417; }
 
 .capybara-copy, .capybara-bath, .capybara-steam { display: none; }
 .flagship-options .flagship-capybara {
@@ -281,7 +281,7 @@ body[data-ui-theme="capybara-onsen"] :is(#seekScene,#imProgressScene):has(input:
   transform: translateX(calc(0% - var(--onsen-position)));
   width: var(--onsen-bath-width);
   aspect-ratio: 432 / 336;
-  background: url('./assets/capybara-idle.webp') center / contain no-repeat;
+  background: url('./assets/capybara-frames.webp') 0 50% / 900% 100% no-repeat;
   filter: drop-shadow(0 3px 3px #050a07b3);
 }
 body[data-ui-theme="capybara-onsen"] :is(#seekBar,#immersiveMode #imSeek) {
@@ -338,8 +338,8 @@ body[data-ui-theme="capybara-onsen"] :is(#seekBar,#immersiveMode #imSeek)::-moz-
   }
   body[data-ui-theme="capybara-onsen"][data-theme-motion="on"][data-playing="true"] :is(#seekScene,#imProgressScene):has(input:not(:disabled)) .capybara-bath {
     background-image: url('./assets/capybara-frames.webp');
-    background-size: 400% 100%;
-    animation: onsen-bathing 2.5s step-end infinite;
+    background-size: 900% 100%;
+    animation: onsen-bathing 1.65s step-end infinite;
   }
   body[data-ui-theme="capybara-onsen"][data-page-visible="false"] :is(.capybara-steam,.capybara-bath) {
     animation-play-state: paused !important;
@@ -350,10 +350,15 @@ body[data-ui-theme="capybara-onsen"] :is(#seekBar,#immersiveMode #imSeek)::-moz-
   to { transform: translate3d(3%,-7%,0); opacity: .78; }
 }
 @keyframes onsen-bathing {
-  0%,100% { background-position: 0 50%; }
-  40% { background-position: 33.333333% 50%; }
-  56.8% { background-position: 66.666667% 50%; }
-  81.6% { background-position: 100% 50%; }
+  0%,100% { background-position: 0% 50%; }
+  13% { background-position: 12.5% 50%; }
+  23% { background-position: 25% 50%; }
+  33% { background-position: 37.5% 50%; }
+  44% { background-position: 50% 50%; }
+  55% { background-position: 62.5% 50%; }
+  66% { background-position: 75% 50%; }
+  77% { background-position: 87.5% 50%; }
+  88% { background-position: 100% 50%; }
 }
 
 @media (min-width:851px) {
