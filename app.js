@@ -67,8 +67,8 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4418';
-window.PineTreeAppRelease='4418';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4500';
+window.PineTreeAppRelease='4500';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -652,6 +652,7 @@ function updateLyrics(force=false){
   const lines=win.querySelectorAll('.lyric-line');
   if(state.lineIndex>=0&&lines[state.lineIndex])lines[state.lineIndex].classList.remove('active');
   state.lineIndex=idx;
+  if(document.body.dataset.ptDepth==='on'){for(const el of win.querySelectorAll('[data-pt-depth]'))delete el.dataset.ptDepth;for(let j=Math.max(0,idx-2);j<=Math.min(lines.length-1,idx+2);j++)lines[j].dataset.ptDepth=String(Math.abs(j-idx));}
   if(idx>=0&&lines[idx]){
     const el=lines[idx];
     el.classList.add('active');
@@ -745,7 +746,7 @@ function updateMediaSession(force=false){
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
       title:info.title,artist:info.artist,album:info.album,
-      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4418',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4500',document.baseURI).href,sizes:'512x512',type:'image/png'}]
     });
     state.lockScreenMetaKey=info.key;
     state.lockScreenLastText=info.title;
@@ -755,7 +756,7 @@ function updateMediaSession(force=false){
       try{
         navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
           artist:'PineTree 有聲書',album:info.album,
-          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4418',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4500',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
         state.lockScreenMetaKey=info.key;
         state.lockScreenLastAt=now;
         return;
@@ -832,7 +833,7 @@ function installForestFireflies(){
   document.body.dataset.fireflyIntensity=level;
   host.style.setProperty('--firefly-opacity',String(cfg.opacity));
   const frag=document.createDocumentFragment();
-  for(let i=0;i<cfg.count;i++){
+  for(let i=0;i<Math.min(cfg.count,document.body.dataset.ptEco==='on'?12:88);i++){
     const f=document.createElement('i');f.className='forest-firefly';
     // Deterministic viewport-wide distribution; one straight drift per cycle.
     // Tail always points opposite the velocity, and the particle fades before recycling.
@@ -1808,6 +1809,7 @@ function updateSleepUI(){
   $('sleepDetail').textContent=state.sleepDeadline||state.sleepEndChapter?'已啟用：'+label+'。切換 App 或鎖屏後，iOS 可能延遲執行定時停止。':'目前尚未啟用。睡眠定時不會在重新啟動 App 後意外恢復。';
 }
 function stopSleepTimer(message='已取消睡眠定時'){
+  ptRestore();
   state.sleepDeadline=0;state.sleepEndChapter=false;
   if(state.sleepInterval){clearInterval(state.sleepInterval);state.sleepInterval=null;}
   updateSleepUI();if(message)toast(message);
@@ -1816,7 +1818,7 @@ function checkSleepTimer(){
   if(state.sleepDeadline && Date.now()>=state.sleepDeadline){
     // Guard against paused audio being inadvertently restarted by other events.
     audio.pause();saveProgress();stopSleepTimer('定時時間已到，已暫停並保存續聽位置');
-  }else if(state.sleepDeadline)updateSleepUI();
+  }else if(state.sleepDeadline){ptFade();updateSleepUI();}
 }
 function chooseSleepTimer(value){
   stopSleepTimer('');
@@ -2127,6 +2129,7 @@ function renderImmersiveLyrics(force=false){
     btn.type='button';
     btn.className='im-lyric'+(i===ix?' active':i<ix?' previous':' upcoming');
     btn.dataset.index=String(i);
+    btn.dataset.ptDepth=String(Math.abs(i-n));
     btn.textContent=line.text;
     btn.title=formatTime(line.time)+' · 點擊跳轉';
     btn.setAttribute('aria-label',`${formatTime(line.time)} ${line.text}`);
@@ -2197,7 +2200,7 @@ window.PineTreeBeforeResourceReload=async function(manual){
 async function start(){
   syncRestoreTask=restoreSyncFolder().catch(error=>console.warn("恢復同步資料夾授權失敗",error));
   const oneButton=$('iosSingleButtonCompatibility');if(oneButton)oneButton.checked=state.iosSingleButtonCompatibility;
-  setupEvents();setupImmersiveEvents();requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setCalibrationStyle(state.calibrationStyle,{persist:false});setFireflyTrails(state.fireflyTrails,{persist:false});setPlayButtonVisual(false);
+  setupEvents();setupImmersiveEvents();ptInstall();requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setCalibrationStyle(state.calibrationStyle,{persist:false});setFireflyTrails(state.fireflyTrails,{persist:false});setPlayButtonVisual(false);
   setMobileTab(localStorage.getItem('lyra-mobile-tab')==='chapters'?'chapters':'player');
   setImmersiveMode(state.immersive,{persist:false});
   setLineSpacing(state.lineSpacing,false);setKeepAwake(state.keepAwake,false);setFocusMode(state.focusMode,false);setLyricsCentered(state.lyricsCentered,false);updateSleepUI();
@@ -2220,7 +2223,7 @@ async function start(){
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
     await restoreChapterIndex();
     await syncRestoreTask;await activateLinkedSyncAfterStartup();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.4.18：卡比巴拉溫泉主題徽章',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.5.0：卡比巴拉溫泉主題徽章',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     if(pendingSyncedResumeId()){
@@ -2232,6 +2235,32 @@ async function start(){
     if(last){state.selectedBook=last.book;localStorage.setItem('lyra-selected-book',last.book);drawBookGrid();drawChapterList();updateBookControls();await loadTrack(last,{autoplay:false});}
     else if(state.selectedBook){const candidates=sortedBookTracks(state.selectedBook);const savedId=localStorage.getItem('lyra-last-book-track:'+state.selectedBook);const previous=candidates.find(t=>t.id===savedId);if(previous)await loadTrack(previous,{autoplay:false});}
   }catch(error){console.error('数据库无法初始化',error);toast('无法打开离线书库，请允许网站储存数据并退出隐私浏览',6500);}
+}
+
+
+/* Living Forest: independent local statistics and effects. */
+let ptDays={},ptLast=null,ptVolume=null,ptTimer=null,ptSaved=0,ptDirty=false,ptCelebrate=0;
+const ptKey='pinetree-listening-v1';
+function ptDay(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function ptDelta(a,b){if(!a||!b||a.id!==b.id)return 0;const s=(b.wall-a.wall)/1000,m=b.media-a.media;return s>0&&s<=30&&m>0&&Number.isFinite(m)?Math.min(s,m/Math.max(.1,b.rate||1)):0;}
+function ptFadeValue(v,ms){return Math.max(0,Math.min(1,v*Math.max(0,Math.min(1,ms/60000))));}
+function ptRestore(){if(ptVolume!==null){try{audio.volume=ptVolume;}catch(_){}ptVolume=null;}}
+function ptFade(){if(!$('ptFade')?.checked||!state.sleepDeadline||audio.paused){ptRestore();return;}const ms=state.sleepDeadline-Date.now();if(ms>60000)return;if(ptVolume===null)ptVolume=audio.volume;try{audio.volume=ptFadeValue(ptVolume,ms);}catch(_){}}
+function ptBucket(){let k=ptDay();return ptDays[k]||(ptDays[k]={seconds:0,chapters:0});}
+function ptFlush(){if(!ptDirty)return;try{for(const k of Object.keys(ptDays).sort().slice(0,Math.max(0,Object.keys(ptDays).length-400)))delete ptDays[k];localStorage.setItem(ptKey,JSON.stringify(ptDays));ptDirty=false;ptSaved=Date.now();}catch(_){}}
+function ptCollect(){if(!state.current||audio.paused||audio.seeking||audio.ended){ptLast=null;return;}const n={id:state.current.id,wall:Date.now(),media:audio.currentTime,rate:audio.playbackRate},s=ptDelta(ptLast,n);ptLast=n;if(s>0){ptBucket().seconds+=s;ptDirty=true;}if(Date.now()-ptSaved>15000){ptFlush();if($('bookManager').open)ptDraw();}}
+function ptDraw(){const t=ptDays[ptDay()]||{seconds:0,chapters:0};$('ptToday').textContent=Math.floor(t.seconds/60)+' 分鐘';$('ptChapters').textContent=t.chapters;let n=0,d=new Date();if(!t.seconds)d.setDate(d.getDate()-1);while(n<400&&ptDays[ptDay(d)]?.seconds>0){n++;d.setDate(d.getDate()-1);}$('ptStreak').textContent=n+' 天';const days=[];for(let i=6;i>=0;i--){const x=new Date();x.setDate(x.getDate()-i);days.push({label:(x.getMonth()+1)+'/'+x.getDate(),s:ptDays[ptDay(x)]?.seconds||0});}const max=Math.max(60,...days.map(x=>x.s));$('ptWeek').replaceChildren();for(const x of days){const el=document.createElement('div'),bar=document.createElement('i'),label=document.createElement('small');bar.style.height=Math.max(2,x.s/max*48)+'px';label.textContent=x.label;el.title=x.label+' · '+Math.floor(x.s/60)+' 分鐘';el.append(bar,label);$('ptWeek').append(el);}}
+function ptBehavior(){clearTimeout(ptTimer);ptTimer=null;const b=document.body;if(document.hidden||b.dataset.ptEco==='on'||!state.themeMotion||state.uiTheme!=='forest-reading'){b.dataset.ptSquirrel='rest';return;}if(Date.now()<ptCelebrate){b.dataset.ptSquirrel='hop';ptTimer=setTimeout(ptBehavior,1200);return;}if(audio.paused){b.dataset.ptSquirrel='rest';return;}b.dataset.ptSquirrel=['run','run','hop','sniff'][Math.floor(Math.random()*4)];ptTimer=setTimeout(ptBehavior,2500+Math.random()*3500);}
+function ptInstall(){
+try{const raw=JSON.parse(localStorage.getItem(ptKey)||'{}');for(const [k,v]of Object.entries(raw))if(/^\d{4}-\d{2}-\d{2}$/.test(k)&&Number.isFinite(v?.seconds)&&v.seconds>=0&&Number.isFinite(v?.chapters)&&v.chapters>=0)ptDays[k]=v;}catch(_){}
+for(const [id,key,def]of [['ptEco','eco',false],['ptDepth','depth',true],['ptFade','fade',true]]){const el=$(id);el.checked=(localStorage.getItem('pinetree-living-'+key)??(def?'1':'0'))==='1';const apply=()=>{try{localStorage.setItem('pinetree-living-'+key,el.checked?'1':'0');}catch(_){}if(key==='eco'){document.body.dataset.ptEco=el.checked?'on':'off';installForestFireflies();ptBehavior();}if(key==='depth'){document.body.dataset.ptDepth=el.checked?'on':'off';updateLyrics(true);}if(key==='fade'&&!el.checked)ptRestore();};el.addEventListener('change',apply);apply();}
+for(const e of document.querySelectorAll('[data-pt-rewind]'))e.addEventListener('click',()=>{if(!state.current||!Number.isFinite(audio.duration)){toast('請先選擇章節');return;}skipSeconds(-Number(e.dataset.ptRewind));closeDialog('sleepDialog');toast('已回溯至 '+formatTime(audio.currentTime));});
+for(const id of ['bookManagerOpen','bookManagerOpenSecondary'])$(id)?.addEventListener('click',ptDraw);ptDraw();
+audio.addEventListener('timeupdate',ptCollect);
+for(const e of ['seeking','seeked','ratechange','waiting','emptied','loadedmetadata','pause'])audio.addEventListener(e,()=>{ptLast=null;});
+audio.addEventListener('pause',()=>{ptFlush();ptRestore();ptBehavior();});audio.addEventListener('play',()=>{ptLast=null;ptBehavior();ptFade();});audio.addEventListener('ended',()=>{if(state.current){ptBucket().chapters++;ptDirty=true;ptFlush();}ptCelebrate=Date.now()+1200;ptBehavior();});
+document.addEventListener('visibilitychange',()=>{ptFlush();ptBehavior();});window.addEventListener('pagehide',()=>{ptFlush();clearTimeout(ptTimer);});window.addEventListener('pageshow',ptBehavior);
+new MutationObserver(ptBehavior).observe(document.body,{attributes:true,attributeFilter:['data-ui-theme','data-theme-motion']});
 }
 
 start();

@@ -465,4 +465,25 @@ body[data-ui-theme="forest-reading"] #offsetLabel::before{
 body[data-ui-theme="forest-reading"].focus-reading #offsetLabel{display:none!important;}
 @media(max-width:540px){body[data-ui-theme="forest-reading"] #offsetLabel{min-width:62px!important;height:28px!important;padding:2px 5px 2px 25px!important;font-size:10px!important;}body[data-ui-theme="forest-reading"] #offsetLabel::before{width:21px!important;height:21px!important;left:2px!important;}}
 
-:root{--pt-theme-release:4418;}
+:root{--pt-theme-release:4500;}
+
+/* Living Forest 4.5: only forest theme. */
+body[data-ui-theme="forest-reading"][data-theme-motion="on"][data-pt-eco="off"][data-pt-squirrel="hop"] :is(.squirrel-chase,#immersiveMode .im-squirrel){animation:pineGallopFrames .55s step-end infinite,ptHop 1.2s ease-in-out infinite!important;}
+body[data-ui-theme="forest-reading"][data-theme-motion="on"][data-pt-eco="off"][data-pt-squirrel="sniff"] :is(.squirrel-chase,#immersiveMode .im-squirrel){animation:ptSniff 1s ease-in-out infinite alternate!important;background-position:0 0!important;}
+body[data-ui-theme="forest-reading"][data-pt-squirrel="rest"] :is(.squirrel-chase,#immersiveMode .im-squirrel){animation:none!important;background-position:0 0!important;}
+@keyframes ptHop{0%,100%{translate:0 0}50%{translate:0 -7px;rotate:-5deg}}
+@keyframes ptSniff{from{rotate:-3deg;scale:1 .96}to{rotate:3deg;scale:1 1.04}}
+body[data-ui-theme="forest-reading"][data-theme-motion="on"][data-pt-eco="off"] #forestFireflies .forest-firefly{animation:ptCurve var(--t) linear var(--delay) infinite!important;}
+@keyframes ptCurve{0%{transform:translate3d(0,0,0);opacity:0}15%{opacity:var(--peak)}38%{transform:translate3d(calc(var(--dx)*.38 + 12px),calc(var(--dy)*.38 - 12px),0);opacity:.4}65%{transform:translate3d(calc(var(--dx)*.65 - 12px),calc(var(--dy)*.65 + 10px),0);opacity:var(--peak)}100%{transform:translate3d(var(--dx),var(--dy),0);opacity:0}}
+body[data-ui-theme="forest-reading"][data-theme-motion="on"][data-pt-eco="off"][data-playing="true"] :is(#playBtn.forest-crystal,#immersiveMode #imPlay){animation:ptBreath 3.4s ease-in-out infinite!important;}
+@keyframes ptBreath{0%,100%{filter:drop-shadow(0 0 3px #b4d87c44)}50%{filter:drop-shadow(0 0 12px #a3f5a277)}}
+body[data-ui-theme="forest-reading"][data-theme-motion="on"][data-pt-eco="off"] :is(.reader,#immersiveMode)::after{animation:ptLake 13s ease-in-out infinite alternate!important;}
+@keyframes ptLake{from{opacity:.45}to{opacity:.78}}
+body[data-ui-theme="forest-reading"][data-pt-depth="on"] :is(.lyric-line,.im-lyric){transition:color .2s,opacity .2s,background-color .2s;overflow-wrap:anywhere;}
+body[data-ui-theme="forest-reading"][data-pt-depth="on"] :is(.lyric-line,.im-lyric)[data-pt-depth="2"]:not(.active){opacity:.52}
+body[data-ui-theme="forest-reading"][data-pt-depth="on"] :is(.lyric-line,.im-lyric)[data-pt-depth="1"]:not(.active){opacity:.82}
+body[data-ui-theme="forest-reading"][data-pt-depth="on"] .lyric-line:not([data-pt-depth]):not(.active){opacity:.48}
+body[data-ui-theme="forest-reading"][data-pt-eco="on"] #forestFireflies .forest-firefly{animation:pineFireflyFlight 18s linear var(--delay) infinite!important;box-shadow:0 0 6px #ffed8588!important;}
+body[data-ui-theme="forest-reading"][data-pt-eco="on"] #forestFireflies .forest-firefly::before{display:none!important;}
+body[data-ui-theme="forest-reading"][data-page-visible="false"] :is(.squirrel-chase,.im-squirrel,#playBtn,#imPlay,#forestFireflies .forest-firefly),body[data-ui-theme="forest-reading"][data-page-visible="false"] :is(.reader,#immersiveMode)::after{animation-play-state:paused!important;}
+@media(prefers-reduced-motion:reduce){body[data-ui-theme="forest-reading"] :is(.squirrel-chase,#immersiveMode .im-squirrel,#playBtn.forest-crystal,#immersiveMode #imPlay),body[data-ui-theme="forest-reading"] :is(.reader,#immersiveMode)::after{animation:none!important;}body[data-ui-theme="forest-reading"] :is(.lyric-line,.im-lyric){transition:none!important;}}
