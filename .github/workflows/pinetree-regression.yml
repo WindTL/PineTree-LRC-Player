@@ -8,6 +8,9 @@ on:
       - 'version.json'
       - 'tests/pinetree-regression.js'
       - 'tests/play-mode-regression.js'
+      - 'tests/living-forest-regression.js'
+      - 'themes/**'
+      - 'styles.css'
       - '.github/workflows/pinetree-regression.yml'
   pull_request:
     paths:
@@ -17,6 +20,9 @@ on:
       - 'version.json'
       - 'tests/pinetree-regression.js'
       - 'tests/play-mode-regression.js'
+      - 'tests/living-forest-regression.js'
+      - 'themes/**'
+      - 'styles.css'
       - '.github/workflows/pinetree-regression.yml'
 permissions:
   contents: read
@@ -34,3 +40,6 @@ jobs:
         run: node tests/pinetree-regression.js app.js index.html
       - name: Check playback mode transitions / sleep timer priority
         run: node tests/play-mode-regression.js
+
+      - name: Check Living Forest and full release manifest
+        run: node tests/living-forest-regression.js
