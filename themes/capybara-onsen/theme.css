@@ -1,10 +1,18 @@
 /* PineTree · Capybara Onsen */
-:root { --pt-capybara-release: 4417; }
+:root { --pt-capybara-release: 4418; }
 
 .capybara-copy, .capybara-bath, .capybara-steam { display: none; }
 .flagship-options .flagship-capybara {
-  --flagship-art: url('./assets/progress.webp');
+  --flagship-art: url('./assets/theme-badge.webp');
   background: linear-gradient(140deg,#3d4729,#23382b);
+}
+.flagship-options .flagship-preset.flagship-capybara i {
+  display: block;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: var(--flagship-art) center / contain no-repeat;
 }
 
 body[data-ui-theme="capybara-onsen"] {
