@@ -40,3 +40,23 @@ assert(engine.includes("['pause','ended','emptied','loadstart','waiting','error'
 assert(engine.includes("state.sleepDeadline-Date.now()"));
 assert(!/new Audio\(|createMediaElementSource\(/.test(engine),'must not create competing media element or reroute primary MP3');
 console.log('PASS offline ambient PCM, amplitude, fade, theme selection, independent settings, mix isolation and sleep guards');
+
+/* Late native ended events from a temporary WAV must not save completed
+ * progress, increment statistics or trigger auto-advance on the original MP3. */
+vm.runInContext('this.originalReady=ptHOriginalReady;',ctx);
+const chapterRaw={src:'blob:chapter',currentSrc:'blob:hold',duration:300,currentTime:300,readyState:4,ended:true,addEventListener(type,fn){this.handlers??={};(this.handlers[type]??=[]).push(fn);}};
+const chapter=ctx.facade(chapterRaw);let advances=0,completedStats=0;
+chapter.addEventListener('ended',()=>advances++);
+chapter.addEventListener('ended',()=>completedStats++);
+const fireEnded=()=>chapterRaw.handlers.ended.forEach(fn=>fn({type:'ended'}));
+const saved={source:'blob:chapter',position:37,duration:500,rate:2,phase:'restore'};
+ctx.snap(saved);
+assert(!ctx.originalReady(chapterRaw,saved));fireEnded();assert.equal(advances,0);
+ctx.snap(null);fireEnded();assert.equal(advances,0,'stale currentSrc must be ignored');
+chapterRaw.currentSrc='blob:chapter';chapterRaw.duration=500;chapterRaw.currentTime=37;chapterRaw.ended=false;
+assert(ctx.originalReady(chapterRaw,saved));fireEnded();assert.equal(advances,0,'queued ended after resume must be ignored');
+chapterRaw.ended=true;fireEnded();assert.equal(advances,0,'ended flag alone must not finish a chapter at the saved position');
+chapterRaw.currentTime=500;fireEnded();assert.equal(advances,1);assert.equal(completedStats,1,'true chapter end remains functional');
+assert(!ctx.originalReady({...chapterRaw,readyState:0},saved));
+assert(!ctx.originalReady({...chapterRaw,duration:NaN},saved));
+console.log('PASS late WAV ended isolation, original-source readiness and genuine chapter end');
