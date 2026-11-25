@@ -232,3 +232,64 @@ async function h3Begin(wantPlay=true){
   c.mixStop('test end');
   console.log('PASS H6 iOS visibility mix isolation, foreground restoration and normal MP3 invariants');
 })();
+
+/* Audio Control Center: exercise actual relocation logic on a minimal DOM fixture.
+ * The fixture models original IDs/relationships; Safari rendering is separate. */
+(()=>{
+  class El{
+    constructor(tag){this.tag=tag;this.children=[];this.parentElement=null;this.id='';this.className='';this.textContent='';this.dataset={};this.events={};this.attrs={};this.checked=false;this.value='';this.name='';this.classList={add:x=>{if(!this.className.split(' ').includes(x))this.className+=' '+x;}};}
+    detach(){if(this.parentElement){const a=this.parentElement.children;a.splice(a.indexOf(this),1);this.parentElement=null;}}
+    append(...nodes){for(const n of nodes){n.detach();n.parentElement=this;this.children.push(n);}}
+    before(...nodes){const p=this.parentElement;for(const n of nodes){n.detach();n.parentElement=p;p.children.splice(p.children.indexOf(this),0,n);}}
+    after(...nodes){const p=this.parentElement;let i=p.children.indexOf(this)+1;for(const n of nodes){n.detach();n.parentElement=p;p.children.splice(i++,0,n);}}
+    setAttribute(k,v){this.attrs[k]=v;}
+    addEventListener(t,fn){(this.events[t]??=[]).push(fn);}
+    click(){for(const fn of this.events.click||[])fn({target:this});}
+    matches(sel){
+      if(sel.includes(' ')){const i=sel.lastIndexOf(' ');return this.matches(sel.slice(i+1))&&!!this.parentElement?.closest(sel.slice(0,i));}
+      if(sel.startsWith('.'))return this.className.split(' ').includes(sel.slice(1));
+      if(sel.startsWith('#'))return this.id===sel.slice(1);
+      if(sel.startsWith('input[')){if(this.tag!=='input')return false;for(const m of sel.matchAll(/\[(name|value)="([^"]+)"\]/g))if(this[m[1]]!==m[2])return false;return !sel.endsWith(':checked')||this.checked;}
+      return this.tag===sel;
+    }
+    closest(sel){for(let n=this;n;n=n.parentElement)if(n.matches(sel))return n;return null;}
+    querySelectorAll(sel){let found=[];for(const ch of this.children){if(ch.matches(sel))found.push(ch);found.push(...ch.querySelectorAll(sel));}return found;}
+    querySelector(sel){return this.querySelectorAll(sel)[0]||null;}
+    scrollIntoView(){this.scrolled=true;}
+  }
+  const body=new El('body'),node=(tag,parent,id='',cls='')=>{const e=new El(tag);e.id=id;e.className=cls;parent.append(e);return e;};
+  const extras=node('div',body,'','listen-extras'),entry=node('button',extras,'lockScreenOpen');
+  const original=node('dialog',body,'lockScreenDialog'),inner=node('div',original,'','dialog-inner'),head=node('div',inner,'','dialog-head');node('h2',head);
+  const compat=node('div',inner,'','sync-guide');node('input',compat,'iosSingleButtonCompatibility');
+  const field=node('fieldset',inner);node('legend',field);
+  const radio=(parent,name,value)=>{const label=node('label',parent);const i=node('input',label);i.name=name;i.value=value;node('strong',label);node('small',label);return i;};
+  const modes=['standard','smart','experimental','silent'].map(v=>radio(field,'ptRecoveryMode',v));
+  modes[3].checked=true;
+  const subtitle=radio(inner,'lockScreenMode','lyrics');
+  node('select',field,'ptHoldMinutes');
+  const hold=node('div',field,'','sync-guide');node('strong',hold);node('p',hold);
+  const holdSelect=node('select',hold,'ptAmbientHold');holdSelect.value='campfire';node('input',hold,'ptAmbientHoldVolume');node('output',hold,'ptAmbientHoldValue');
+  const mix=node('div',field,'','sync-guide');node('strong',mix);const enabled=node('input',mix,'ptAmbientMixEnabled');enabled.checked=true;
+  const mixSelect=node('select',mix,'ptAmbientMix');mixSelect.value='rain';node('input',mix,'ptAmbientMixVolume');node('output',mix,'ptAmbientMixValue');node('p',mix,'ptAmbientMixStatus','dialog-note');node('p',mix,'','dialog-note');
+  node('p',field,'ptHoldStatus');const status=node('p',field,'ptRecoveryStatus');
+  const diag=node('div',inner,'','sync-guide');node('pre',diag,'ptRecoveryDiagnostic');node('button',diag,'ptRecoveryCopy');node('button',diag,'ptRecoveryClear');
+  const hp=node('div',inner,'','sync-guide');node('pre',hp,'headphoneDiagnostic');node('button',hp,'copyHeadphoneDiagnostic');
+  const get=id=>body.querySelector('#'+id),dialogs=[];
+  const c={document:{body,createElement:tag=>new El(tag),querySelector:s=>body.querySelector(s)},$:get,ptAmbientName:s=>({campfire:'森林篝火',rain:'松林細雨',silent:'完全無聲'})[s]||s,refreshLockScreenControls:()=>{},requestAnimationFrame:fn=>fn(),openDialog:id=>{get(id).open=true;dialogs.push(['open',id]);},closeDialog:id=>{get(id).open=false;dialogs.push(['close',id]);}};
+  const start=app.indexOf('function ptAudioCenterElement('),end=app.indexOf('function refreshLockScreenControls()',start);
+  assert(start>=0&&end>start);vm.createContext(c);vm.runInContext(app.slice(start,end)+'\nthis.install=ptAudioCenterInstall;this.refresh=ptAudioCenterRefresh;this.open=ptAudioCenterOpen;',c);
+  assert(c.install());assert(c.install(),'installation is idempotent');
+  const panel=get('ptAudioCenter');assert(panel);assert.equal(field.closest('dialog'),panel);assert.equal(get('ptAmbientHold'),holdSelect);assert.equal(get('ptAmbientMix'),mixSelect);assert.equal(get('ptRecoveryStatus'),status);
+  assert.equal(body.querySelectorAll('#ptAudioCenter').length,1);assert.equal(body.querySelectorAll('#ptAudioHoldQuick').length,1);
+  assert.equal(body.querySelectorAll('input[name="ptRecoveryMode"]').length,4);
+  assert.equal(modes[3].closest('details'),null);for(const m of modes.slice(0,3))assert(m.closest('details'));
+  assert.equal(subtitle.closest('dialog'),original);assert(compat.closest('details'));assert(diag.closest('details'));assert(hp.closest('details'));
+  assert.equal(entry.textContent,'♫ 單音軌保活');assert(get('ptAudioHoldQuick').textContent.includes('森林篝火'));assert(get('ptAudioMixQuick').textContent.includes('松林細雨'));
+  get('ptAudioHoldQuick').click();assert(panel.open&&hold.scrolled);
+  get('ptAudioMixQuick').click();assert(mix.scrolled);get('ptAudioAdvanced').click();assert(original.open&&!panel.open);get('ptAudioBack').click();assert(panel.open&&!original.open);
+  enabled.checked=false;c.refresh();assert(get('ptAudioMixQuick').textContent.endsWith('關閉'));
+  assert.equal(holdSelect.value,'campfire');assert.equal(mixSelect.value,'rain');assert(modes[3].checked);
+  assert(app.includes('ptAudioCenterInstall();setupEvents();setupImmersiveEvents();ptRInstall();ptHInstall();'));
+  for(const id of ['lockScreenOpen','lockScreenDialog','ptAmbientHold','ptAmbientMix','ptRecoveryStatus','iosSingleButtonCompatibility','ptRecoveryDiagnostic','headphoneDiagnostic'])assert(html.includes('id="'+id+'"'),'original source anchor '+id);
+  console.log('PASS Audio Control Center: original node identity, unique controls, navigation, legacy folding, state preservation');
+})();
