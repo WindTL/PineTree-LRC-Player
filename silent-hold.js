@@ -78,7 +78,7 @@ function ptHTrace(event){
     const r=ptRawAudio,s=ptHSnapshot;
     const kind=url=>!url?'empty':url===state.fileUrl?'chapter':s&&url===s.silence?'hold':'other';
     const n=v=>Number.isFinite(v)?v.toFixed(2):'-';
-    ptRLog('TRACE H4 '+event+' phase='+(s?.phase||'none')+' src='+kind(r.src)+' current='+kind(r.currentSrc)+' raw='+n(r.currentTime)+'/'+n(r.duration)+' saved='+n(s?.position)+'/'+n(s?.duration)+' rate='+n(r.playbackRate)+' seek='+Number(r.seeking)+' end='+Number(r.ended)+' paused='+Number(r.paused));
+    ptRLog('TRACE H5 '+event+' phase='+(s?.phase||'none')+' src='+kind(r.src)+' current='+kind(r.currentSrc)+' raw='+n(r.currentTime)+'/'+n(r.duration)+' saved='+n(s?.position)+'/'+n(s?.duration)+' rate='+n(r.playbackRate)+' seek='+Number(r.seeking)+' end='+Number(r.ended)+' paused='+Number(r.paused));
   }catch(_){}
 }
 function ptHStatus(s){const el=$('ptHoldStatus');if(el)el.textContent=s;ptRLog('Silent Hold: '+s);}
@@ -117,10 +117,16 @@ function ptHRestore(wantPlay,reason){
   ptHClear();const gen=++ptHGeneration;s.phase='restore';ptHLastAction=Date.now();ptHTrace('restore begin play='+Number(wantPlay));
   let resolveResult;const result=new Promise(resolve=>{resolveResult=resolve;});
   let settled=false,playOK=!wantPlay,metadata=false,seekIssued=false,seekConfirmed=false,rateApplied=false,rateAt=null;
+  let progressProbe=null,probeStartedAt=null;
   const target=wantPlay?Math.min(ptHClamp(s.position,s.duration),Math.max(0,s.duration-.6)):ptHClamp(s.position,s.duration);
   const events=['loadedmetadata','durationchange','seeked','canplay','playing','timeupdate','ended'];
   const valid=()=>ptHSnapshot===s&&gen===ptHGeneration;
-  const cleanup=()=>{for(const ev of events)r.removeEventListener(ev,check);r.removeEventListener('error',fail);if(!settled){settled=true;resolveResult(false);}};
+  const stopProbe=()=>{if(progressProbe!==null){clearTimeout(progressProbe);progressProbe=null;}};
+  // Background timeupdate may arrive only every ~750ms on iOS. Probe the
+  // actual native media clock every 40ms during this short, verified stage.
+  // Native events remain the fallback when WebKit throttles timers.
+  const probe=()=>{if(progressProbe===null&&valid()&&!rateApplied)progressProbe=setTimeout(()=>{progressProbe=null;if(valid()&&!rateApplied)check();},40);};
+  const cleanup=()=>{stopProbe();for(const ev of events)r.removeEventListener(ev,check);r.removeEventListener('error',fail);if(!settled){settled=true;resolveResult(false);}};
   const fail=()=>{if(!valid())return;ptHTrace('restore failed / checkpoint retained');ptHClear();s.phase='failed';r.pause();r.muted=s.muted;ptHDispose(s);ptHPublish();ptHSave();ptHStatus('恢復受限 · 已保護原章節，解鎖後按播放將使用安全續播');};
   const finish=(ended=false)=>{
     if(!valid())return;ptHTrace('restore verified');settled=true;ptHClear();
@@ -158,8 +164,9 @@ function ptHRestore(wantPlay,reason){
     // First observe actual 1x playback beyond the breakpoint; only then change rate.
     if(!rateApplied){
       const advance=Math.min(.25,Math.max(.04,(s.duration-target)/3));
-      if(r.currentTime<target+advance)return;
-      rateApplied=true;rateAt=r.currentTime;ptHTrace('1x progress verified; applying saved rate');
+      if(probeStartedAt===null)probeStartedAt=Date.now();
+      if(r.currentTime<target+advance){probe();return;}
+      stopProbe();rateApplied=true;rateAt=r.currentTime;ptHTrace('1x verified '+(Date.now()-probeStartedAt)+'ms; applying saved rate');
       try{r.defaultPlaybackRate=s.rate;r.playbackRate=s.rate;}catch(_){fail();return;}
       if(s.rate===1)finish();return;
     }
@@ -200,7 +207,7 @@ function ptHMediaAction(kind){
 }
 function ptHInstall(){
   ptAmbientInstall();
-  ptHTrace('diagnostic build H4 installed');
+  ptHTrace('diagnostic build H5 installed');
   ptRawAudio.addEventListener('durationchange',()=>ptHProtectTruncated(ptRawAudio));
   for(const e of ['loadstart','loadedmetadata','durationchange','canplay','play','playing','pause','seeking','seeked','ended','error','emptied'])ptRawAudio.addEventListener(e,()=>{if(ptRMode==='silent'||ptHSnapshot)ptHTrace('raw '+e);});
   const select=$('ptHoldMinutes');try{const n=Number(localStorage.getItem('pinetree-hold-minutes-v1'));if([1,5,10,30].includes(n))ptHMinutes=n;}catch(_){}
