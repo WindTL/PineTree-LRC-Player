@@ -1084,7 +1084,7 @@ function ptUiInstall(){
   }
   window.addEventListener('resize',ptUiCheckDock);
   if(typeof MutationObserver!=='undefined')new MutationObserver(ptUiCheckDock).observe(document.body,{attributes:true,attributeFilter:['class']});
-  ptUiSpeedInstall();ptImCompactInstall();ptUiCompactInfo();ptUiApply();ptAudioCenterRefresh();
+  ptUiSpeedInstall();ptImCompactInstall();ptImLyricsInstall();ptUiCompactInfo();ptUiApply();ptAudioCenterRefresh();
 }
 function refreshLockScreenControls(){
   const experimental=state.lockScreenMode==='lyrics';
@@ -2539,6 +2539,55 @@ function updateImmersiveInfo(){
   const ready=!!state.current&&!!state.fileUrl&&!!audio.src;
   for(const id of ['imPlay','imPrev','imNext','imBack','imAhead','imSeek'])$(id).disabled=!ready;
 }
+/* Immersive subtitles: bounded context, viewport-based clipping and independent font size. */
+const PT_IM_FONT_KEY='pinetree-immersive-font-v453';
+let ptImFont=18,ptImLyricResize=null;
+function ptImFontApply(){
+  const root=$('immersiveMode'),label=$('ptImFontValue');
+  if(root)root.style.setProperty('--pt-im-font-size',ptImFont+'px');
+  if(label)label.textContent=ptImFont+'px';
+  if($('ptImFontMinus'))$('ptImFontMinus').disabled=ptImFont<=14;
+  if($('ptImFontPlus'))$('ptImFontPlus').disabled=ptImFont>=38;
+  if(state.immersive)renderImmersiveLyrics(true);
+}
+function ptImFontChange(delta){
+  ptImFont=Math.max(14,Math.min(38,ptImFont+delta));
+  try{localStorage.setItem(PT_IM_FONT_KEY,String(ptImFont));}catch(_){}
+  ptImFontApply();
+}
+function ptImLyricsInstall(){
+  const target=$('imLyrics'),fold=$('ptImQuickToggle');
+  if(!target||!fold||$('ptImFontMinus'))return;
+  try{const saved=Number(localStorage.getItem(PT_IM_FONT_KEY));if(saved>=14&&saved<=38)ptImFont=Math.round(saved);}catch(_){}
+  const group=ptAudioCenterElement('div',{className:'pt-im-font-group'});
+  group.setAttribute('role','group');group.setAttribute('aria-label','沉浸字幕字級');
+  const minus=ptAudioCenterButton('ptImFontMinus','A−','im-glass'),plus=ptAudioCenterButton('ptImFontPlus','A+','im-glass');
+  minus.setAttribute('aria-label','縮小沉浸字幕');plus.setAttribute('aria-label','放大沉浸字幕');
+  const label=ptAudioCenterElement('output',{id:'ptImFontValue',text:ptImFont+'px'});
+  group.append(minus,label,plus);fold.before(group);
+  minus.addEventListener('click',()=>ptImFontChange(-2));plus.addEventListener('click',()=>ptImFontChange(2));
+  ptImFontApply();
+  // A resize may result from device rotation, footer folding or speed expansion.
+  // Recenter only; no source, seek, playback or media-session change.
+  if(typeof ResizeObserver!=='undefined'){
+    ptImLyricResize=new ResizeObserver(()=>{if(state.immersive)ptImCenterLyric();});
+    ptImLyricResize.observe(target);
+  }
+}
+function ptImLyricRange(length,index){
+  const n=Math.max(0,Math.min(length-1,index));
+  const size=Math.min(41,length),from=Math.max(0,Math.min(n-20,length-size));
+  return {from,to:from+size};
+}
+function ptImCenterLyric(){
+  const target=$('imLyrics');if(!target||target.clientHeight<1)return;
+  const active=target.querySelector('.im-lyric.active')||target.querySelector('.im-lyric');
+  if(!active)return;
+  const viewport=target.getBoundingClientRect(),line=active.getBoundingClientRect();
+  const desired=target.scrollTop+line.top+line.height/2-viewport.top-viewport.height/2;
+  const top=Math.max(0,Math.min(Math.max(0,target.scrollHeight-target.clientHeight),desired));
+  if(Math.abs(target.scrollTop-top)>1)target.scrollTop=top;
+}
 function renderImmersiveLyrics(force=false){
   if(!state.immersive&&!force)return;
   const target=$('imLyrics');
@@ -2550,19 +2599,20 @@ function renderImmersiveLyrics(force=false){
   target.replaceChildren();
   if(!lines.length){const empty=document.createElement('p');empty.className='im-lyric-empty';empty.textContent=state.current?'此章沒有 LRC 時間軸字幕；音訊仍可正常播放。':'選擇章節後，同步字幕會在這裡顯示。';target.append(empty);return;}
   const n=ix>=0?ix:0;
-  const from=Math.max(0,n-2),to=Math.min(lines.length,n+3);
+  const {from,to}=ptImLyricRange(lines.length,n);
   for(let i=from;i<to;i++){
     const line=lines[i];
     const btn=document.createElement('button');
     btn.type='button';
     btn.className='im-lyric'+(i===ix?' active':i<ix?' previous':' upcoming');
     btn.dataset.index=String(i);
-    btn.dataset.ptDepth=String(Math.abs(i-n));
+    btn.dataset.ptDepth=String(Math.min(2,Math.abs(i-n)));
     btn.textContent=line.text;
     btn.title=formatTime(line.time)+' · 點擊跳轉';
     btn.setAttribute('aria-label',`${formatTime(line.time)} ${line.text}`);
     target.append(btn);
   }
+  ptImCenterLyric();
 }
 function updateImmersiveUI(force=false){
   if(!state.immersive&&!force)return;
