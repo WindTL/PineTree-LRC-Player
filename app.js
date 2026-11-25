@@ -714,7 +714,7 @@ function ptAudioCenterRefresh(){
   const modeName=({silent:'單音軌保活',smart:'智慧恢復',standard:'標準模式',experimental:'舊實驗保活'})[mode]||'標準模式';
   const holdName=hold?ptAmbientName(hold.value):'完全無聲',mixName=enabled?.checked&&mix?ptAmbientName(mix.value):'關閉';
   const button=$('lockScreenOpen'),holdQuick=$('ptAudioHoldQuick'),mixQuick=$('ptAudioMixQuick');
-  if(button){button.textContent='♫ 播放引擎';button.title='播放引擎：'+modeName;button.setAttribute('aria-label','播放引擎與音效，'+modeName);}
+  if(button){button.textContent='♫ '+modeName;button.title='播放引擎：'+modeName;button.setAttribute('aria-label','播放引擎與音效，'+modeName);}
   if(holdQuick){holdQuick.textContent='暫停音效 · '+holdName;holdQuick.title=mode==='silent'?'暫停時的音效：'+holdName:'暫停音效待命；選擇單音軌保活後生效';holdQuick.dataset.active=String(mode==='silent');}
   if(mixQuick){mixQuick.textContent='說書背景音 · '+mixName;mixQuick.title='說書背景音：'+mixName;mixQuick.dataset.active=String(!!enabled?.checked&&mix?.value!=='silent');}
   const summary=$('ptAudioCenterSummary');if(summary)summary.textContent=modeName+' · 暫停：'+holdName+' · 背景：'+mixName;
@@ -766,6 +766,8 @@ function ptAudioCenterInstall(){
     if(strong)strong.textContent=input.value==='lyrics'?'LRC 逐句字幕':'標準章節資訊';
   }
   if(compat){const fold=ptAudioCenterFold('耳機相容性 · 建議保留',[]);compat.before(fold);fold.append(compat);}
+  const oldHelp=[...original.querySelectorAll('.sync-guide')].find(el=>el.querySelector('strong')?.textContent.trim()==='鎖屏久暫停後的續播');
+  if(oldHelp){const fold=ptAudioCenterFold('相容性說明',[]);oldHelp.before(fold);fold.append(oldHelp);}
   if(diag||headphone){
     const first=diag||headphone,fold=ptAudioCenterFold('進階診斷 · 鎖屏恢復與耳機事件',[]);
     first.before(fold);if(diag)fold.append(diag);if(headphone&&headphone!==diag)fold.append(headphone);
