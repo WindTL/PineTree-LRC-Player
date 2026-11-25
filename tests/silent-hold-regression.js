@@ -10,7 +10,18 @@ const raw={currentTime:1,duration:60,src:'blob:silence',paused:false,ended:true,
 let calls=0;const audio=ctx.facade(raw);audio.addEventListener('timeupdate',()=>calls++);raw.fn();assert.equal(calls,1);
 const snap={position:37,duration:500,source:'blob:original',rate:1.5};ctx.snap(snap);
 assert.equal(audio.currentTime,37);assert.equal(audio.duration,500);assert.equal(audio.src,'blob:original');assert.equal(audio.paused,true);assert.equal(audio.ended,false);assert.equal(audio.playbackRate,1.5);raw.fn();assert.equal(calls,1);audio.currentTime=45;assert.equal(snap.position,45);assert.equal(raw.currentTime,1);ctx.snap(null);raw.fn();assert.equal(calls,2);
-assert(html.includes('name="ptRecoveryMode" value="silent"'));assert(html.includes('id="ptHoldMinutes"'));assert(html.indexOf('src="./silent-hold.js?v=4502"')<html.indexOf('src="./app.js?v=4502"'));
+assert(html.includes('name="ptRecoveryMode" value="silent"'));assert(html.includes('id="ptHoldMinutes"'));
+const release=JSON.parse(fs.readFileSync('version.json','utf8'));
+assert.equal(release.version,'4503');assert.equal(release.displayVersion,'4.5.3');
+const holdSrc=html.indexOf('src="./silent-hold.js?v='+release.version+'"'),appSrc=html.indexOf('src="./app.js?v='+release.version+'"');
+assert(holdSrc>=0&&appSrc>holdSrc);
+assert(html.includes('name="pinetree-release" content="'+release.version+'"'));
+assert(html.includes("const RELEASE='"+release.version+"'"));
+assert(app.includes("window.PineTreeAppRelease='"+release.version+"'"));
+assert(fs.readFileSync('sw.js','utf8').includes("VERSION='"+release.version+"'"));
+assert(fs.readFileSync('repair.html','utf8').includes("const RELEASE='"+release.version+"'"));
+assert(fs.readFileSync('styles.css','utf8').includes('--pt-base-release:'+release.version));
+assert(fs.readFileSync('themes/forest-reading/theme.css','utf8').includes('--pt-theme-release:'+release.version));
 assert(app.includes("ptHHardStop('睡眠定時設定')"));assert(app.includes("ptHHardStop('睡眠定時到期')"));assert(app.includes("ptHDiscard('章節釋放')"));assert(engine.includes('ptHSave()'));assert(app.includes("if(ptHMediaAction('pause'))return"));
 console.log('PASS finite WAV lengths, eligibility, frozen logical time, event isolation, sleep and release guards');
 
@@ -289,7 +300,11 @@ async function h3Begin(wantPlay=true){
   node('p',field,'ptHoldStatus');const status=node('p',field,'ptRecoveryStatus');
   const diag=node('div',inner,'','sync-guide');node('pre',diag,'ptRecoveryDiagnostic');node('button',diag,'ptRecoveryCopy');node('button',diag,'ptRecoveryClear');
   const hp=node('div',inner,'','sync-guide');node('pre',hp,'headphoneDiagnostic');node('button',hp,'copyHeadphoneDiagnostic');
-  const get=id=>body.querySelector('#'+id),dialogs=[],storage=new Map(),state={immersive:false,lyricsMax:false,focusMode:false,lockScreenMode:'lyrics',speed:2,playMode:'sequence'};let wide=true,reflows=0,sleepClicks=0,deleteClicks=0;
+  const im=node('section',body,'immersiveMode'),imHost=node('div',im,'','im-speed'),imLabel=node('label',imHost);node('output',imLabel,'imSpeedLabel');
+  const imRange=node('input',imHost,'imSpeed'),imPresets=node('div',imHost,'','im-speed-presets'),imMode=node('button',imHost,'imPlayMode'),imFooter=node('footer',im,'','im-footer');
+  for(const id of ['imSleep','imCloud','imText','imBookmark','imBookmarkList'])node('button',imFooter,id);
+  const get=id=>body.querySelector('#'+id),dialogs=[],storage=new Map(),state={immersive:false,lyricsMax:false,focusMode:false,lockScreenMode:'lyrics',speed:2,playMode:'sequence'};let wide=true,reflows=0,sleepClicks=0,deleteClicks=0,bookmarkClicks=0;
+  get('imBookmark').addEventListener('click',()=>bookmarkClicks++);
   sleep.addEventListener('click',()=>sleepClicks++);del.addEventListener('click',()=>deleteClicks++);
   const c={document:{body,createElement:tag=>new El(tag),querySelector:s=>body.querySelector(s)},$:get,ptAmbientName:s=>({campfire:'森林篝火',rain:'松林細雨',silent:'完全無聲'})[s]||s,refreshLockScreenControls:()=>{},requestAnimationFrame:fn=>fn(),openDialog:id=>{get(id).show();dialogs.push(['open',id]);},closeDialog:id=>{get(id).close();dialogs.push(['close',id]);},state,window:{matchMedia:()=>({matches:wide}),addEventListener(){}},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},syncLyricsViewportPadding:()=>{},updateLyrics:()=>reflows++,PLAY_MODES:[{id:'sequence',label:'順序播放'},{id:'repeat-one',label:'單章循環'},{id:'repeat-all',label:'整本循環'}],setPlayMode:id=>{state.playMode=id;}};
   const start=app.indexOf('function ptAudioCenterElement('),end=app.indexOf('function refreshLockScreenControls()',start);
@@ -327,6 +342,19 @@ async function h3Begin(wantPlay=true){
   assert.deepEqual(playSelect.children.map(o=>o.value),['sequence','repeat-one','repeat-all']);
   playSelect.value='repeat-one';playSelect.events.change[0]();assert.equal(state.playMode,'repeat-one');
   state.speed=1.25;state.playMode='repeat-all';c.speedRefresh();assert.equal(speedToggle.textContent,'倍速 1.25× ▾');assert.equal(playSelect.value,'repeat-all');
+  const imToggle=get('ptImSpeedToggle'),imSelect=get('ptImPlayModeSelect'),imQuick=get('ptImQuickActions'),imFold=get('ptImQuickToggle');
+  assert(imToggle&&imSelect&&imQuick&&imFold);assert.equal(imToggle.textContent,'倍速 1.25× ▾');assert.equal(imSelect.value,'repeat-all');
+  assert(imRange.classList.contains('pt-im-speed-detail'));assert.equal(imMode.parentElement,imHost);assert(imQuick.hidden);
+  imToggle.click();assert(imHost.classList.contains('pt-im-speed-expanded'));assert(!speedHost.classList.contains('pt-ui-speed-expanded'));
+  imToggle.click();assert(!imHost.classList.contains('pt-im-speed-expanded'));
+  imSelect.value='repeat-one';imSelect.events.change[0]();assert.equal(playSelect.value,'repeat-one');assert.equal(state.playMode,'repeat-one');
+  imFold.click();assert(!imQuick.hidden);assert.equal(storage.get('pinetree-immersive-quick-collapsed-v453'),'0');
+  state.immersive=true;get('ptImSound').click();assert(panel.open&&panel.parentElement===body);c.closeDialog('ptAudioCenter');
+  get('ptImLockScreen').click();assert(original.open);c.closeDialog('lockScreenDialog');
+  get('ptImMore').click();assert(get('ptImMoreDialog').open);get('ptImBookmarkAction').click();assert.equal(bookmarkClicks,1);assert(!get('ptImMoreDialog').open);
+  imFold.click();assert(imQuick.hidden);assert.equal(storage.get('pinetree-immersive-quick-collapsed-v453'),'1');
+  assert(state.immersive);state.immersive=false;
+  assert(get('imBookmark').classList.contains('pt-im-relocated'));assert.equal(get('imSleep').parentElement,imQuick);
   const right=top.querySelector('.pt-ui-header-right');
   assert(right&&right.parentElement===top);
   assert.equal(header.parentElement,right);
@@ -338,6 +366,9 @@ async function h3Begin(wantPlay=true){
   assert(style.includes('grid-column:3;grid-row:1;width:100%'));
   assert(style.includes('.pt-ui-header-right{display:contents;}'));
   assert(style.includes('.pt-ui-speed-compact:not(.pt-ui-speed-expanded)>.pt-ui-speed-detail'));
+  assert(style.includes('.pt-im-speed-compact:not(.pt-im-speed-expanded)>.pt-im-speed-detail'));
+  assert(style.includes('.pt-im-quick-actions[hidden]{display:none!important;}'));
+  assert.equal(body.querySelectorAll('#ptImSpeedToggle').length,1);
   assert(style.includes("url('./themes/forest-reading/assets/forest-mobile.webp')"));
   assert(style.includes('.app-shell #forestDeleteShortcut.pt-ui-relocated{display:none!important;}'));
 

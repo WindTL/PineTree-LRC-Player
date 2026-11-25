@@ -1228,7 +1228,7 @@ body[data-ui-theme="forest-reading"] #bookSelect {
   }
 }
 
-:root{--pt-base-release:4502;}
+:root{--pt-base-release:4503;}
 
 /* Featured theme cards span the picker without changing the classic grid. */
 .flagship-options{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
@@ -1467,4 +1467,46 @@ body.pt-ui-hide-context .app-shell .listen-extras{display:none!important;}
     min-height:0!important;height:auto!important;padding:6px 2px 7px!important;gap:3px!important;
   }
   body[data-ui-theme="forest-reading"]:not(.immersive-active) .app-shell .reader .forest-signature{margin-bottom:2px!important;}
+}
+
+/* 4.5.3: immersive controls collapse independently from the regular player. */
+#immersiveMode .pt-im-speed-row{display:none;}
+#immersiveMode .pt-im-relocated,#immersiveMode .pt-im-quick-actions[hidden]{display:none!important;}
+#immersiveMode .im-footer{display:flex;align-items:center;justify-content:center;gap:5px;min-height:0;flex-wrap:nowrap;}
+#immersiveMode .pt-im-quick-toggle{flex:0 0 auto;white-space:nowrap;}
+#immersiveMode .pt-im-quick-actions{display:flex;align-items:center;gap:5px;min-width:0;overflow-x:auto;scrollbar-width:none;}
+#immersiveMode .pt-im-quick-actions>button{flex:0 0 auto;white-space:nowrap;}
+#immersiveMode #ptImLockScreen[data-active=true]{border-color:var(--accent);color:var(--lyric-active);}
+@media(max-width:850px) and (orientation:portrait){
+  body #immersiveMode .im-speed.pt-im-speed-compact{
+    display:grid!important;grid-template-columns:minmax(0,1fr);width:100%!important;min-width:0!important;
+    min-height:0!important;height:auto!important;flex:0 0 auto!important;gap:4px!important;
+    padding:4px 8px!important;margin:0!important;border-radius:13px!important;
+  }
+  body #immersiveMode .pt-im-speed-row{display:flex!important;gap:8px;align-items:center;justify-content:space-between;min-width:0;}
+  body #immersiveMode #ptImSpeedToggle,
+  body #immersiveMode #ptImPlayModeSelect{
+    min-height:34px!important;max-width:100%;margin:0!important;padding:4px 9px!important;
+    color:var(--text);background:var(--panel-alt);border:1px solid var(--border);
+    border-radius:999px;font-size:12px!important;white-space:nowrap;font-family:inherit;
+  }
+  body #immersiveMode #ptImSpeedToggle{flex:1 1 auto;text-align:left;font-variant-numeric:tabular-nums;}
+  body #immersiveMode #ptImPlayModeSelect{flex:0 1 auto;max-width:47%;width:auto;}
+  body #immersiveMode .pt-im-speed-compact>#imPlayMode,
+  body #immersiveMode .pt-im-speed-compact:not(.pt-im-speed-expanded)>.pt-im-speed-detail{display:none!important;}
+  body #immersiveMode .pt-im-speed-compact::after{display:none!important;}
+  body #immersiveMode .pt-im-speed-expanded>#imSpeed{width:100%;min-width:0;margin:0!important;}
+  body #immersiveMode .im-transport-card{min-height:0!important;height:auto!important;padding:5px 7px!important;gap:4px!important;}
+  body #immersiveMode .pt-im-speed-expanded>.im-speed-presets{display:flex!important;justify-content:space-between;margin:0!important;}
+  body #immersiveMode .im-heading h1{font-size:clamp(25px,6.6vw,37px)!important;line-height:1.13!important;}
+  body #immersiveMode .im-eng{margin:2px 0 3px!important;}
+  body #immersiveMode .im-chapter{padding:2px 4px!important;}
+  body #immersiveMode .im-main{min-height:0;gap:5px!important;}
+  body #immersiveMode .im-lyrics{flex:1 1 auto;min-height:0!important;}
+  body #immersiveMode .im-footer{padding:2px 0!important;}
+  body #immersiveMode .im-footer .im-glass{min-height:32px!important;padding:5px 8px!important;}
+  body[data-ui-theme="forest-reading"] #immersiveMode .im-lyrics{
+    background:radial-gradient(ellipse at 50% 55%,rgba(0,28,21,.27),rgba(0,24,18,.16))!important;
+  }
+  body[data-ui-theme="forest-reading"] #immersiveMode .im-transport-card{backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
 }
