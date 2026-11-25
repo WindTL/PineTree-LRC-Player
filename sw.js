@@ -1,4 +1,4 @@
-/* PineTree 4.5.2 mix-lockscreen hotfix H6 - verified, scope-specific shell. Never touches IndexedDB. */
+/* PineTree 4.5.2 fast-resume hotfix H7 - verified, scope-specific shell. Never touches IndexedDB. */
 'use strict';
 const VERSION='4502', SCOPE=new URL(self.registration.scope), PREFIX='pinetree-shell-'+encodeURIComponent(SCOPE.pathname)+'-', CACHE=PREFIX+VERSION;
 const absolute=p=>new URL(p,SCOPE).href;

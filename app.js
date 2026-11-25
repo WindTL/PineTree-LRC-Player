@@ -2368,7 +2368,7 @@ function ptRInstall(){
     input.checked=input.value===ptRMode;input.addEventListener('change',()=>{if(!input.checked)return;ptHHardStop('切換模式');ptRInvalidate('切換模式');ptRStop('切換模式',true);ptRMode=input.value;ptRBlocked=false;try{localStorage.setItem(PT_R_MODE,ptRMode==='standard'?'standard':'smart');}catch(_){}ptRStatus(ptRMode==='standard'?'標準模式':ptRMode==='smart'?'智慧恢復已啟用':ptRMode==='silent'?'Silent Hold 已選擇 · 本次使用':'實驗模式 · 本次使用');ptRLog('設定模式');if(ptRMode==='experimental')ptRKeep();});
   }
   ptRStatus(ptRMode==='smart'?'智慧恢復已啟用':'標準模式');
-  $('ptRecoveryCopy')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText('PineTree 4.5.2 Hotfix H6 Mix Lockscreen\n'+ptRHistory.join('\n'));toast('診斷已複製');}catch(_){toast('無法使用剪貼簿，請手動選取紀錄');}});
+  $('ptRecoveryCopy')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText('PineTree 4.5.2 Hotfix H7 Fast Resume\n'+ptRHistory.join('\n'));toast('診斷已複製');}catch(_){toast('無法使用剪貼簿，請手動選取紀錄');}});
   $('ptRecoveryClear')?.addEventListener('click',()=>{ptRHistory=[];try{localStorage.removeItem(PT_R_LOG);}catch(_){}if($('ptRecoveryDiagnostic'))$('ptRecoveryDiagnostic').textContent='';});
   audio.addEventListener('pause',()=>{if(!audio.paused)return;ptRPausedAt=Date.now();ptRInvalidate('audio pause');ptRKeep();});
   audio.addEventListener('play',()=>{ptRBlocked=false;ptRStop('audio play');ptRLog('audio play');});

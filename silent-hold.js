@@ -4,6 +4,8 @@
 'use strict';
 let ptHSnapshot=null,ptHGeneration=0,ptHTimer=null,ptHMinutes=5,ptHLastAction=0,ptHCleanup=null;
 let ptHSourceBlob=null,ptHWatch=null;
+// H7 experimental rate transition: require real playback advancement, not a wall-clock delay.
+const PT_H_RATE_ADVANCE=.12,PT_H_PROBE_MS=20;
 function ptHClamp(t,d){return Math.max(0,Math.min(Math.max(0,d-.05),Number(t)||0));}
 function ptHCanEnter(x){return x.mode==='silent'&&x.ios&&x.loaded&&!x.paused&&!x.ended&&!x.seeking&&!x.sleep&&!x.busy;}
 function ptHWav(minutes,sound='silent',volume=0){
@@ -78,7 +80,7 @@ function ptHTrace(event){
     const r=ptRawAudio,s=ptHSnapshot;
     const kind=url=>!url?'empty':url===state.fileUrl?'chapter':s&&url===s.silence?'hold':'other';
     const n=v=>Number.isFinite(v)?v.toFixed(2):'-';
-    ptRLog('TRACE H6 '+event+' phase='+(s?.phase||'none')+' src='+kind(r.src)+' current='+kind(r.currentSrc)+' raw='+n(r.currentTime)+'/'+n(r.duration)+' saved='+n(s?.position)+'/'+n(s?.duration)+' rate='+n(r.playbackRate)+' seek='+Number(r.seeking)+' end='+Number(r.ended)+' paused='+Number(r.paused));
+    ptRLog('TRACE H7 '+event+' phase='+(s?.phase||'none')+' src='+kind(r.src)+' current='+kind(r.currentSrc)+' raw='+n(r.currentTime)+'/'+n(r.duration)+' saved='+n(s?.position)+'/'+n(s?.duration)+' rate='+n(r.playbackRate)+' seek='+Number(r.seeking)+' end='+Number(r.ended)+' paused='+Number(r.paused));
   }catch(_){}
 }
 function ptHStatus(s){const el=$('ptHoldStatus');if(el)el.textContent=s;ptRLog('Silent Hold: '+s);}
@@ -123,9 +125,9 @@ function ptHRestore(wantPlay,reason){
   const valid=()=>ptHSnapshot===s&&gen===ptHGeneration;
   const stopProbe=()=>{if(progressProbe!==null){clearTimeout(progressProbe);progressProbe=null;}};
   // Background timeupdate may arrive only every ~750ms on iOS. Probe the
-  // actual native media clock every 40ms during this short, verified stage.
+  // actual native media clock every 20ms during this short, verified stage.
   // Native events remain the fallback when WebKit throttles timers.
-  const probe=()=>{if(progressProbe===null&&valid()&&!rateApplied)progressProbe=setTimeout(()=>{progressProbe=null;if(valid()&&!rateApplied)check();},40);};
+  const probe=()=>{if(progressProbe===null&&valid()&&!rateApplied)progressProbe=setTimeout(()=>{progressProbe=null;if(valid()&&!rateApplied)check();},PT_H_PROBE_MS);};
   const cleanup=()=>{stopProbe();for(const ev of events)r.removeEventListener(ev,check);r.removeEventListener('error',fail);if(!settled){settled=true;resolveResult(false);}};
   const fail=()=>{if(!valid())return;ptHTrace('restore failed / checkpoint retained');ptHClear();s.phase='failed';r.pause();r.muted=s.muted;ptHDispose(s);ptHPublish();ptHSave();ptHStatus('恢復受限 · 已保護原章節，解鎖後按播放將使用安全續播');};
   const finish=(ended=false)=>{
@@ -163,7 +165,7 @@ function ptHRestore(wantPlay,reason){
     // H3 device trace: 2x was applied at seeked, then EOF within 15–42ms.
     // First observe actual 1x playback beyond the breakpoint; only then change rate.
     if(!rateApplied){
-      const advance=Math.min(.25,Math.max(.04,(s.duration-target)/3));
+      const advance=Math.min(PT_H_RATE_ADVANCE,Math.max(.04,(s.duration-target)/3));
       if(probeStartedAt===null)probeStartedAt=Date.now();
       if(r.currentTime<target+advance){probe();return;}
       stopProbe();rateApplied=true;rateAt=r.currentTime;ptHTrace('1x verified '+(Date.now()-probeStartedAt)+'ms; applying saved rate');
@@ -207,7 +209,7 @@ function ptHMediaAction(kind){
 }
 function ptHInstall(){
   ptAmbientInstall();
-  ptHTrace('diagnostic build H6 installed');
+  ptHTrace('diagnostic build H7 installed');
   ptRawAudio.addEventListener('durationchange',()=>ptHProtectTruncated(ptRawAudio));
   for(const e of ['loadstart','loadedmetadata','durationchange','canplay','play','playing','pause','seeking','seeked','ended','error','emptied'])ptRawAudio.addEventListener(e,()=>{if(ptRMode==='silent'||ptHSnapshot)ptHTrace('raw '+e);});
   const select=$('ptHoldMinutes');try{const n=Number(localStorage.getItem('pinetree-hold-minutes-v1'));if([1,5,10,30].includes(n))ptHMinutes=n;}catch(_){}
