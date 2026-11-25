@@ -3,6 +3,7 @@
  * Finite silent PCM, logical chapter snapshot, no background autoplay or external requests. */
 'use strict';
 let ptHSnapshot=null,ptHGeneration=0,ptHTimer=null,ptHMinutes=5,ptHLastAction=0,ptHCleanup=null;
+let ptHSourceBlob=null,ptHWatch=null;
 function ptHClamp(t,d){return Math.max(0,Math.min(Math.max(0,d-.05),Number(t)||0));}
 function ptHCanEnter(x){return x.mode==='silent'&&x.ios&&x.loaded&&!x.paused&&!x.ended&&!x.seeking&&!x.sleep&&!x.busy;}
 function ptHWav(minutes,sound='silent',volume=0){
@@ -18,6 +19,28 @@ function ptHEndedIsCurrent(raw){
 function ptHOriginalReady(raw,s){
   return raw.src===s.source&&raw.currentSrc===s.source&&raw.readyState>=1&&Number.isFinite(raw.duration)&&raw.duration>0;
 }
+// Keep only the current chapter Blob (already in IndexedDB); generate a fresh URL
+// on restore to avoid reusing WebKit's old media resource.
+function ptHRememberSource(blob,url){ptHSourceBlob={blob,url};}
+function ptHDurationMatches(actual,expected){
+  return Number.isFinite(actual)&&Number.isFinite(expected)&&actual>0&&Math.abs(actual-expected)<=Math.max(.5,Math.min(2,expected*.005));
+}
+function ptHTruncated(actual,expected){
+  return Number.isFinite(actual)&&Number.isFinite(expected)&&actual<expected-Math.max(.5,Math.min(2,expected*.005));
+}
+function ptHDispose(s){
+  for(const url of [s.silence,...(s.retired||[])])if(url&&url!==s.source)try{URL.revokeObjectURL(url);}catch(_){}
+  s.silence=null;s.retired=[];
+}
+function ptHProtectTruncated(raw){
+  const w=ptHWatch;
+  if(ptHSnapshot||!w||state.current?.id!==w.id||state.fileUrl!==w.source||raw.src!==w.source||raw.currentSrc!==w.source||raw.readyState<1)return false;
+  if(!ptHTruncated(raw.duration,w.duration))return false;
+  ptHSnapshot={...w,phase:'failed'};ptHWatch=null;
+  ptHTrace('BLOCK truncated chapter duration');
+  raw.pause();raw.muted=w.muted;ptHPublish();ptHSave();ptHStatus('音訊長度異常 · 已保護原章節及斷點，請按播放重試');
+  return true;
+}
 function ptHoldFacade(raw){
   const listeners=new WeakMap();
   return new Proxy(raw,{
@@ -26,7 +49,7 @@ function ptHoldFacade(raw){
       if(key==='addEventListener')return (type,fn,options)=>{
         if(typeof fn!=='function')return target.addEventListener(type,fn,options);
         let byType=listeners.get(fn);if(!byType){byType=new Map();listeners.set(fn,byType);}
-        let wrap=byType.get(type);if(!wrap){wrap=function(e){if(type==='ended')ptHTrace('facade ended '+(!ptHSnapshot&&ptHEndedIsCurrent(target)?'accepted':'blocked'));if(!ptHSnapshot&&(type!=='ended'||ptHEndedIsCurrent(target)))fn.call(target,e);};byType.set(type,wrap);}
+        let wrap=byType.get(type);if(!wrap){wrap=function(e){if(['durationchange','pause','timeupdate','ended'].includes(type))ptHProtectTruncated(target);if(type==='ended')ptHTrace('facade ended '+(!ptHSnapshot&&ptHEndedIsCurrent(target)?'accepted':'blocked'));if(!ptHSnapshot&&(type!=='ended'||ptHEndedIsCurrent(target))){if(type==='timeupdate'&&ptHWatch&&target.src===ptHWatch.source&&ptHDurationMatches(target.duration,ptHWatch.duration)&&!target.seeking){ptHWatch.position=ptHClamp(target.currentTime,ptHWatch.duration);ptHWatch.rate=target.playbackRate;}fn.call(target,e);}};byType.set(type,wrap);}
         target.addEventListener(type,wrap,options);
       };
       if(key==='removeEventListener')return (type,fn,options)=>target.removeEventListener(type,listeners.get(fn)?.get(type)||fn,options);
@@ -55,7 +78,7 @@ function ptHTrace(event){
     const r=ptRawAudio,s=ptHSnapshot;
     const kind=url=>!url?'empty':url===state.fileUrl?'chapter':s&&url===s.silence?'hold':'other';
     const n=v=>Number.isFinite(v)?v.toFixed(2):'-';
-    ptRLog('TRACE H2 '+event+' phase='+(s?.phase||'none')+' src='+kind(r.src)+' current='+kind(r.currentSrc)+' raw='+n(r.currentTime)+'/'+n(r.duration)+' saved='+n(s?.position)+'/'+n(s?.duration)+' rate='+n(r.playbackRate)+' seek='+Number(r.seeking)+' end='+Number(r.ended)+' paused='+Number(r.paused));
+    ptRLog('TRACE H3 '+event+' phase='+(s?.phase||'none')+' src='+kind(r.src)+' current='+kind(r.currentSrc)+' raw='+n(r.currentTime)+'/'+n(r.duration)+' saved='+n(s?.position)+'/'+n(s?.duration)+' rate='+n(r.playbackRate)+' seek='+Number(r.seeking)+' end='+Number(r.ended)+' paused='+Number(r.paused));
   }catch(_){}
 }
 function ptHStatus(s){const el=$('ptHoldStatus');if(el)el.textContent=s;ptRLog('Silent Hold: '+s);}
@@ -67,16 +90,17 @@ function ptHPublish(){
 }
 function ptHSave(){ptLast=null;ptFlush();ptBehavior();if(!state.suppressProgressWrites)Promise.resolve(saveProgress()).then(queuePauseSyncExport).catch(()=>{});}
 function ptHDiscard(reason){
-  const s=ptHSnapshot;if(!s)return;
+  const s=ptHSnapshot;ptHWatch=null;ptHSourceBlob=null;if(!s)return;
   ptHGeneration++;ptHClear();ptRawAudio.pause();ptRawAudio.loop=false;ptRawAudio.muted=s.muted;
-  ptHSnapshot=null;try{URL.revokeObjectURL(s.silence);}catch(_){}ptHStatus(reason);
+  ptHSnapshot=null;ptHDispose(s);ptHStatus(reason);
 }
 function ptHEnter(){
   const r=ptRawAudio;
+  if(ptHProtectTruncated(r))return true;
   if(!ptHCanEnter({mode:ptRMode,ios:isIOSHeadphoneEnvironment(),loaded:!!(state.current&&state.fileUrl&&r.src===state.fileUrl&&r.readyState>=2&&Number.isFinite(r.duration)&&r.duration>0),paused:r.paused,ended:r.ended,seeking:r.seeking,sleep:!!(state.sleepDeadline||state.sleepEndChapter),busy:!!(state.importJob?.running||state.suppressProgressWrites||state.episodeDeleteRunning||ptHSnapshot)}))return false;
   const sound=ptAmbientResolve(ptAmbientHold);let silence;try{silence=URL.createObjectURL(new Blob([ptHWav(ptHMinutes,sound,ptAmbientHoldVolume/100)],{type:'audio/wav'}));}catch(e){ptHStatus('無聲音軌建立失敗');return false;}
   const s={id:state.current.id,source:r.src,position:ptHClamp(r.currentTime,r.duration),duration:r.duration,rate:r.playbackRate,muted:r.muted,silence,phase:'hold',deadline:Date.now()+ptHMinutes*60000};
-  ptMixStop('進入保活');ptHSnapshot=s;const gen=++ptHGeneration;ptHLastAction=Date.now();
+  ptMixStop('進入保活');ptHWatch=null;ptHSnapshot=s;const gen=++ptHGeneration;ptHLastAction=Date.now();
   ptRStop('Silent Hold',true);ptRInvalidate('Silent Hold');ptHSave();
   try{
     r.loop=false;r.src=s.silence;r.defaultPlaybackRate=1;r.playbackRate=1;
@@ -92,32 +116,65 @@ function ptHRestore(wantPlay,reason){
   if(state.current?.id!==s.id||state.fileUrl!==s.source){ptHDiscard('來源已變更');return Promise.resolve(false);}
   ptHClear();const gen=++ptHGeneration;s.phase='restore';ptHLastAction=Date.now();ptHTrace('restore begin play='+Number(wantPlay));
   let resolveResult;const result=new Promise(resolve=>{resolveResult=resolve;});
-  let settled=false,playOK=!wantPlay;
+  let settled=false,playOK=!wantPlay,metadata=false,seekIssued=false,seekConfirmed=false,rateApplied=false;
+  const target=wantPlay?Math.min(ptHClamp(s.position,s.duration),Math.max(0,s.duration-.6)):ptHClamp(s.position,s.duration);
+  const events=['loadedmetadata','durationchange','seeked','canplay','playing','timeupdate','ended'];
   const valid=()=>ptHSnapshot===s&&gen===ptHGeneration;
-  const cleanup=()=>{for(const ev of ['loadedmetadata','seeked','canplay'])r.removeEventListener(ev,check);r.removeEventListener('error',fail);if(!settled){settled=true;resolveResult(false);}};
-  const fail=()=>{if(!valid())return;ptHTrace('restore failed');ptHClear();r.pause();s.phase='failed';r.muted=s.muted;ptHPublish();ptHStatus('恢復受限 · 保留斷點，請解鎖重試');};
-  const check=()=>{
-    if(!valid()||r.src!==s.source||r.readyState<1)return;
-    const pos=ptHClamp(s.position,s.duration);
-    if(Math.abs(r.currentTime-pos)>.25){try{r.currentTime=pos;}catch(_){fail();}return;}
-    if(r.seeking||!playOK)return;
-    ptHTrace('restore accepted');settled=true;ptHClear();ptHSnapshot=null;r.muted=s.muted;try{URL.revokeObjectURL(s.silence);}catch(_){}
-    ptLast=null;ptHStatus(wantPlay?'已恢復原 MP3':'真正暫停 · 斷點已保留');
+  const cleanup=()=>{for(const ev of events)r.removeEventListener(ev,check);r.removeEventListener('error',fail);if(!settled){settled=true;resolveResult(false);}};
+  const fail=()=>{if(!valid())return;ptHTrace('restore failed / checkpoint retained');ptHClear();s.phase='failed';r.pause();r.muted=s.muted;ptHDispose(s);ptHPublish();ptHSave();ptHStatus('恢復受限 · 已保護原章節，請按播放重試');};
+  const finish=(ended=false)=>{
+    if(!valid())return;ptHTrace('restore verified');settled=true;ptHClear();
+    ptHWatch={...s,position:ptHClamp(r.currentTime,s.duration),silence:null,retired:[]};ptHSnapshot=null;
+    r.muted=s.muted;ptHDispose(s);ptLast=null;
+    ptHStatus(wantPlay?'已驗證原 MP3 續播':'真正暫停 · 斷點已保留');
     if(wantPlay&&!r.paused)r.dispatchEvent(new Event('play'));else{setPlayButtonVisual(false);$('playStatus').textContent='已暫停';try{navigator.mediaSession.playbackState='paused';}catch(_){}}
-    updateProgressDisplay();updateLyrics(true);updateImmersiveUI(true);updateMediaPosition(true);updateMediaSession(true);ptBehavior();resolveResult(wantPlay?!r.paused:true);
+    updateProgressDisplay();updateLyrics(true);updateImmersiveUI(true);updateMediaPosition(true);updateMediaSession(true);ptBehavior();resolveResult(wantPlay?!r.paused||ended:true);
+    if(ended)r.dispatchEvent(new Event('ended'));
+  };
+  const check=(e)=>{
+    if(!valid()||!ptHOriginalReady(r,s))return;
+    if(e?.type==='loadedmetadata')metadata=true;
+    if(!metadata)return;
+    // No seek until metadata belongs to this exact MP3 and its duration matches the snapshot.
+    if(!ptHDurationMatches(r.duration,s.duration)){if(ptHTruncated(r.duration,s.duration)||e?.type==='ended')fail();return;}
+    if(!seekIssued){
+      seekIssued=true;ptHTrace('metadata verified; seek requested');
+      if(Math.abs(r.currentTime-target)>.03){try{r.currentTime=target;}catch(_){fail();}return;}
+      seekConfirmed=!r.seeking;
+    }
+    if(!seekConfirmed){
+      if(r.seeking)return;
+      if(e?.type!=='seeked'&&Math.abs(r.currentTime-target)>.35)return;
+      seekConfirmed=true;ptHTrace('seek verified');
+    }
+    if(!rateApplied){rateApplied=true;try{r.defaultPlaybackRate=s.rate;r.playbackRate=s.rate;}catch(_){fail();return;}}
+    if(!playOK||r.seeking)return;
+    if(!wantPlay){if(r.paused)finish();return;}
+    if(r.ended){if(e?.type==='ended'&&r.currentTime>=s.duration-.1&&target>=s.duration-1)finish(true);else fail();return;}
+    if(r.paused)return;
+    // Never release the snapshot merely because play() resolved at the seek position.
+    // The H2 device log proved that an erroneous EOF can follow within 39ms.
+    r.muted=s.muted;
+    if(r.currentTime>=target+Math.min(.12,Math.max(.03,(s.duration-target)/3)))finish();
   };
   ptHCleanup=cleanup;
-  for(const ev of ['loadedmetadata','seeked','canplay'])r.addEventListener(ev,check);
+  for(const ev of events)r.addEventListener(ev,check);
   r.addEventListener('error',fail);
   try{
     if(!wantPlay)r.pause();
-    r.muted=true;r.loop=false;r.src=s.source;r.defaultPlaybackRate=s.rate;r.playbackRate=s.rate;
-    try{r.currentTime=s.position;}catch(_){}
+    r.muted=true;r.loop=false;r.defaultPlaybackRate=1;r.playbackRate=1;
+    if(ptHSourceBlob?.url===s.source&&ptHSourceBlob.blob){
+      const blob=ptHSourceBlob.blob;
+      const fresh=URL.createObjectURL(blob.slice(0,blob.size,blob.type));
+      (s.retired??=[]).push(s.source);s.source=fresh;state.fileUrl=fresh;ptHSourceBlob.url=fresh;ptHTrace('fresh chapter URL');
+    }
+    r.src=s.source;r.load();
     ptHTimer=setTimeout(fail,12000);
+    // Keep play() within the original UI/MediaSession user activation; seek only after metadata.
     if(wantPlay){requestPlaybackAudioSession();Promise.resolve(r.play()).then(()=>{if(valid()){playOK=true;check();}}).catch(fail);}
-    else{r.load();check();}
   }catch(_){fail();}
-  ptHStatus(reason+' · 正在還原原 MP3');return result;
+  if(valid()&&s.phase==='restore')ptHStatus(reason+' · 正在驗證原 MP3');
+  return result;
 }
 function ptHHardStop(reason){if(ptHSnapshot){ptHRestore(false,reason);return true;}return false;}
 function ptHPauseFromUI(){if(!ptHEnter())audio.pause();}
@@ -134,8 +191,9 @@ function ptHMediaAction(kind){
 }
 function ptHInstall(){
   ptAmbientInstall();
-  ptHTrace('diagnostic build H2 installed');
-  for(const e of ['loadstart','loadedmetadata','canplay','play','playing','pause','seeking','seeked','ended','error','emptied'])ptRawAudio.addEventListener(e,()=>{if(ptRMode==='silent'||ptHSnapshot)ptHTrace('raw '+e);});
+  ptHTrace('diagnostic build H3 installed');
+  ptRawAudio.addEventListener('durationchange',()=>ptHProtectTruncated(ptRawAudio));
+  for(const e of ['loadstart','loadedmetadata','durationchange','canplay','play','playing','pause','seeking','seeked','ended','error','emptied'])ptRawAudio.addEventListener(e,()=>{if(ptRMode==='silent'||ptHSnapshot)ptHTrace('raw '+e);});
   const select=$('ptHoldMinutes');try{const n=Number(localStorage.getItem('pinetree-hold-minutes-v1'));if([1,5,10,30].includes(n))ptHMinutes=n;}catch(_){}
   select.value=String(ptHMinutes);select.addEventListener('change',()=>{ptHHardStop('調整保活時長');ptHMinutes=[1,5,10,30].includes(Number(select.value))?Number(select.value):5;try{localStorage.setItem('pinetree-hold-minutes-v1',String(ptHMinutes));}catch(_){}});
   const r=ptRawAudio;
