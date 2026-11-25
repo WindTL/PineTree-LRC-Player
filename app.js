@@ -718,11 +718,14 @@ function ptAudioCenterRefresh(){
   if(holdQuick){holdQuick.textContent='暫停音效 · '+holdName;holdQuick.title=mode==='silent'?'暫停時的音效：'+holdName:'暫停音效待命；選擇單音軌保活後生效';holdQuick.dataset.active=String(mode==='silent');}
   if(mixQuick){mixQuick.textContent='說書背景音 · '+mixName;mixQuick.title='說書背景音：'+mixName;mixQuick.dataset.active=String(!!enabled?.checked&&mix?.value!=='silent');}
   const summary=$('ptAudioCenterSummary');if(summary)summary.textContent=modeName+' · 暫停：'+holdName+' · 背景：'+mixName;
+  const topEngine=$('ptUiTopEngine'),topHold=$('ptUiTopHold');
+  if(topEngine){topEngine.title='播放引擎：'+modeName;topEngine.setAttribute('aria-label',topEngine.title);}
+  if(topHold){topHold.title='暫停音效：'+holdName;topHold.setAttribute('aria-label',topHold.title);}
 }
 function ptAudioCenterOpen(section='engine'){
   const dlg=$('ptAudioCenter');
   if(!dlg){refreshLockScreenControls();openDialog('lockScreenDialog');return;}
-  ptAudioCenterRefresh();openDialog('ptAudioCenter');
+  ptAudioCenterRefresh();if($('ptUiToggle-header'))ptUiOpenAudio();else openDialog('ptAudioCenter');
   const target=section==='hold'?$('ptAmbientHold'):section==='mix'?$('ptAmbientMix'):null;
   if(target)requestAnimationFrame(()=>{if(dlg.open)target.closest('.sync-guide')?.scrollIntoView({block:'start',behavior:'auto'});});
   else dlg.scrollTop=0;
@@ -782,6 +785,191 @@ function ptAudioCenterInstall(){
   // Safety fallback updates radios programmatically; existing status changes also refresh the shortcuts.
   if(typeof MutationObserver!=='undefined')new MutationObserver(ptAudioCenterRefresh).observe(status,{childList:true,characterData:true,subtree:true});
   ptAudioCenterRefresh();return true;
+}
+/* Collapsible UI: presentation-only, independent of playback and immersive mode. */
+const PT_UI_LAYOUT_KEY='pinetree-ui-layout-v453';
+const PT_UI_SECTIONS=['library','header','tools','context'];
+let ptUiHelpSerial=0;
+let ptUiCollapsed={};
+function ptUiNormalize(v){return Object.fromEntries(PT_UI_SECTIONS.map(k=>[k,v?.[k]===true]));}
+function ptUiRelayout(){
+  requestAnimationFrame(()=>{if(!state.immersive){syncLyricsViewportPadding();updateLyrics(true);}});
+}
+function ptUiApply(){
+  for(const key of PT_UI_SECTIONS){
+    const hidden=!!ptUiCollapsed[key];
+    document.body.classList.toggle('pt-ui-hide-'+key,hidden);
+    const b=$('ptUiToggle-'+key);
+    if(b){b.setAttribute('aria-expanded',String(!hidden));b.textContent=(hidden?'＋ ':'− ')+({library:'章節',header:'選單',tools:'字幕工具',context:'快捷設定'})[key];}
+  }
+  ptUiRelayout();
+}
+function ptUiToggle(key){
+  if(!PT_UI_SECTIONS.includes(key))return;
+  ptUiCollapsed[key]=!ptUiCollapsed[key];try{localStorage.setItem(PT_UI_LAYOUT_KEY,JSON.stringify(ptUiCollapsed));}catch(_){}
+  ptUiApply();
+}
+function ptUiGroup(host,id,label,ids){
+  const nodes=ids.map($).filter(el=>el&&el.parentElement===host);
+  if(nodes.length<2)return;
+  const group=ptAudioCenterElement('div',{id,className:'pt-ui-tool-group'});
+  group.setAttribute('role','group');group.setAttribute('aria-label',label);
+  nodes[0].before(group);group.append(...nodes);
+}
+function ptUiDockEligible(){
+  return !!window.matchMedia?.('(min-width: 1280px) and (min-height: 650px) and (pointer: fine)').matches&&!state.immersive&&!state.lyricsMax&&!state.focusMode;
+}
+function ptUiReleaseDock(){
+  const d=$('ptAudioCenter');
+  if(!d?.classList.contains('pt-ui-docked'))return;
+  d.classList.remove('pt-ui-docked');document.body.classList.remove('pt-ui-dock-open');
+  document.body.append(d);ptUiRelayout();
+}
+function ptUiOpenAudio(){
+  const d=$('ptAudioCenter'),layout=document.querySelector('.app-shell .layout');
+  if(!d||d.open)return;
+  if(layout&&ptUiDockEligible()&&typeof d.show==='function'){
+    layout.append(d);d.classList.add('pt-ui-docked');
+    try{d.show();document.body.classList.add('pt-ui-dock-open');ptUiRelayout();return;}
+    catch(_){ptUiReleaseDock();}
+  }
+  openDialog('ptAudioCenter');
+}
+function ptUiCheckDock(){
+  const d=$('ptAudioCenter');
+  if(d?.classList.contains('pt-ui-docked')&&!ptUiDockEligible()){if(d.open)d.close();ptUiReleaseDock();}
+}
+function ptUiToggleButton(key,host,placement='after'){
+  if(!host)return;
+  const b=ptAudioCenterButton('ptUiToggle-'+key,'','tiny-action pt-ui-toggle');
+  const target=key==='library'?document.querySelector('.app-shell .library'):host;
+  if(target){if(!target.id)target.id='ptUiRegion-'+key;b.setAttribute('aria-controls',target.id);}
+  b.addEventListener('click',()=>ptUiToggle(key));
+  if(placement==='before')host.before(b);else host.after(b);
+  return b;
+}
+function ptUiMoreInstall(header){
+  if(!header)return;
+  const panel=ptAudioCenterElement('dialog',{id:'ptUiMoreDialog',className:'drawer-dialog pt-ui-more'});
+  panel.setAttribute('aria-label','更多功能');
+  const inner=ptAudioCenterElement('div',{className:'dialog-inner'}),head=ptAudioCenterElement('div',{className:'dialog-head'});
+  const close=ptAudioCenterButton('ptUiMoreClose','×','close-action');close.setAttribute('aria-label','關閉更多功能');
+  head.append(ptAudioCenterElement('h2',{text:'更多功能'}),close);inner.append(head);
+  const group=ptAudioCenterElement('div',{className:'pt-ui-more-grid'});
+  for(const [id,name] of [['themeOpen','◐ 外觀設定'],['bookManagerOpen','▤ 書庫管理'],['immersiveEnter','✦ 沉浸模式']]){
+    const original=$(id);if(!original||!header.contains(original))continue;
+    const b=ptAudioCenterButton('ptUiMore-'+id,name);
+    b.addEventListener('click',()=>{closeDialog('ptUiMoreDialog');original.click();});
+    group.append(b);original.classList.add('pt-ui-relocated');
+  }
+  const net=$('networkBadge');if(net&&header.contains(net)){
+    const readout=ptAudioCenterElement('p',{className:'dialog-note'});readout.textContent=net.textContent;
+    inner.append(readout);net.classList.add('pt-ui-relocated');
+    if(typeof MutationObserver!=='undefined')new MutationObserver(()=>{readout.textContent=net.textContent;}).observe(net,{childList:true,characterData:true,subtree:true});
+  }
+  inner.append(group);panel.append(inner);document.body.append(panel);
+  close.addEventListener('click',()=>closeDialog('ptUiMoreDialog'));
+  panel.addEventListener('click',e=>{if(e.target===panel)closeDialog('ptUiMoreDialog');});
+  const more=ptAudioCenterButton('ptUiMore','⋯ 更多','top-action pt-ui-top-action');
+  more.addEventListener('click',()=>openDialog('ptUiMoreDialog'));header.append(more);
+}
+function ptUiChapterMenu(context){
+  const original=$('forestDeleteShortcut');
+  if(!original||!context.contains(original))return;
+  const wrap=ptAudioCenterElement('details',{className:'pt-ui-chapter-menu'});
+  const summary=ptAudioCenterElement('summary',{className:'tiny-action',text:'本章操作 ▾'});
+  const menu=ptAudioCenterElement('div',{className:'pt-ui-chapter-options'});
+  const del=ptAudioCenterButton('ptUiDeleteChapter','刪除本章','tiny-action');
+  del.addEventListener('click',()=>{wrap.open=false;original.click();});
+  menu.append(del);wrap.append(summary,menu);original.before(wrap);original.classList.add('pt-ui-relocated');
+}
+function ptUiInfo(anchor,nodes,label,position='after'){
+  const source=nodes.filter(n=>n&&!n.id&&n.textContent.trim()&&!n.querySelector('input,select,button,textarea,a'));
+  if(!anchor||!source.length)return;
+  const wrap=ptAudioCenterElement('span',{className:'pt-ui-info-wrap'});
+  const b=ptAudioCenterButton('','ⓘ','pt-ui-info');b.setAttribute('aria-label',label+'：詳細說明');b.setAttribute('aria-expanded','false');
+  // Use one real disclosure button; native text nodes stay available to assistive technology on demand.
+  const tip=ptAudioCenterElement('span',{id:'ptUiHelp-'+(++ptUiHelpSerial),className:'pt-ui-info-text'});tip.hidden=true;b.setAttribute('aria-controls',tip.id);
+  tip.textContent=source.map(n=>n.textContent.trim()).join('\n');
+  b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();tip.hidden=!tip.hidden;b.setAttribute('aria-expanded',String(!tip.hidden));});
+  if(anchor.tagName==='LABEL'&&anchor.classList.contains('lockscreen-choice')){
+    const row=ptAudioCenterElement('div',{className:'pt-ui-radio-row'});
+    anchor.before(row);row.append(anchor,b,tip);
+  }else{
+    wrap.append(b);if(position==='inside')anchor.append(wrap);else anchor.after(wrap);
+    wrap.after(tip);
+  }
+  for(const n of source)n.classList.add('pt-ui-description');
+}
+function ptUiCompactInfo(){
+  const panel=$('ptAudioCenter'),advanced=$('lockScreenDialog');
+  if(!panel)return;
+  for(const root of [panel,advanced].filter(Boolean)){
+    // Radio descriptions must not accidentally select the corresponding mode.
+    for(const label of root.querySelectorAll('.lockscreen-choice')){
+      const small=[...label.querySelectorAll('small')];if(small.length)ptUiInfo(label,small,'模式說明');
+    }
+    for(const box of root.querySelectorAll('.sync-guide')){
+      const title=[...box.children].find(n=>n.tagName==='STRONG');
+      if(title)ptUiInfo(title,[...box.children].filter(n=>n.tagName==='P'),title.textContent.trim());
+    }
+  }
+  const privateStatus=$('ptPrivateCampfireStatus'),privateBox=privateStatus?.closest('.sync-guide');
+  if(privateBox)privateBox.classList.add('pt-ui-private-sound');
+  // Keep the selected mode and live status visible, rather than hiding them with the help.
+  const recovery=$('ptRecoveryStatus'),field=recovery?.closest('fieldset');
+  const holdStatus=$('ptHoldStatus'),holdBox=$('ptAmbientHold')?.closest('.sync-guide');
+  const minutes=$('ptHoldMinutes')?.closest('label');
+  if(field&&recovery&&minutes){const legacy=field.querySelector('.pt-audio-fold');if(legacy)field.insertBefore(recovery,legacy);}
+  if(holdStatus&&holdBox)holdBox.append(holdStatus);
+  const hold=$('ptHoldMinutes')?.closest('label');
+  if(hold){
+    const b=ptAudioCenterElement('span',{className:'pt-ui-static-help',text:'保活到期後停止環境音，睡眠定時優先。'});
+    hold.after(b);ptUiInfo(hold,[b],'保活上限');
+  }
+  const intro=panel.querySelector('.dialog-inner > .dialog-note');
+  if(intro)ptUiInfo($('ptAudioAdvanced'),[intro],'iPhone 鎖屏混音');
+}
+function ptUiInstall(){
+  if($('ptUiToggle-header'))return;
+  try{ptUiCollapsed=ptUiNormalize(JSON.parse(localStorage.getItem(PT_UI_LAYOUT_KEY)||'{}'));}catch(_){ptUiCollapsed=ptUiNormalize({});}
+  const header=document.querySelector('.app-shell .header-actions'),library=document.querySelector('.app-shell .library');
+  const tools=document.querySelector('.app-shell .lyrics-tools'),context=document.querySelector('.app-shell .listen-extras');
+  if(header){
+    const engine=ptAudioCenterButton('ptUiTopEngine','♫ 播放引擎','top-action pt-ui-top-action');
+    engine.addEventListener('click',()=>ptAudioCenterOpen());
+    const hold=ptAudioCenterButton('ptUiTopHold','♨ 暫停音效','top-action pt-ui-top-action');
+    hold.addEventListener('click',()=>ptAudioCenterOpen('hold'));
+    header.prepend(engine,hold);ptUiMoreInstall(header);
+    const toggle=ptUiToggleButton('header',header);
+    if(library){const b=ptUiToggleButton('library',toggle,'before');if(b)b.classList.add('pt-ui-library-toggle');}
+    // Top shortcuts stay distinct from the current-state controls in the lower row.
+    header.classList.add('pt-ui-header-actions');
+    if(header.parentElement){
+      header.parentElement.classList.add('pt-ui-header');
+      const switches=ptAudioCenterElement('div',{className:'pt-ui-header-switches'});
+      header.after(switches);const librarySwitch=$('ptUiToggle-library');if(librarySwitch)switches.append(librarySwitch);switches.append(toggle);
+    }
+  }
+  if(tools){
+    ptUiGroup(tools,'ptUiFontGroup','字級',['fontMinus','fontPlus']);
+    ptUiGroup(tools,'ptUiOffsetGroup','字幕校準',['offsetMinus','offsetLabel','offsetPlus']);
+    ptUiGroup(tools,'ptUiViewGroup','字幕版面',['lyricsCenterToggle','toggleLyricsMax']);
+    ptUiToggleButton('tools',tools);
+  }
+  if(context){
+    ptUiChapterMenu(context);const b=ptUiToggleButton('context',context,'before');
+    const row=ptAudioCenterElement('div',{className:'pt-ui-context-row'});b.before(row);row.append(b,context);
+  }
+  const d=$('ptAudioCenter');if(d){
+    d.addEventListener('close',()=>{if(!d.open)ptUiReleaseDock();});
+    const close=$('ptAudioCenterClose');if(close){close.title='收起播放控制中心';close.setAttribute('aria-label',close.title);}
+    const advanced=$('ptAudioAdvanced'),sleep=$('sleepOpen');
+    if(advanced&&sleep){const b=ptAudioCenterButton('ptUiCenterSleep','☾ 睡眠與定時','btn btn-quiet pt-ui-center-sleep');b.addEventListener('click',()=>{closeDialog('ptAudioCenter');sleep.click();});advanced.before(b);}
+  }
+  window.addEventListener('resize',ptUiCheckDock);
+  if(typeof MutationObserver!=='undefined')new MutationObserver(ptUiCheckDock).observe(document.body,{attributes:true,attributeFilter:['class']});
+  ptUiCompactInfo();ptUiApply();ptAudioCenterRefresh();
 }
 function refreshLockScreenControls(){
   const experimental=state.lockScreenMode==='lyrics';
@@ -2323,7 +2511,7 @@ window.PineTreeBeforeResourceReload=async function(manual){
 async function start(){
   syncRestoreTask=restoreSyncFolder().catch(error=>console.warn("恢復同步資料夾授權失敗",error));
   const oneButton=$('iosSingleButtonCompatibility');if(oneButton)oneButton.checked=state.iosSingleButtonCompatibility;
-  ptAudioCenterInstall();setupEvents();setupImmersiveEvents();ptRInstall();ptHInstall();ptAudioCenterRefresh();ptPrivateCampfireInstall();ptInstall();requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setCalibrationStyle(state.calibrationStyle,{persist:false});setFireflyTrails(state.fireflyTrails,{persist:false});setPlayButtonVisual(false);
+  ptAudioCenterInstall();setupEvents();setupImmersiveEvents();ptRInstall();ptHInstall();ptAudioCenterRefresh();ptPrivateCampfireInstall();ptInstall();try{ptUiInstall();}catch(error){console.warn('PineTree UI layout enhancement unavailable',error);}requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setCalibrationStyle(state.calibrationStyle,{persist:false});setFireflyTrails(state.fireflyTrails,{persist:false});setPlayButtonVisual(false);
   setMobileTab(localStorage.getItem('lyra-mobile-tab')==='chapters'?'chapters':'player');
   setImmersiveMode(state.immersive,{persist:false});
   setLineSpacing(state.lineSpacing,false);setKeepAwake(state.keepAwake,false);setFocusMode(state.focusMode,false);setLyricsCentered(state.lyricsCentered,false);updateSleepUI();

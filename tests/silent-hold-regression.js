@@ -237,15 +237,22 @@ async function h3Begin(wantPlay=true){
  * The fixture models original IDs/relationships; Safari rendering is separate. */
 (()=>{
   class El{
-    constructor(tag){this.tag=tag;this.children=[];this.parentElement=null;this.id='';this.className='';this.textContent='';this.dataset={};this.events={};this.attrs={};this.checked=false;this.value='';this.name='';this.classList={add:x=>{if(!this.className.split(' ').includes(x))this.className+=' '+x;}};}
+    constructor(tag){this.tag=tag;this.children=[];this.parentElement=null;this.id='';this.className='';this.textContent='';this.dataset={};this.events={};this.attrs={};this.checked=false;this.value='';this.name='';this.classList={contains:x=>this.className.split(' ').includes(x),add:x=>{if(!this.className.split(' ').includes(x))this.className+=' '+x;},remove:x=>{this.className=this.className.split(' ').filter(v=>v!==x).join(' ');},toggle:(x,v)=>{const on=v===undefined?!this.classList.contains(x):!!v;on?this.classList.add(x):this.classList.remove(x);return on;}};this.tagName=tag.toUpperCase();}
     detach(){if(this.parentElement){const a=this.parentElement.children;a.splice(a.indexOf(this),1);this.parentElement=null;}}
     append(...nodes){for(const n of nodes){n.detach();n.parentElement=this;this.children.push(n);}}
+    prepend(...nodes){for(const n of [...nodes].reverse()){n.detach();n.parentElement=this;this.children.unshift(n);}}
+    insertBefore(n,ref){n.detach();n.parentElement=this;this.children.splice(this.children.indexOf(ref),0,n);}
+    contains(n){for(let p=n;p;p=p.parentElement)if(p===this)return true;return false;}
+    show(){this.open=true;}
+    close(){this.open=false;for(const fn of this.events.close||[])fn({target:this});}
     before(...nodes){const p=this.parentElement;for(const n of nodes){n.detach();n.parentElement=p;p.children.splice(p.children.indexOf(this),0,n);}}
     after(...nodes){const p=this.parentElement;let i=p.children.indexOf(this)+1;for(const n of nodes){n.detach();n.parentElement=p;p.children.splice(i++,0,n);}}
     setAttribute(k,v){this.attrs[k]=v;}
     addEventListener(t,fn){(this.events[t]??=[]).push(fn);}
-    click(){for(const fn of this.events.click||[])fn({target:this});}
+    click(){for(const fn of this.events.click||[])fn({target:this,preventDefault(){},stopPropagation(){}});}
     matches(sel){
+      if(sel.includes(','))return sel.split(',').some(s=>this.matches(s.trim()));
+      if(sel.includes(' > ')){const [parent,child]=sel.split(' > ');return this.matches(child)&&!!this.parentElement?.matches(parent);}
       if(sel.includes(' ')){const i=sel.lastIndexOf(' ');return this.matches(sel.slice(i+1))&&!!this.parentElement?.closest(sel.slice(0,i));}
       if(sel.startsWith('.'))return this.className.split(' ').includes(sel.slice(1));
       if(sel.startsWith('#'))return this.id===sel.slice(1);
@@ -258,15 +265,20 @@ async function h3Begin(wantPlay=true){
     scrollIntoView(){this.scrolled=true;}
   }
   const body=new El('body'),node=(tag,parent,id='',cls='')=>{const e=new El(tag);e.id=id;e.className=cls;parent.append(e);return e;};
-  const extras=node('div',body,'','listen-extras'),entry=node('button',extras,'lockScreenOpen');
+  const shell=node('div',body,'','app-shell'),top=node('header',shell,'','topbar'),header=node('div',top,'','header-actions');
+  const layout=node('div',shell,'','layout'),library=node('div',layout,'','library'),reader=node('div',layout,'','reader'),toolbar=node('div',reader,'','lyrics-toolbar'),tools=node('div',toolbar,'','lyrics-tools');
+  for(const id of ['themeOpen','bookManagerOpen','immersiveEnter','networkBadge','quickResume','cloudOpen'])node('button',header,id);
+  for(const id of ['fontMinus','fontPlus','offsetMinus','offsetLabel','offsetPlus','lyricsCenterToggle','toggleLyricsMax','focusToggle'])node('button',tools,id);
+  const extras=node('div',reader,'','listen-extras'),entry=node('button',extras,'lockScreenOpen');
+  const sleep=node('button',extras,'sleepOpen'),del=node('button',extras,'forestDeleteShortcut');
   const original=node('dialog',body,'lockScreenDialog'),inner=node('div',original,'','dialog-inner'),head=node('div',inner,'','dialog-head');node('h2',head);
   const compat=node('div',inner,'','sync-guide');node('input',compat,'iosSingleButtonCompatibility');
   const field=node('fieldset',inner);node('legend',field);
-  const radio=(parent,name,value)=>{const label=node('label',parent);const i=node('input',label);i.name=name;i.value=value;node('strong',label);node('small',label);return i;};
+  const radio=(parent,name,value)=>{const label=node('label',parent,'','lockscreen-choice');const i=node('input',label);i.name=name;i.value=value;node('strong',label);node('small',label);return i;};
   const modes=['standard','smart','experimental','silent'].map(v=>radio(field,'ptRecoveryMode',v));
   modes[3].checked=true;
   const subtitle=radio(inner,'lockScreenMode','lyrics');
-  node('select',field,'ptHoldMinutes');
+  node('select',node('label',field),'ptHoldMinutes');
   const hold=node('div',field,'','sync-guide');node('strong',hold);node('p',hold);
   const holdSelect=node('select',hold,'ptAmbientHold');holdSelect.value='campfire';node('input',hold,'ptAmbientHoldVolume');node('output',hold,'ptAmbientHoldValue');
   const mix=node('div',field,'','sync-guide');node('strong',mix);const enabled=node('input',mix,'ptAmbientMixEnabled');enabled.checked=true;
@@ -274,10 +286,11 @@ async function h3Begin(wantPlay=true){
   node('p',field,'ptHoldStatus');const status=node('p',field,'ptRecoveryStatus');
   const diag=node('div',inner,'','sync-guide');node('pre',diag,'ptRecoveryDiagnostic');node('button',diag,'ptRecoveryCopy');node('button',diag,'ptRecoveryClear');
   const hp=node('div',inner,'','sync-guide');node('pre',hp,'headphoneDiagnostic');node('button',hp,'copyHeadphoneDiagnostic');
-  const get=id=>body.querySelector('#'+id),dialogs=[];
-  const c={document:{body,createElement:tag=>new El(tag),querySelector:s=>body.querySelector(s)},$:get,ptAmbientName:s=>({campfire:'森林篝火',rain:'松林細雨',silent:'完全無聲'})[s]||s,refreshLockScreenControls:()=>{},requestAnimationFrame:fn=>fn(),openDialog:id=>{get(id).open=true;dialogs.push(['open',id]);},closeDialog:id=>{get(id).open=false;dialogs.push(['close',id]);}};
+  const get=id=>body.querySelector('#'+id),dialogs=[],storage=new Map(),state={immersive:false,lyricsMax:false,focusMode:false};let wide=true,reflows=0,sleepClicks=0,deleteClicks=0;
+  sleep.addEventListener('click',()=>sleepClicks++);del.addEventListener('click',()=>deleteClicks++);
+  const c={document:{body,createElement:tag=>new El(tag),querySelector:s=>body.querySelector(s)},$:get,ptAmbientName:s=>({campfire:'森林篝火',rain:'松林細雨',silent:'完全無聲'})[s]||s,refreshLockScreenControls:()=>{},requestAnimationFrame:fn=>fn(),openDialog:id=>{get(id).show();dialogs.push(['open',id]);},closeDialog:id=>{get(id).close();dialogs.push(['close',id]);},state,window:{matchMedia:()=>({matches:wide}),addEventListener(){}},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},syncLyricsViewportPadding:()=>{},updateLyrics:()=>reflows++};
   const start=app.indexOf('function ptAudioCenterElement('),end=app.indexOf('function refreshLockScreenControls()',start);
-  assert(start>=0&&end>start);vm.createContext(c);vm.runInContext(app.slice(start,end)+'\nthis.install=ptAudioCenterInstall;this.refresh=ptAudioCenterRefresh;this.open=ptAudioCenterOpen;',c);
+  assert(start>=0&&end>start);vm.createContext(c);vm.runInContext(app.slice(start,end)+'\nthis.install=ptAudioCenterInstall;this.refresh=ptAudioCenterRefresh;this.open=ptAudioCenterOpen;this.ui=ptUiInstall;this.checkDock=ptUiCheckDock;this.normalize=ptUiNormalize;',c);
   assert(c.install());assert(c.install(),'installation is idempotent');
   const panel=get('ptAudioCenter');assert(panel);assert.equal(field.closest('dialog'),panel);assert.equal(get('ptAmbientHold'),holdSelect);assert.equal(get('ptAmbientMix'),mixSelect);assert.equal(get('ptRecoveryStatus'),status);
   assert.equal(body.querySelectorAll('#ptAudioCenter').length,1);assert.equal(body.querySelectorAll('#ptAudioHoldQuick').length,1);
@@ -292,6 +305,33 @@ async function h3Begin(wantPlay=true){
   assert(app.includes('ptAudioCenterInstall();setupEvents();setupImmersiveEvents();ptRInstall();ptHInstall();'));
   for(const id of ['lockScreenOpen','lockScreenDialog','ptAmbientHold','ptAmbientMix','ptRecoveryStatus','iosSingleButtonCompatibility','ptRecoveryDiagnostic','headphoneDiagnostic'])assert(html.includes('id="'+id+'"'),'original source anchor '+id);
   console.log('PASS Audio Control Center: original node identity, unique controls, navigation, legacy folding, state preservation');
+  c.closeDialog('ptAudioCenter');
+  storage.set('pinetree-ui-layout-v453',JSON.stringify({library:true,tools:false,unknown:true}));
+  const originalFont=get('fontMinus'),originalMode=modes[3];
+  c.ui();c.ui();
+  assert(body.classList.contains('pt-ui-hide-library'));assert(!body.classList.contains('pt-ui-hide-tools'));
+  assert.equal(get('ptUiToggle-library').attrs['aria-expanded'],'false');assert.equal(get('ptUiToggle-library').attrs['aria-controls'],library.id);
+  assert.equal(body.querySelectorAll('#ptUiToggle-header').length,1);
+  assert.equal(get('fontMinus'),originalFont);assert.equal(originalFont.parentElement.id,'ptUiFontGroup');
+  assert.equal(get('ptUiViewGroup').querySelector('#toggleLyricsMax'),get('toggleLyricsMax'));
+  assert.equal(get('ptUiToggle-context').parentElement,extras.parentElement);assert.equal(get('ptUiToggle-tools').parentElement,toolbar);
+  get('ptUiToggle-header').click();get('ptUiToggle-tools').click();get('ptUiToggle-context').click();
+  assert(body.classList.contains('pt-ui-hide-header'));assert(body.classList.contains('pt-ui-hide-tools'));assert(body.classList.contains('pt-ui-hide-context'));
+  assert.deepEqual(JSON.parse(storage.get('pinetree-ui-layout-v453')),{library:true,header:true,tools:true,context:true});
+  get('ptUiToggle-library').click();assert(!body.classList.contains('pt-ui-hide-library'));assert(body.classList.contains('pt-ui-hide-tools'));
+  const radioRow=originalMode.closest('.pt-ui-radio-row');assert(radioRow);const info=radioRow.querySelector('.pt-ui-info'),tip=get(info.attrs['aria-controls']);assert(tip.hidden);
+  assert(!originalMode.closest('label').contains(info));info.click();assert(!tip.hidden);assert(originalMode.checked);info.click();assert(tip.hidden);
+  get('ptUiDeleteChapter').click();assert.equal(deleteClicks,1);
+  get('ptUiTopEngine').click();assert(panel.open&&panel.parentElement===layout);assert(body.classList.contains('pt-ui-dock-open'));
+  get('ptAudioCenterClose').click();assert(!panel.open&&panel.parentElement===body);assert(!body.classList.contains('pt-ui-dock-open'));
+  get('ptUiTopEngine').click();wide=false;c.checkDock();assert(!panel.open&&panel.parentElement===body);
+  get('ptUiTopHold').click();assert(panel.open&&panel.parentElement===body);assert(!body.classList.contains('pt-ui-dock-open'));
+  get('ptUiCenterSleep').click();assert(!panel.open);assert.equal(sleepClicks,1);
+  wide=true;get('ptUiTopEngine').click();state.immersive=true;c.checkDock();assert(!panel.open);assert(state.immersive);
+  const before=reflows;get('ptUiToggle-header').click();assert.equal(reflows,before);assert(state.immersive);state.immersive=false;
+  assert.equal(get('ptAmbientHold'),holdSelect);assert.equal(get('ptAmbientMix'),mixSelect);assert.equal(modes[3],originalMode);
+  assert(!JSON.parse(storage.get('pinetree-ui-layout-v453')).unknown);
+  console.log('PASS collapsible UI: independent persisted flags, grouped original nodes, info disclosure, dock/modal, sleep and immersive isolation');
 })();
 
 /* Home bookmark shortcuts hidden; existing immersive access and handlers retained. */
