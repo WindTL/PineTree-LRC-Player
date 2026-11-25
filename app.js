@@ -949,6 +949,9 @@ function ptUiInstall(){
       header.parentElement.classList.add('pt-ui-header');
       const switches=ptAudioCenterElement('div',{className:'pt-ui-header-switches'});
       header.after(switches);const librarySwitch=$('ptUiToggle-library');if(librarySwitch)switches.append(librarySwitch);switches.append(toggle);
+      // Keep the actions and collapse switches in one right-aligned layout region.
+      const right=ptAudioCenterElement('div',{className:'pt-ui-header-right'});
+      header.before(right);right.append(header,switches);
     }
   }
   if(tools){
