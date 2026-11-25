@@ -1497,7 +1497,7 @@ body.pt-ui-hide-context .app-shell .listen-extras{display:none!important;}
   body #immersiveMode .pt-im-speed-compact::after{display:none!important;}
   body #immersiveMode .pt-im-speed-expanded>#imSpeed{width:100%;min-width:0;margin:0!important;}
   body #immersiveMode .im-transport-card{min-height:0!important;height:auto!important;padding:5px 7px!important;gap:4px!important;}
-  body #immersiveMode .im-speed-expanded>.im-speed-presets{display:flex!important;justify-content:space-between;margin:0!important;}
+  body #immersiveMode .pt-im-speed-expanded>.im-speed-presets{display:flex!important;justify-content:space-between;margin:0!important;}
   body #immersiveMode .im-heading h1{font-size:clamp(25px,6.6vw,37px)!important;line-height:1.13!important;}
   body #immersiveMode .im-eng{margin:2px 0 3px!important;}
   body #immersiveMode .im-chapter{padding:2px 4px!important;}
