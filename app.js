@@ -16,7 +16,8 @@ const storedUITheme=localStorage.getItem('pinetree-ui-theme-v380');
 const FOREST_MIGRATION_KEY = 'lyra-forest-theme-v31-applied';
 const PRE_FOREST_BACKUP_KEY = 'lyra-theme-before-forest-v31';
 const $ = id => document.getElementById(id);
-const audio = $('audio');
+const ptRawAudio = $('audio');
+const audio = ptHoldFacade(ptRawAudio);
 const COLLATOR = new Intl.Collator('zh-Hans', {numeric:true, sensitivity:'base'});
 const bounded = (n, lo, hi, fallback) => Number.isFinite(n) ? Math.max(lo, Math.min(hi,n)) : fallback;
 const storedNumber = (key, fallback) => Number(localStorage.getItem(key) ?? fallback);
@@ -67,8 +68,8 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4501';
-window.PineTreeAppRelease='4501';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4502';
+window.PineTreeAppRelease='4502';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -546,7 +547,7 @@ async function importFiles(fileList,{chapterPlan=null, targetBook=state.selected
           // iOS may reject autoplay after an async file import; load without autoplay.
           await loadTrack(ready,{autoplay:false});
           $('playStatus').textContent='已匯入這一章，請按播放';
-          toast('本章 MP3 已匯入，按播放開始收聽',4501);
+          toast('本章 MP3 已匯入，按播放開始收聽',4502);
         }else if(!job.cancelled){
           toast('尚未找到本章 MP3，請選擇同名 MP3；LRC 可一起選取',5500);
         }
@@ -664,7 +665,7 @@ function updateLyrics(force=false){
   }
 }
 async function saveProgress(ended=false){if(!state.db||!state.current||state.suppressProgressWrites||!state.fileUrl||audio.readyState<1||!Number.isFinite(audio.duration)||audio.duration<=0)return;const id=state.current.id;const done=ended||audio.ended;const record={id,position:done?(Number(audio.duration)||0):(Number(audio.currentTime)||0),ended:done,updatedAt:Date.now()};state.progresses.set(id,record);try{await putStore('progress',record);}catch(error){console.warn('进度保存失败：',error);}}
-function releaseAudio(){ptRInvalidate('章節釋放');ptRStop('章節釋放',true);if(!audio.paused)state.skipNextPauseAutoSync=true;audio.pause();audio.removeAttribute('src');audio.load();if(state.fileUrl)URL.revokeObjectURL(state.fileUrl);state.fileUrl=null;}
+function releaseAudio(){ptHDiscard('章節釋放');ptRInvalidate('章節釋放');ptRStop('章節釋放',true);if(!audio.paused)state.skipNextPauseAutoSync=true;audio.pause();audio.removeAttribute('src');audio.load();if(state.fileUrl)URL.revokeObjectURL(state.fileUrl);state.fileUrl=null;}
 function updateStoryArt(){const cover=$('currentCover'),fallback=$('storyArtFallback');const book=getBook(state.current?.book||state.selectedBook);const title=book?bookTitle(book.id):'选择一本小说';$('storyBookName').textContent=title;$('storyBookName').title=title;$('storyBookName').classList.toggle('long-title',title.length>15);const url=coverUrl(book);if(url){cover.src=url;cover.hidden=false;fallback.hidden=true;}else{cover.hidden=true;cover.removeAttribute('src');fallback.hidden=false;}}
 // Experimental lock-screen subtitles use OS media metadata, not native system karaoke lyrics.
 // iOS may throttle/suspend background JavaScript, timeupdate and metadata rendering.
@@ -746,7 +747,7 @@ function updateMediaSession(force=false){
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
       title:info.title,artist:info.artist,album:info.album,
-      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4501',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4502',document.baseURI).href,sizes:'512x512',type:'image/png'}]
     });
     state.lockScreenMetaKey=info.key;
     state.lockScreenLastText=info.title;
@@ -756,7 +757,7 @@ function updateMediaSession(force=false){
       try{
         navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
           artist:'PineTree 有聲書',album:info.album,
-          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4501',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4502',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
         state.lockScreenMetaKey=info.key;
         state.lockScreenLastAt=now;
         return;
@@ -906,6 +907,7 @@ function setIOSSingleButtonCompatibility(enabled,{persist=true}={}){
   logMediaAction('耳機單鍵相容模式：'+(enabled?'開啟':'關閉'));
 }
 function handleHeadphonePlayAction(){
+  if(ptHMediaAction('play'))return;
   if(ptRMode!=='standard'){ptRPlay();return;}
   const now=Date.now();
   const compatible=isIOSHeadphoneEnvironment()&&state.iosSingleButtonCompatibility;
@@ -928,8 +930,8 @@ function handleHeadphonePlayAction(){
 function setupMediaSession(){if(!('mediaSession' in navigator))return;
  const handlers={
    play:()=>handleHeadphonePlayAction(),
-   pause:()=>{ptRInvalidate('系統 Pause');logMediaAction('收到耳機/鎖屏 Pause');if(!audio.paused)audio.pause();},
-   stop:()=>{ptRInvalidate('系統 Stop');ptRStop('系統 Stop',true);logMediaAction('收到 Stop');if(!audio.paused)audio.pause();},
+   pause:()=>{if(ptHMediaAction('pause'))return;ptRInvalidate('系統 Pause');logMediaAction('收到耳機/鎖屏 Pause');if(!audio.paused)audio.pause();},
+   stop:()=>{ptHHardStop('系統 Stop');ptRInvalidate('系統 Stop');ptRStop('系統 Stop',true);logMediaAction('收到 Stop');if(!audio.paused)audio.pause();},
    previoustrack:()=>adjacentTrack(-1),nexttrack:()=>adjacentTrack(1),
    seekbackward:({seekOffset}={})=>skipSeconds(-(seekOffset||15)),
    seekforward:({seekOffset}={})=>skipSeconds(seekOffset||15),
@@ -941,6 +943,7 @@ function clearCurrent(message='请选择章节'){++state.loadingToken;state.curr
 async function loadTrack(track,{autoplay=false,restart=false}={}){if(!track)return;const token=++state.loadingToken;if(state.current&&state.current.id!==track.id&&!audio.ended)await saveProgress();if(token!==state.loadingToken)return;releaseAudio();state.current=track;localStorage.setItem('lyra-last-id',track.id);localStorage.setItem('lyra-last-book-track:'+track.book,track.id);$('currentBook').textContent=bookTitle(track.book);$('currentTitle').textContent=chapterDisplayName(track.name);$('chapterHint').textContent='自动保存续听进度 · 点击字幕可跳转';$('deleteBtn').disabled=false;$('bookmarkAdd').disabled=false;$('playBtn').disabled=true;$('seekBar').disabled=true;$('playStatus').textContent='读取音频中…';state.lockScreenMetaKey='';displayLyrics(track.lrcText||'');updateStoryArt();updateBookBrand();drawChapterList();if(window.matchMedia('(max-width:850px), (orientation:landscape) and (max-height:820px) and (pointer:coarse)').matches)setMobileTab('player',true);else requestAnimationFrame(scrollActiveChapter);
   try{const [stored,progress]=await Promise.all([getStore('audio',track.id),getStore('progress',track.id)]);if(token!==state.loadingToken)return;if(!stored?.blob)throw new Error('本章 MP3 已清理或未匯入；請從 iCloud Drive 重新匯入同名 MP3');const resumeAt=restart||progress?.ended?0:Math.max(0,Number(progress?.position)||0);state.fileUrl=URL.createObjectURL(stored.blob);audio.src=state.fileUrl;audio.defaultPlaybackRate=state.speed;audio.playbackRate=state.speed;audio.load();$('playBtn').disabled=false;$('seekBar').disabled=false;updateMediaSession();let restored=false;const resume=()=>{if(token!==state.loadingToken||restored)return;const d=audio.duration;if(Number.isFinite(d)&&d>0){if(resumeAt>0){try{audio.currentTime=Math.min(resumeAt,Math.max(0,d-0.5));}catch(_) {}}restored=true;updateProgressDisplay();updateLyrics(true);updateMediaPosition();}};if(audio.readyState>=1)resume();else{audio.addEventListener('loadedmetadata',resume,{once:true});audio.addEventListener('canplay',resume,{once:true});}$('playStatus').textContent=progress?.ended?'已听完 · 从头开始':resumeAt>1?`续听 ${formatTime(resumeAt)}`:'准备播放';if(autoplay)await startPlayback();}catch(error){if(token!==state.loadingToken)return;console.error(error);$('playBtn').disabled=true;$('seekBar').disabled=true;$('playStatus').textContent='音频读取失败';toast(`播放失败：${error.message||error}`);}}
 async function startPlayback({fromLockScreen=false}={}){
+  if(ptHSnapshot)return ptHRestore(true,'手動播放');
   if(!state.current){if(!fromLockScreen)toast('請先選擇小說章節');return false;}
   requestPlaybackAudioSession();
   // Keep the same audio element and Blob URL while paused; never unload it to 'refresh' the lock screen.
@@ -1390,7 +1393,7 @@ async function resumeFromLinkedOrPickedFile(){
     syncFolderReady=await getFolderPermission('readwrite');
     syncBridgeMessage(`✅ 快速續聽已先讀取 ${f.name} · ${new Date(f.lastModified).toLocaleString()}`);
     await quickResumeLocal();
-  }catch(error){syncBridgeMessage('無法讀取已連結同步檔：'+(error?.message||error));toast(`請選擇 iCloud Drive 最新的 ${SYNC_JSON_NAME}`,4501);$('syncQuickFile').click();}
+  }catch(error){syncBridgeMessage('無法讀取已連結同步檔：'+(error?.message||error));toast(`請選擇 iCloud Drive 最新的 ${SYNC_JSON_NAME}`,4502);$('syncQuickFile').click();}
 }
 async function onQuickSyncFileSelected(file){
   if(!file)return;
@@ -1818,12 +1821,14 @@ function stopSleepTimer(message='已取消睡眠定時'){
 }
 function checkSleepTimer(){
   if(state.sleepDeadline && Date.now()>=state.sleepDeadline){
+    ptHHardStop('睡眠定時到期');
     ptRStop('睡眠定時到期',true);
     // Guard against paused audio being inadvertently restarted by other events.
     audio.pause();saveProgress();stopSleepTimer('定時時間已到，已暫停並保存續聽位置');
   }else if(state.sleepDeadline){ptFade();updateSleepUI();}
 }
 function chooseSleepTimer(value){
+  ptHHardStop('睡眠定時設定');
   ptRStop('睡眠定時設定',true);
   stopSleepTimer('');
   if(value==='off'){toast('睡眠定時已取消');}
@@ -2040,7 +2045,7 @@ function setupEvents(){
   $('deleteBtn').addEventListener('click',deleteCurrent);
   $('forestDeleteShortcut').addEventListener('click',()=>{if(!$('deleteBtn').disabled)$('deleteBtn').click();});
   $('libraryJumpBtn').addEventListener('click',()=>{if(state.lyricsMax)setLyricsMax(false);setMobileTab('chapters',true);jumpToCurrent();});
-  $('playBtn').addEventListener('click',()=>audio.paused?startPlayback():audio.pause());
+  $('playBtn').addEventListener('click',()=>audio.paused?startPlayback():ptHPauseFromUI());
   $('prevBtn').addEventListener('click',()=>adjacentTrack(-1));$('nextBtn').addEventListener('click',()=>adjacentTrack(1));
   $('backBtn').addEventListener('click',()=>skipSeconds(-15));$('aheadBtn').addEventListener('click',()=>skipSeconds(15));
   $('seekBar').addEventListener('input',()=>{state.seeking=true;const value=Number($('seekBar').value);$('elapsed').textContent=formatTime((audio.duration||0)*value/1000);const pos=Math.max(0,Math.min(100,value/10))+'%';$('seekBar').style.setProperty('--seek-progress',pos);$('seekScene')?.style.setProperty('--seek-progress',pos);});
@@ -2175,7 +2180,7 @@ function setupImmersiveEvents(){
   $('imSleep').addEventListener('click',()=>openDialog('sleepDialog'));
   $('imBookmark').addEventListener('click',addBookmark);
   $('imBookmarkList').addEventListener('click',()=>openDialog('bookmarksDialog'));
-  $('imPlay').addEventListener('click',()=>audio.paused?startPlayback():audio.pause());
+  $('imPlay').addEventListener('click',()=>audio.paused?startPlayback():ptHPauseFromUI());
   $('imPrev').addEventListener('click',()=>adjacentTrack(-1));
   $('imNext').addEventListener('click',()=>adjacentTrack(1));
   $('imBack').addEventListener('click',()=>skipSeconds(-15));
@@ -2204,7 +2209,7 @@ window.PineTreeBeforeResourceReload=async function(manual){
 async function start(){
   syncRestoreTask=restoreSyncFolder().catch(error=>console.warn("恢復同步資料夾授權失敗",error));
   const oneButton=$('iosSingleButtonCompatibility');if(oneButton)oneButton.checked=state.iosSingleButtonCompatibility;
-  setupEvents();setupImmersiveEvents();ptRInstall();ptInstall();requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setCalibrationStyle(state.calibrationStyle,{persist:false});setFireflyTrails(state.fireflyTrails,{persist:false});setPlayButtonVisual(false);
+  setupEvents();setupImmersiveEvents();ptRInstall();ptHInstall();ptInstall();requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setCalibrationStyle(state.calibrationStyle,{persist:false});setFireflyTrails(state.fireflyTrails,{persist:false});setPlayButtonVisual(false);
   setMobileTab(localStorage.getItem('lyra-mobile-tab')==='chapters'?'chapters':'player');
   setImmersiveMode(state.immersive,{persist:false});
   setLineSpacing(state.lineSpacing,false);setKeepAwake(state.keepAwake,false);setFocusMode(state.focusMode,false);setLyricsCentered(state.lyricsCentered,false);updateSleepUI();
@@ -2227,7 +2232,7 @@ async function start(){
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
     await restoreChapterIndex();
     await syncRestoreTask;await activateLinkedSyncAfterStartup();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.5.1：鎖屏播放恢復',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.5.2：鎖屏播放恢復',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     if(pendingSyncedResumeId()){
@@ -2334,10 +2339,10 @@ function ptRPlay(){
 function ptRInstall(){
   try{ptRMode=localStorage.getItem(PT_R_MODE)==='smart'?'smart':'standard';const raw=JSON.parse(localStorage.getItem(PT_R_LOG)||'[]');if(Array.isArray(raw))ptRHistory=raw.filter(x=>typeof x==='string').slice(-80);}catch(_){}
   for(const input of document.querySelectorAll('input[name="ptRecoveryMode"]')){
-    input.checked=input.value===ptRMode;input.addEventListener('change',()=>{if(!input.checked)return;ptRInvalidate('切換模式');ptRStop('切換模式',true);ptRMode=input.value;ptRBlocked=false;try{localStorage.setItem(PT_R_MODE,ptRMode==='standard'?'standard':'smart');}catch(_){}ptRStatus(ptRMode==='standard'?'標準模式':ptRMode==='smart'?'智慧恢復已啟用':'實驗模式 · 本次使用');ptRLog('設定模式');if(ptRMode==='experimental')ptRKeep();});
+    input.checked=input.value===ptRMode;input.addEventListener('change',()=>{if(!input.checked)return;ptHHardStop('切換模式');ptRInvalidate('切換模式');ptRStop('切換模式',true);ptRMode=input.value;ptRBlocked=false;try{localStorage.setItem(PT_R_MODE,ptRMode==='standard'?'standard':'smart');}catch(_){}ptRStatus(ptRMode==='standard'?'標準模式':ptRMode==='smart'?'智慧恢復已啟用':ptRMode==='silent'?'Silent Hold 已選擇 · 本次使用':'實驗模式 · 本次使用');ptRLog('設定模式');if(ptRMode==='experimental')ptRKeep();});
   }
   ptRStatus(ptRMode==='smart'?'智慧恢復已啟用':'標準模式');
-  $('ptRecoveryCopy')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText('PineTree 4.5.1 Lock Screen Recovery\n'+ptRHistory.join('\n'));toast('診斷已複製');}catch(_){toast('無法使用剪貼簿，請手動選取紀錄');}});
+  $('ptRecoveryCopy')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText('PineTree 4.5.2 Lock Screen Recovery\n'+ptRHistory.join('\n'));toast('診斷已複製');}catch(_){toast('無法使用剪貼簿，請手動選取紀錄');}});
   $('ptRecoveryClear')?.addEventListener('click',()=>{ptRHistory=[];try{localStorage.removeItem(PT_R_LOG);}catch(_){}if($('ptRecoveryDiagnostic'))$('ptRecoveryDiagnostic').textContent='';});
   audio.addEventListener('pause',()=>{if(!audio.paused)return;ptRPausedAt=Date.now();ptRInvalidate('audio pause');ptRKeep();});
   audio.addEventListener('play',()=>{ptRBlocked=false;ptRStop('audio play');ptRLog('audio play');});
