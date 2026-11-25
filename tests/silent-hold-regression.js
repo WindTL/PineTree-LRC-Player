@@ -69,7 +69,7 @@ ctx.state={fileUrl:'blob:private-chapter'};
 ctx.ptRLog=x=>traceLines.push(x);
 ctx.snap({source:'blob:private-chapter',silence:'blob:private-hold',position:37,duration:500,phase:'restore'});
 ctx.trace('raw seeked');
-assert(traceLines[0].includes('TRACE H5 raw seeked phase=restore src=chapter current=hold'));
+assert(traceLines[0].includes('TRACE H6 raw seeked phase=restore src=chapter current=hold'));
 assert(traceLines[0].includes('saved=37.00/500.00'));
 assert(!traceLines[0].includes('blob:'));
 ctx.snap(null);
@@ -196,3 +196,34 @@ async function h3Begin(wantPlay=true){
   x=await h3Begin(false);assert.equal(await x.result,true);assert.equal(x.timerCount(),0,'paused restore starts no probe');
   console.log('PASS H5: clock-based early rate switch, no duplicate timers, unchanged safety thresholds, event fallback and cleanup');
 })().catch(e=>{console.error(e);process.exitCode=1;});
+
+/* H6: release the separate mix context when an iOS page goes into the background.
+ * The normal MP3 and Hold engine must not be touched by the visibility guard. */
+(()=>{
+  const log=[],status={textContent:''},events=[],raw={src:'blob:chapter',currentSrc:'blob:chapter',readyState:4,paused:false,ended:false,currentTime:10,duration:200,playbackRate:2};
+  let created=0,closed=0,stopped=0,registered=0;
+  class MockContext{
+    constructor(){created++;this.state='running';this.currentTime=0;this.destination={};}
+    createBuffer(){return {getChannelData:()=>new Float32Array(96000)};}
+    createBufferSource(){return {connect(){},disconnect(){},start(){},stop(){stopped++;}};}
+    createGain(){return {gain:{value:0,setTargetAtTime(){}},connect(){}};}
+    resume(){return Promise.resolve();}
+    close(){closed++;return Promise.resolve();}
+  }
+  const c={ptRawAudio:raw,document:{hidden:false},window:{AudioContext:MockContext},state:{current:{id:'chapter'},fileUrl:'blob:chapter',uiTheme:'forest-reading'},isIOSHeadphoneEnvironment:()=>true,$:()=>status,setupMediaSession:()=>{registered++;},ptRLog:s=>log.push(s)};
+  vm.createContext(c);vm.runInContext(engine+'\nthis.mixStart=ptMixStart;this.mixVisibility=ptMixVisibility;this.mixStop=ptMixStop;this.enable=v=>ptAmbientMixEnabled=v;this.snapshot=v=>ptHSnapshot=v;this.block=ptMixBackgroundBlocked;this.allowed=ptMixAllowed;',c);
+  assert(c.block(true,true));assert(!c.block(false,true));assert(!c.block(true,false));
+  assert(!c.allowed({enabled:true,sound:'rain',volume:10,loaded:true,paused:false,ended:false,holding:false,expired:false,backgroundBlocked:true}));
+  c.enable(true);c.mixStart();assert.equal(created,1);
+  c.document.hidden=true;c.mixVisibility();assert.equal(stopped,1);assert.equal(closed,1);assert.equal(registered,1);
+  assert.equal(raw.currentTime,10);assert.equal(raw.playbackRate,2);assert.equal(raw.paused,false);assert.equal(raw.src,'blob:chapter');
+  c.mixStart();assert.equal(created,1,'no background mix context recreation');
+  c.document.hidden=false;c.mixVisibility();assert.equal(created,2,'restore mix on foreground');
+  c.document.hidden=true;c.mixVisibility();c.document.hidden=false;
+  raw.paused=true;c.mixVisibility();assert.equal(created,2,'do not start mix while paused');
+  raw.paused=false;c.snapshot({phase:'hold'});c.mixVisibility();assert.equal(created,2,'do not start mix during Hold');
+  c.snapshot(null);c.enable(false);c.mixVisibility();assert.equal(created,2,'preserve disabled setting');
+  c.enable(true);c.isIOSHeadphoneEnvironment=()=>false;c.document.hidden=true;c.mixStart();assert.equal(created,3,'non-iOS background mix remains available');
+  c.mixStop('test end');
+  console.log('PASS H6 iOS visibility mix isolation, foreground restoration and normal MP3 invariants');
+})();

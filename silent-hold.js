@@ -78,7 +78,7 @@ function ptHTrace(event){
     const r=ptRawAudio,s=ptHSnapshot;
     const kind=url=>!url?'empty':url===state.fileUrl?'chapter':s&&url===s.silence?'hold':'other';
     const n=v=>Number.isFinite(v)?v.toFixed(2):'-';
-    ptRLog('TRACE H5 '+event+' phase='+(s?.phase||'none')+' src='+kind(r.src)+' current='+kind(r.currentSrc)+' raw='+n(r.currentTime)+'/'+n(r.duration)+' saved='+n(s?.position)+'/'+n(s?.duration)+' rate='+n(r.playbackRate)+' seek='+Number(r.seeking)+' end='+Number(r.ended)+' paused='+Number(r.paused));
+    ptRLog('TRACE H6 '+event+' phase='+(s?.phase||'none')+' src='+kind(r.src)+' current='+kind(r.currentSrc)+' raw='+n(r.currentTime)+'/'+n(r.duration)+' saved='+n(s?.position)+'/'+n(s?.duration)+' rate='+n(r.playbackRate)+' seek='+Number(r.seeking)+' end='+Number(r.ended)+' paused='+Number(r.paused));
   }catch(_){}
 }
 function ptHStatus(s){const el=$('ptHoldStatus');if(el)el.textContent=s;ptRLog('Silent Hold: '+s);}
@@ -207,7 +207,7 @@ function ptHMediaAction(kind){
 }
 function ptHInstall(){
   ptAmbientInstall();
-  ptHTrace('diagnostic build H5 installed');
+  ptHTrace('diagnostic build H6 installed');
   ptRawAudio.addEventListener('durationchange',()=>ptHProtectTruncated(ptRawAudio));
   for(const e of ['loadstart','loadedmetadata','durationchange','canplay','play','playing','pause','seeking','seeked','ended','error','emptied'])ptRawAudio.addEventListener(e,()=>{if(ptRMode==='silent'||ptHSnapshot)ptHTrace('raw '+e);});
   const select=$('ptHoldMinutes');try{const n=Number(localStorage.getItem('pinetree-hold-minutes-v1'));if([1,5,10,30].includes(n))ptHMinutes=n;}catch(_){}
@@ -257,7 +257,8 @@ function ptAmbientSamples(sound,rate=8000){
   for(let i=0;i<size;i++)out[i]*=scale*Math.min(1,i/edge,(size-1-i)/edge);
   return out;
 }
-function ptMixAllowed(x){return !!(x.enabled&&x.sound!=='silent'&&x.volume>0&&x.loaded&&!x.paused&&!x.ended&&!x.holding&&!x.expired);}
+function ptMixBackgroundBlocked(ios,hidden){return !!(ios&&hidden);}
+function ptMixAllowed(x){return !!(x.enabled&&x.sound!=='silent'&&x.volume>0&&x.loaded&&!x.paused&&!x.ended&&!x.holding&&!x.expired&&!x.backgroundBlocked);}
 function ptMixStatus(message){const el=$('ptAmbientMixStatus');if(el)el.textContent=message;}
 function ptMixStop(reason){
   ptMixGeneration++;
@@ -265,6 +266,7 @@ function ptMixStop(reason){
   ptMixContext=null;ptMixSource=null;ptMixGain=null;
   try{src?.stop();src?.disconnect();}catch(_){}
   if(ctx){try{Promise.resolve(ctx.close()).catch(()=>{});}catch(_){}}
+  if(ctx||src)ptHTrace('mix stop '+reason);
   ptMixStatus(ptAmbientMixEnabled?'環境音待命 · '+reason:'說書混音已關閉');
 }
 function ptMixSetGain(){
@@ -275,6 +277,10 @@ function ptMixSetGain(){
   try{ptMixGain.gain.setTargetAtTime(gain,ptMixContext.currentTime,.08);}catch(_){}
 }
 function ptMixStart(){
+  if(ptMixBackgroundBlocked(isIOSHeadphoneEnvironment(),document.hidden)){
+    if(ptMixContext||ptMixSource)ptMixStop('iOS 鎖屏相容');
+    if(ptAmbientMixEnabled)ptMixStatus('鎖屏相容 · 解鎖後自動恢復混音');return;
+  }
   const sound=ptAmbientResolve(ptAmbientMix);
   if(!ptMixAllowed({enabled:ptAmbientMixEnabled,sound,volume:ptAmbientMixVolume,loaded:!!(state.current&&state.fileUrl&&ptRawAudio.src===state.fileUrl&&ptRawAudio.readyState>=2),paused:ptRawAudio.paused,ended:ptRawAudio.ended,holding:!!ptHSnapshot,expired:!!(state.sleepDeadline&&Date.now()>=state.sleepDeadline)}))return;
   if(ptMixContext){ptMixSetGain();return;}
@@ -287,9 +293,22 @@ function ptMixStart(){
     buffer.getChannelData(0).set(samples);
     const src=ctx.createBufferSource(),gain=ctx.createGain();ptMixSource=src;ptMixGain=gain;
     src.buffer=buffer;src.loop=true;gain.gain.value=0;src.connect(gain);gain.connect(ctx.destination);src.start();
-    ptMixSetGain();ptMixStatus('嘗試啟動 '+ptAmbientName(sound));
-    Promise.resolve(ctx.resume()).then(()=>{if(gen===ptMixGeneration&&ctx===ptMixContext)ptMixStatus(ctx.state==='running'?'混音中 · '+ptAmbientName(sound):'混音暫未啟動 · '+ctx.state);}).catch(()=>{if(gen===ptMixGeneration){ptMixStop('系統拒絕');ptMixStatus('混音被系統限制 · 請在前景重試');}});
+    ptMixSetGain();ptHTrace('mix start '+sound);ptMixStatus('嘗試啟動 '+ptAmbientName(sound));
+    Promise.resolve(ctx.resume()).then(()=>{if(gen===ptMixGeneration&&ctx===ptMixContext){if(ptMixBackgroundBlocked(isIOSHeadphoneEnvironment(),document.hidden)){ptMixStop('iOS 鎖屏相容');return;}ptHTrace('mix context '+ctx.state);ptMixStatus(ctx.state==='running'?'混音中 · '+ptAmbientName(sound):'混音暫未啟動 · '+ctx.state);}}).catch(()=>{if(gen===ptMixGeneration){ptMixStop('系統拒絕');ptMixStatus('混音被系統限制 · 請在前景重試');}});
   }catch(_){if(gen===ptMixGeneration){ptMixStop('啟動失敗');ptMixStatus('環境音混音不可用');}}
+}
+function ptMixVisibility(){
+  if(ptMixBackgroundBlocked(isIOSHeadphoneEnvironment(),document.hidden)){
+    if(ptAmbientMixEnabled||ptMixContext||ptMixSource){
+      ptMixStop('iOS 鎖屏相容');ptHTrace('mix background blocked');
+      if(ptAmbientMixEnabled)ptMixStatus('鎖屏相容 · 解鎖後自動恢復混音');
+      // No new audio session, no MP3 reload or synthetic playback action.
+      // Re-register existing system callbacks without touching Hold or LRC.
+      setupMediaSession();
+    }
+    return;
+  }
+  if(!document.hidden){if(ptAmbientMixEnabled)ptHTrace('mix foreground check');ptMixStart();}
 }
 function ptAmbientInstall(){
   try{const c=JSON.parse(localStorage.getItem(PT_AMBIENT_KEY)||'{}');
@@ -315,6 +334,7 @@ function ptAmbientInstall(){
   for(const e of ['pause','ended','emptied','loadstart','waiting','error'])audio.addEventListener(e,()=>ptMixStop(e));
   audio.addEventListener('timeupdate',ptMixSetGain);
   window.addEventListener('pagehide',()=>ptMixStop('頁面離開'));
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)ptMixStart();});
+  document.addEventListener('visibilitychange',ptMixVisibility);
+  window.addEventListener('pageshow',ptMixVisibility);
   new MutationObserver(()=>{if(ptAmbientMix==='auto'){ptMixStop('主題切換');ptMixStart();}}).observe(document.body,{attributes:true,attributeFilter:['data-ui-theme']});
 }
