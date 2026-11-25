@@ -11,6 +11,13 @@ function ptHWav(minutes,sound='silent',volume=0){
   for(const [off,s] of [[0,'RIFF'],[8,'WAVE'],[12,'fmt '],[36,'data']])for(let i=0;i<s.length;i++)b[off+i]=s.charCodeAt(i);
   v.setUint32(4,36+n,true);v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,8000,true);v.setUint32(28,8000,true);v.setUint16(32,1,true);v.setUint16(34,8,true);v.setUint32(40,n,true);b.fill(128,44);if(sound!=='silent'&&volume>0){const samples=ptAmbientSamples(sound,8000),gain=Math.max(0,Math.min(1,volume));for(let i=0;i<n;i++){const fade=Math.min(1,(n-i)/80000);b[44+i]=Math.max(0,Math.min(255,Math.round(128+127*samples[i%samples.length]*gain*fade)));}}return b;
 }
+// An ended event queued for the temporary WAV must never complete an MP3.
+function ptHEndedIsCurrent(raw){
+  return raw.ended===true&&raw.readyState>=1&&!!raw.currentSrc&&raw.currentSrc===raw.src&&Number.isFinite(raw.duration)&&raw.duration>0&&Number.isFinite(raw.currentTime)&&raw.currentTime>=raw.duration-.5;
+}
+function ptHOriginalReady(raw,s){
+  return raw.src===s.source&&raw.currentSrc===s.source&&raw.readyState>=1&&Number.isFinite(raw.duration)&&raw.duration>0;
+}
 function ptHoldFacade(raw){
   const listeners=new WeakMap();
   return new Proxy(raw,{
@@ -19,7 +26,7 @@ function ptHoldFacade(raw){
       if(key==='addEventListener')return (type,fn,options)=>{
         if(typeof fn!=='function')return target.addEventListener(type,fn,options);
         let byType=listeners.get(fn);if(!byType){byType=new Map();listeners.set(fn,byType);}
-        let wrap=byType.get(type);if(!wrap){wrap=function(e){if(!ptHSnapshot)fn.call(target,e);};byType.set(type,wrap);}
+        let wrap=byType.get(type);if(!wrap){wrap=function(e){if(!ptHSnapshot&&(type!=='ended'||ptHEndedIsCurrent(target)))fn.call(target,e);};byType.set(type,wrap);}
         target.addEventListener(type,wrap,options);
       };
       if(key==='removeEventListener')return (type,fn,options)=>target.removeEventListener(type,listeners.get(fn)?.get(type)||fn,options);
@@ -81,10 +88,11 @@ function ptHRestore(wantPlay,reason){
   const cleanup=()=>{for(const ev of ['loadedmetadata','seeked','canplay'])r.removeEventListener(ev,check);r.removeEventListener('error',fail);if(!settled){settled=true;resolveResult(false);}};
   const fail=()=>{if(!valid())return;ptHClear();r.pause();s.phase='failed';r.muted=s.muted;ptHPublish();ptHStatus('恢復受限 · 保留斷點，請解鎖重試');};
   const check=()=>{
-    if(!valid()||r.src!==s.source||r.readyState<1)return;
+    if(!valid()||!ptHOriginalReady(r,s))return;
     const pos=ptHClamp(s.position,s.duration);
+    if(pos>=r.duration){fail();return;}
     if(Math.abs(r.currentTime-pos)>.25){try{r.currentTime=pos;}catch(_){fail();}return;}
-    if(r.seeking||!playOK)return;
+    if(r.seeking||r.ended||!playOK||(wantPlay&&r.paused))return;
     settled=true;ptHClear();ptHSnapshot=null;r.muted=s.muted;try{URL.revokeObjectURL(s.silence);}catch(_){}
     ptLast=null;ptHStatus(wantPlay?'已恢復原 MP3':'真正暫停 · 斷點已保留');
     if(wantPlay&&!r.paused)r.dispatchEvent(new Event('play'));else{setPlayButtonVisual(false);$('playStatus').textContent='已暫停';try{navigator.mediaSession.playbackState='paused';}catch(_){}}
@@ -96,7 +104,7 @@ function ptHRestore(wantPlay,reason){
   try{
     if(!wantPlay)r.pause();
     r.muted=true;r.loop=false;r.src=s.source;r.defaultPlaybackRate=s.rate;r.playbackRate=s.rate;
-    try{r.currentTime=s.position;}catch(_){}
+    if(ptHOriginalReady(r,s)){try{r.currentTime=ptHClamp(s.position,s.duration);}catch(_){}}
     ptHTimer=setTimeout(fail,12000);
     if(wantPlay){requestPlaybackAudioSession();Promise.resolve(r.play()).then(()=>{if(valid()){playOK=true;check();}}).catch(fail);}
     else{r.load();check();}
@@ -112,6 +120,7 @@ function ptHMediaAction(kind){
     ptHRestore(true,'系統 '+kind+' → 恢復');return true;
   }
   if(ptRMode!=='silent')return false;
+  if(Date.now()-ptHLastAction<700)return true;
   if(kind==='pause'||(kind==='play'&&!ptRawAudio.paused&&state.iosSingleButtonCompatibility)){if(ptHEnter())return true;}
   return false;
 }
