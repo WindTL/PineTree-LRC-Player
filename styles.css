@@ -1417,3 +1417,54 @@ body.pt-ui-hide-context .app-shell .listen-extras{display:none!important;}
   .app-shell .pt-ui-header-right{display:contents;}
   .app-shell .pt-ui-header-right .header-actions{flex:1 0 100%;max-width:100%;}
 }
+
+/* Reading-first controls: main player only; immersive transport remains unchanged. */
+.app-shell .pt-ui-merged-sound,
+.app-shell #forestDeleteShortcut.pt-ui-relocated{display:none!important;}
+.app-shell #lockScreenOpen,.app-shell #ptUiLockScreen{flex:0 0 auto;white-space:nowrap;}
+.app-shell #ptUiLockScreen[data-active=true]{border-color:var(--accent);color:var(--lyric-active);}
+.app-shell .pt-ui-speed-row{display:none;}
+@media(max-width:850px) and (orientation:portrait){
+  body .app-shell .reader .speed-settings.pt-ui-speed-compact{
+    display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.7fr);
+    align-items:center;gap:3px 8px!important;width:100%!important;min-width:0!important;
+    flex:0 0 auto!important;height:auto!important;min-height:0!important;
+    margin:0!important;padding:4px 8px!important;border-radius:13px!important;
+  }
+  body .app-shell .reader .pt-ui-speed-compact>.pt-ui-speed-row{
+    display:flex!important;grid-column:1/-1;align-items:center;justify-content:space-between;
+    gap:8px;min-width:0;width:100%;
+  }
+  body .app-shell .reader #ptUiSpeedToggle,
+  body .app-shell .reader #ptUiPlayModeSelect{
+    min-height:34px!important;max-width:100%;margin:0!important;padding:4px 9px!important;
+    color:var(--text);background:var(--panel-alt);border:1px solid var(--border);
+    border-radius:999px;font-size:12px!important;white-space:nowrap;
+  }
+  body .app-shell .reader #ptUiSpeedToggle{flex:1 1 auto;text-align:left;font-variant-numeric:tabular-nums;}
+  body .app-shell .reader #ptUiPlayModeSelect{flex:0 1 auto;width:auto;max-width:47%;font-family:inherit;}
+  body .app-shell .reader .pt-ui-speed-compact>#playModeBtn,
+  body .app-shell .reader .pt-ui-speed-compact:not(.pt-ui-speed-expanded)>.pt-ui-speed-detail{display:none!important;}
+  body .app-shell .reader .pt-ui-speed-expanded>.forest-speed-presets{grid-column:1/-1;display:flex!important;margin:0!important;}
+  body .app-shell .reader .pt-ui-speed-expanded #speedRange{width:100%;min-width:0;margin:2px 0!important;}
+  body .app-shell .reader .pt-ui-speed-expanded>label{min-width:0;}
+  body .app-shell .reader .pt-ui-speed-compact::after{display:none!important;}
+  body .app-shell .reader .playbar{min-height:0!important;gap:3px!important;padding:4px!important;}
+  body .app-shell .reader .pt-ui-context-row{gap:4px;min-height:0;}
+  body .app-shell .reader .pt-ui-context-row .listen-extras{gap:4px;min-width:0;align-items:center;flex-wrap:nowrap!important;}
+  body .app-shell .reader .pt-ui-context-row .tiny-action{white-space:nowrap;flex-shrink:0;}
+  /* Draw the existing mobile forest image on the whole reader surface, not
+     only on the formerly short pseudo-element above the scrolling lyrics. */
+  body[data-ui-theme="forest-reading"]:not(.immersive-active) .app-shell .reader{
+    background:linear-gradient(180deg,rgba(0,24,17,.12),rgba(0,24,17,.28)),url('./themes/forest-reading/assets/forest-mobile.webp') center center / cover no-repeat #001d18!important;
+  }
+  body[data-ui-theme="forest-reading"]:not(.immersive-active) .app-shell .reader::before{display:none!important;}
+  body[data-ui-theme="forest-reading"]:not(.immersive-active) .app-shell .reader .lyrics-window{
+    background:linear-gradient(180deg,rgba(0,28,21,.23),rgba(1,30,21,.30),rgba(0,24,18,.25))!important;
+    backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  }
+  body[data-ui-theme="forest-reading"]:not(.immersive-active) .app-shell .reader .now-playing{
+    min-height:0!important;height:auto!important;padding:6px 2px 7px!important;gap:3px!important;
+  }
+  body[data-ui-theme="forest-reading"]:not(.immersive-active) .app-shell .reader .forest-signature{margin-bottom:2px!important;}
+}
