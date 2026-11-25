@@ -465,7 +465,7 @@ body[data-ui-theme="forest-reading"] #offsetLabel::before{
 body[data-ui-theme="forest-reading"].focus-reading #offsetLabel{display:none!important;}
 @media(max-width:540px){body[data-ui-theme="forest-reading"] #offsetLabel{min-width:62px!important;height:28px!important;padding:2px 5px 2px 25px!important;font-size:10px!important;}body[data-ui-theme="forest-reading"] #offsetLabel::before{width:21px!important;height:21px!important;left:2px!important;}}
 
-:root{--pt-theme-release:4501;}
+:root{--pt-theme-release:4502;}
 
 /* Living Forest 4.5: only forest theme. */
 body[data-ui-theme="forest-reading"][data-theme-motion="on"][data-pt-eco="off"][data-pt-squirrel="hop"] :is(.squirrel-chase,#immersiveMode .im-squirrel){animation:pineGallopFrames .55s step-end infinite,ptHop 1.2s ease-in-out infinite!important;}

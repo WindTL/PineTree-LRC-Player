@@ -9,6 +9,8 @@ on:
       - 'tests/pinetree-regression.js'
       - 'tests/play-mode-regression.js'
       - 'tests/living-forest-regression.js'
+      - 'tests/silent-hold-regression.js'
+      - 'silent-hold.js'
       - 'tests/lock-screen-recovery-regression.js'
       - 'themes/**'
       - 'styles.css'
@@ -22,6 +24,8 @@ on:
       - 'tests/pinetree-regression.js'
       - 'tests/play-mode-regression.js'
       - 'tests/living-forest-regression.js'
+      - 'tests/silent-hold-regression.js'
+      - 'silent-hold.js'
       - 'tests/lock-screen-recovery-regression.js'
       - 'themes/**'
       - 'styles.css'
@@ -48,3 +52,6 @@ jobs:
 
       - name: Check lock-screen recovery modes and safety guards
         run: node tests/lock-screen-recovery-regression.js
+
+      - name: Check Silent Hold engine syntax and regression
+        run: node --check silent-hold.js && node tests/silent-hold-regression.js
