@@ -69,7 +69,7 @@ ctx.state={fileUrl:'blob:private-chapter'};
 ctx.ptRLog=x=>traceLines.push(x);
 ctx.snap({source:'blob:private-chapter',silence:'blob:private-hold',position:37,duration:500,phase:'restore'});
 ctx.trace('raw seeked');
-assert(traceLines[0].includes('TRACE H6 raw seeked phase=restore src=chapter current=hold'));
+assert(traceLines[0].includes('TRACE H7 raw seeked phase=restore src=chapter current=hold'));
 assert(traceLines[0].includes('saved=37.00/500.00'));
 assert(!traceLines[0].includes('blob:'));
 ctx.snap(null);
@@ -107,7 +107,7 @@ function h3Setup(){
   c.remember({size:100,type:'audio/mpeg',slice(){return this;}},'blob:original');
   c.snap({id:'chapter',source:'blob:original',silence:'blob:hold',position:2.59,duration:421.68,rate:2,muted:false,phase:'hold'});
   let endings=0,pauses=0;c.audio.addEventListener('ended',()=>endings++);c.audio.addEventListener('pause',()=>pauses++);
-  return {c,raw,records,revoked,logs,emit:type=>raw.dispatchEvent(new c.Event(type)),time:v=>{mediaTime=v;},counts:()=>({earlySeeks,playCalls,endings,pauses}),probes:()=>[...timers.values()].filter(t=>t.ms===40).length,tickProbe:()=>{const next=[...timers.entries()].find(([,t])=>t.ms===40);assert(next,'expected scheduled 40ms probe');timers.delete(next[0]);next[1].fn();},timerCount:()=>timers.size};
+  return {c,raw,records,revoked,logs,emit:type=>raw.dispatchEvent(new c.Event(type)),time:v=>{mediaTime=v;},counts:()=>({earlySeeks,playCalls,endings,pauses}),probes:()=>[...timers.values()].filter(t=>t.ms===20).length,tickProbe:()=>{const next=[...timers.entries()].find(([,t])=>t.ms===20);assert(next,'expected scheduled 20ms probe');timers.delete(next[0]);next[1].fn();},timerCount:()=>timers.size};
 }
 async function h3Begin(wantPlay=true){
   const x=h3Setup(),result=x.c.restore(wantPlay,'test');
@@ -170,15 +170,16 @@ async function h3Begin(wantPlay=true){
   console.log('PASS H4 foreground fallback saves original checkpoint and reloads same chapter once');
 })().catch(e=>{console.error(e);process.exitCode=1;});
 
-/* H5: sparse or throttled native timeupdate must not shorten the safety threshold.
+/* H7: sparse or throttled native timeupdate must not bypass the configured media-progress threshold.
  * Only the real media clock unlocks the rate change. Timer delays are simulated. */
 (async()=>{
   let x=await h3Begin();
   assert.equal(x.probes(),1);
   x.emit('playing');x.emit('canplay');assert.equal(x.probes(),1,'no duplicate polling timers');
   x.time(2.69);x.tickProbe();assert.equal(x.raw.playbackRate,1);
+  x.time(2.70);x.tickProbe();assert.equal(x.raw.playbackRate,1,'110ms advance must not unlock the 120ms threshold');
   assert.equal(x.probes(),1);assert(x.c.getSnapshot());
-  x.time(2.85);x.tickProbe();assert.equal(x.raw.playbackRate,2,'clock probe can apply rate before native timeupdate');
+  x.time(2.72);x.tickProbe();assert.equal(x.raw.playbackRate,2,'130ms verified media advance unlocks rate before native timeupdate');
   assert.equal(x.probes(),0);assert(x.c.getSnapshot(),'second-stage validation remains mandatory');
   x.time(3.02);x.emit('timeupdate');assert.equal(await x.result,true);assert.equal(x.timerCount(),0);
 
@@ -193,8 +194,12 @@ async function h3Begin(wantPlay=true){
   assert.equal(x.c.getSnapshot().phase,'failed');
   assert.equal(x.counts().endings,0);
 
+  x=await h3Begin();x.time(2.72);x.tickProbe();assert.equal(x.raw.playbackRate,2);
+  x.raw.duration=2.72;x.raw.ended=true;x.raw.paused=true;x.emit('durationchange');x.emit('ended');
+  assert.equal(await x.result,false);assert.equal(x.counts().endings,0,'early rate transition must never permit false EOF');
+  assert.equal(x.c.getSnapshot().phase,'failed');assert.equal(x.c.audio.currentTime,2.59);assert.equal(x.timerCount(),0);
   x=await h3Begin(false);assert.equal(await x.result,true);assert.equal(x.timerCount(),0,'paused restore starts no probe');
-  console.log('PASS H5: clock-based early rate switch, no duplicate timers, unchanged safety thresholds, event fallback and cleanup');
+  console.log('PASS H7: 120ms verified media advancement, 20ms probes, early-switch EOF guard, second-stage verification, fallback and cleanup');
 })().catch(e=>{console.error(e);process.exitCode=1;});
 
 /* H6: release the separate mix context when an iOS page goes into the background.
