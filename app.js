@@ -786,6 +786,7 @@ function ptAudioCenterInstall(){
 /* Collapsible UI: presentation-only, independent of playback and immersive mode. */
 const PT_UI_LAYOUT_KEY='pinetree-ui-layout-v453';
 const PT_UI_SECTIONS=['library','header','tools','context'];
+let ptUiHelpSerial=0;
 let ptUiCollapsed={};
 function ptUiNormalize(v){return Object.fromEntries(PT_UI_SECTIONS.map(k=>[k,v?.[k]===true]));}
 function ptUiRelayout(){
@@ -883,11 +884,16 @@ function ptUiInfo(anchor,nodes,label,position='after'){
   const wrap=ptAudioCenterElement('span',{className:'pt-ui-info-wrap'});
   const b=ptAudioCenterButton('','ⓘ','pt-ui-info');b.setAttribute('aria-label',label+'：詳細說明');b.setAttribute('aria-expanded','false');
   // Use one real disclosure button; native text nodes stay available to assistive technology on demand.
-  const tip=ptAudioCenterElement('span',{className:'pt-ui-info-text'});tip.hidden=true;
+  const tip=ptAudioCenterElement('span',{id:'ptUiHelp-'+(++ptUiHelpSerial),className:'pt-ui-info-text'});tip.hidden=true;b.setAttribute('aria-controls',tip.id);
   tip.textContent=source.map(n=>n.textContent.trim()).join('\n');
   b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();tip.hidden=!tip.hidden;b.setAttribute('aria-expanded',String(!tip.hidden));});
-  wrap.append(b,tip);
-  if(position==='inside')anchor.append(wrap);else anchor.after(wrap);
+  if(anchor.tagName==='LABEL'&&anchor.classList.contains('lockscreen-choice')){
+    const row=ptAudioCenterElement('div',{className:'pt-ui-radio-row'});
+    anchor.before(row);row.append(anchor,b,tip);
+  }else{
+    wrap.append(b);if(position==='inside')anchor.append(wrap);else anchor.after(wrap);
+    wrap.after(tip);
+  }
   for(const n of source)n.classList.add('pt-ui-description');
 }
 function ptUiCompactInfo(){
@@ -905,6 +911,12 @@ function ptUiCompactInfo(){
   }
   const privateStatus=$('ptPrivateCampfireStatus'),privateBox=privateStatus?.closest('.sync-guide');
   if(privateBox)privateBox.classList.add('pt-ui-private-sound');
+  // Keep the selected mode and live status visible, rather than hiding them with the help.
+  const recovery=$('ptRecoveryStatus'),field=recovery?.closest('fieldset');
+  const holdStatus=$('ptHoldStatus'),holdBox=$('ptAmbientHold')?.closest('.sync-guide');
+  const minutes=$('ptHoldMinutes')?.closest('label');
+  if(field&&recovery&&minutes){const legacy=field.querySelector('.pt-audio-fold');if(legacy)field.insertBefore(recovery,legacy);}
+  if(holdStatus&&holdBox)holdBox.append(holdStatus);
   const hold=$('ptHoldMinutes')?.closest('label');
   if(hold){
     const b=ptAudioCenterElement('span',{className:'pt-ui-static-help',text:'保活到期後停止環境音，睡眠定時優先。'});
@@ -926,6 +938,9 @@ function ptUiInstall(){
     header.prepend(engine,hold);ptUiMoreInstall(header);
     const toggle=ptUiToggleButton('header',header);
     if(library){const b=ptUiToggleButton('library',toggle,'before');if(b)b.classList.add('pt-ui-library-toggle');}
+    // Top shortcuts stay distinct from the current-state controls in the lower row.
+    header.classList.add('pt-ui-header-actions');
+    if(header.parentElement)header.parentElement.classList.add('pt-ui-header');
   }
   if(tools){
     ptUiGroup(tools,'ptUiFontGroup','字級',['fontMinus','fontPlus']);
@@ -2479,7 +2494,7 @@ window.PineTreeBeforeResourceReload=async function(manual){
 async function start(){
   syncRestoreTask=restoreSyncFolder().catch(error=>console.warn("恢復同步資料夾授權失敗",error));
   const oneButton=$('iosSingleButtonCompatibility');if(oneButton)oneButton.checked=state.iosSingleButtonCompatibility;
-  ptAudioCenterInstall();setupEvents();setupImmersiveEvents();ptRInstall();ptHInstall();ptAudioCenterRefresh();ptPrivateCampfireInstall();ptInstall();ptUiInstall();requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setCalibrationStyle(state.calibrationStyle,{persist:false});setFireflyTrails(state.fireflyTrails,{persist:false});setPlayButtonVisual(false);
+  ptAudioCenterInstall();setupEvents();setupImmersiveEvents();ptRInstall();ptHInstall();ptAudioCenterRefresh();ptPrivateCampfireInstall();ptInstall();try{ptUiInstall();}catch(error){console.warn('PineTree UI layout enhancement unavailable',error);}requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setCalibrationStyle(state.calibrationStyle,{persist:false});setFireflyTrails(state.fireflyTrails,{persist:false});setPlayButtonVisual(false);
   setMobileTab(localStorage.getItem('lyra-mobile-tab')==='chapters'?'chapters':'player');
   setImmersiveMode(state.immersive,{persist:false});
   setLineSpacing(state.lineSpacing,false);setKeepAwake(state.keepAwake,false);setFocusMode(state.focusMode,false);setLyricsCentered(state.lyricsCentered,false);updateSleepUI();
