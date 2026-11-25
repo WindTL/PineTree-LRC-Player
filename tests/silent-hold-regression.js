@@ -69,7 +69,7 @@ ctx.state={fileUrl:'blob:private-chapter'};
 ctx.ptRLog=x=>traceLines.push(x);
 ctx.snap({source:'blob:private-chapter',silence:'blob:private-hold',position:37,duration:500,phase:'restore'});
 ctx.trace('raw seeked');
-assert(traceLines[0].includes('TRACE H3 raw seeked phase=restore src=chapter current=hold'));
+assert(traceLines[0].includes('TRACE H4 raw seeked phase=restore src=chapter current=hold'));
 assert(traceLines[0].includes('saved=37.00/500.00'));
 assert(!traceLines[0].includes('blob:'));
 ctx.snap(null);
@@ -118,7 +118,7 @@ async function h3Begin(wantPlay=true){
   assert.equal(x.raw.currentTime,2.59);assert.equal(x.counts().earlySeeks,0);
   x.raw.readyState=4;x.raw.seeking=false;x.emit('seeked');
   await Promise.resolve();
-  assert.equal(x.raw.playbackRate,2);
+  assert.equal(x.raw.playbackRate,wantPlay?1:2,'do not change rate immediately after seek');
   return {...x,result};
 }
 (async()=>{
@@ -131,20 +131,40 @@ async function h3Begin(wantPlay=true){
   assert(x.records.some(p=>p.position===2.59&&!p.ended&&p.duration===421.68));
   assert(x.c.getSnapshot().phase==='failed');
 
-  x=await h3Begin();x.time(2.8);x.emit('timeupdate');assert.equal(await x.result,true);
+  x=await h3Begin();x.time(2.9);x.emit('timeupdate');assert.equal(x.raw.playbackRate,2);assert(x.c.getSnapshot(),'retain snapshot through rate change');x.time(3.1);x.emit('timeupdate');assert.equal(await x.result,true);
   assert.equal(x.c.getSnapshot(),null);assert.equal(x.raw.muted,false);
   assert(x.revoked.includes('blob:original')&&x.revoked.includes('blob:hold'));assert(!x.revoked.includes('blob:fresh-1'));
-  x.raw.duration=2.8;x.raw.ended=true;x.raw.paused=true;x.emit('pause');x.emit('ended');
+  x.raw.duration=3.1;x.raw.ended=true;x.raw.paused=true;x.emit('pause');x.emit('ended');
   assert.equal(x.counts().endings,0);assert.equal(x.counts().pauses,0);
   assert.equal(x.c.audio.duration,421.68);assert.equal(x.c.audio.ended,false);
   assert(x.records.some(p=>!p.ended&&p.duration===421.68));
   assert(x.logs.some(l=>l.includes('BLOCK truncated chapter duration')));
 
-  x=await h3Begin();x.time(2.8);x.emit('timeupdate');assert.equal(await x.result,true);
+  x=await h3Begin();x.time(2.9);x.emit('timeupdate');assert.equal(x.raw.playbackRate,2);assert(x.c.getSnapshot(),'retain snapshot through rate change');x.time(3.1);x.emit('timeupdate');assert.equal(await x.result,true);
   x.time(421.68);x.raw.ended=true;x.raw.paused=true;x.emit('pause');x.emit('ended');
   assert.equal(x.counts().endings,1);assert.equal(x.counts().pauses,1,'real EOF still reaches ordinary handlers');
 
   x=await h3Begin(false);assert.equal(await x.result,true);assert.equal(x.raw.paused,true);assert.equal(x.counts().playCalls,0);
   assert.equal(x.c.getSnapshot(),null);assert.equal(x.raw.currentTime,2.59);
   console.log('PASS H3: real H2 duration-collapse trace, fresh source, deferred seek, verified progress, post-resume protection, genuine EOF, paused restore');
+})().catch(e=>{console.error(e);process.exitCode=1;});
+
+/* H4 fallback is explicitly triggered by foreground Play and uses the normal loader. */
+(async()=>{
+  const begin=app.indexOf('let ptHSafeRecoveryPending=false;'),end=app.indexOf('async function startPlayback(',begin);
+  assert(begin>=0&&end>begin);
+  const snap={phase:'failed',id:'chapter',position:3.42,duration:458.52},track={id:'chapter'},calls=[],inputs=[{value:'silent',checked:true},{value:'smart',checked:false}];
+  const c={ptHSnapshot:snap,state:{current:track},document:{hidden:false,querySelectorAll:()=>inputs},ptRMode:'silent',ptRBlocked:true,PT_R_MODE:'mode',audio:{paused:true},
+    localStorage:{setItem:(k,v)=>calls.push(['mode',v])},saveProgress:async ended=>calls.push(['save',ended,snap.position]),
+    ptRInvalidate:()=>{},ptRStop:()=>{},ptRStatus:()=>{},ptHTrace:()=>{},toast:()=>{},$:()=>({textContent:''}),
+    loadTrack:async(t,o)=>{calls.push(['load',t.id,o.autoplay]);c.ptHSnapshot=null;c.audio.paused=false;}
+  };
+  vm.createContext(c);vm.runInContext(app.slice(begin,end)+'\nthis.recover=ptHSafeRecovery;',c);
+  c.document.hidden=true;assert.equal(await c.recover(),false);assert.equal(calls.length,0);
+  c.document.hidden=false;assert.equal(await c.recover(),true);
+  assert.deepEqual(calls,[['save',false,3.42],['mode','smart'],['load','chapter',true]]);
+  assert.equal(c.ptRMode,'smart');assert.equal(inputs[0].checked,false);assert.equal(inputs[1].checked,true);
+  assert.equal(await c.recover(),false,'no fallback recursion');
+  assert(app.includes("if(ptHSnapshot?.phase==='failed')return ptHSafeRecovery()"));
+  console.log('PASS H4 foreground fallback saves original checkpoint and reloads same chapter once');
 })().catch(e=>{console.error(e);process.exitCode=1;});

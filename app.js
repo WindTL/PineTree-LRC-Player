@@ -942,7 +942,32 @@ function setupMediaSession(){if(!('mediaSession' in navigator))return;
 function clearCurrent(message='请选择章节'){++state.loadingToken;state.current=null;state.lockScreenMetaKey='';releaseAudio();try{if('mediaSession'in navigator)navigator.mediaSession.metadata=null;}catch(_){}state.lines=[];state.lineIndex=-1;localStorage.removeItem('lyra-last-id');$('currentBook').textContent=state.selectedBook?bookTitle(state.selectedBook):'READY TO LISTEN';$('currentTitle').textContent=message;$('chapterHint').textContent='从章节目录选择一章';$('playBtn').disabled=true;$('seekBar').disabled=true;$('deleteBtn').disabled=true;$('bookmarkAdd').disabled=true;setPlayButtonVisual(false);$('playStatus').textContent='未选章节';$('lrcState').textContent='· 暂无字幕';$('elapsed').textContent='00:00';$('duration').textContent='00:00';displayPlaceholder(message,'MP3 和 LRC 将保存在本机书库');updateStoryArt();updateBookBrand();drawChapterList();}
 async function loadTrack(track,{autoplay=false,restart=false}={}){if(!track)return;ptHTrace('loadTrack '+(track.id===state.current?.id?'same':'different')+' autoplay='+Number(autoplay)+' restart='+Number(restart));const token=++state.loadingToken;if(state.current&&state.current.id!==track.id&&!audio.ended)await saveProgress();if(token!==state.loadingToken)return;releaseAudio();state.current=track;localStorage.setItem('lyra-last-id',track.id);localStorage.setItem('lyra-last-book-track:'+track.book,track.id);$('currentBook').textContent=bookTitle(track.book);$('currentTitle').textContent=chapterDisplayName(track.name);$('chapterHint').textContent='自动保存续听进度 · 点击字幕可跳转';$('deleteBtn').disabled=false;$('bookmarkAdd').disabled=false;$('playBtn').disabled=true;$('seekBar').disabled=true;$('playStatus').textContent='读取音频中…';state.lockScreenMetaKey='';displayLyrics(track.lrcText||'');updateStoryArt();updateBookBrand();drawChapterList();if(window.matchMedia('(max-width:850px), (orientation:landscape) and (max-height:820px) and (pointer:coarse)').matches)setMobileTab('player',true);else requestAnimationFrame(scrollActiveChapter);
   try{const [stored,progress]=await Promise.all([getStore('audio',track.id),getStore('progress',track.id)]);if(token!==state.loadingToken)return;if(!stored?.blob)throw new Error('本章 MP3 已清理或未匯入；請從 iCloud Drive 重新匯入同名 MP3');const resumeAt=restart||progress?.ended?0:Math.max(0,Number(progress?.position)||0);state.fileUrl=URL.createObjectURL(stored.blob);ptHRememberSource(stored.blob,state.fileUrl);audio.src=state.fileUrl;audio.defaultPlaybackRate=state.speed;audio.playbackRate=state.speed;audio.load();$('playBtn').disabled=false;$('seekBar').disabled=false;updateMediaSession();let restored=false;const resume=()=>{if(token!==state.loadingToken||restored)return;const d=audio.duration;if(Number.isFinite(d)&&d>0){if(resumeAt>0){try{audio.currentTime=Math.min(resumeAt,Math.max(0,d-0.5));}catch(_) {}}restored=true;updateProgressDisplay();updateLyrics(true);updateMediaPosition();}};if(audio.readyState>=1)resume();else{audio.addEventListener('loadedmetadata',resume,{once:true});audio.addEventListener('canplay',resume,{once:true});}$('playStatus').textContent=progress?.ended?'已听完 · 从头开始':resumeAt>1?`续听 ${formatTime(resumeAt)}`:'准备播放';if(autoplay)await startPlayback();}catch(error){if(token!==state.loadingToken)return;console.error(error);$('playBtn').disabled=true;$('seekBar').disabled=true;$('playStatus').textContent='音频读取失败';toast(`播放失败：${error.message||error}`);}}
+// Failed hold must not endlessly retry the same broken native seek path.
+// Use the proven normal chapter loading flow after an explicit foreground Play.
+let ptHSafeRecoveryPending=false;
+async function ptHSafeRecovery(){
+  if(ptHSafeRecoveryPending)return false;
+  const s=ptHSnapshot,track=state.current;
+  if(!s||s.phase!=='failed'||track?.id!==s.id||document.hidden)return false;
+  ptHSafeRecoveryPending=true;
+  try{
+    await saveProgress(false);
+    if(ptHSnapshot!==s||state.current?.id!==s.id)return false;
+    ptRInvalidate('H4 安全續播');ptRStop('H4 安全續播',true);
+    if(ptRMode==='silent'||ptRMode==='experimental')ptRMode='smart';
+    ptRBlocked=false;
+    try{localStorage.setItem(PT_R_MODE,ptRMode==='standard'?'standard':'smart');}catch(_){}
+    for(const input of document.querySelectorAll('input[name="ptRecoveryMode"]'))input.checked=input.value===ptRMode;
+    ptRStatus('保活恢復失敗 · 已切回安全播放模式');ptHTrace('fallback: reload same chapter');
+    await loadTrack(track,{autoplay:true});
+    if(state.current?.id!==s.id)return false;
+    if(audio.paused){$('playStatus').textContent='已保留斷點 · 請按播放';return false;}
+    toast('已切回安全播放模式 · 原章節續播');return true;
+  }catch(_){$('playStatus').textContent='安全續播受限 · 請重新選擇原章節';return false;}
+  finally{ptHSafeRecoveryPending=false;}
+}
 async function startPlayback({fromLockScreen=false}={}){
+  if(ptHSnapshot?.phase==='failed')return ptHSafeRecovery();
   if(ptHSnapshot)return ptHRestore(true,'手動播放');
   if(!state.current){if(!fromLockScreen)toast('請先選擇小說章節');return false;}
   requestPlaybackAudioSession();
@@ -2343,7 +2368,7 @@ function ptRInstall(){
     input.checked=input.value===ptRMode;input.addEventListener('change',()=>{if(!input.checked)return;ptHHardStop('切換模式');ptRInvalidate('切換模式');ptRStop('切換模式',true);ptRMode=input.value;ptRBlocked=false;try{localStorage.setItem(PT_R_MODE,ptRMode==='standard'?'standard':'smart');}catch(_){}ptRStatus(ptRMode==='standard'?'標準模式':ptRMode==='smart'?'智慧恢復已啟用':ptRMode==='silent'?'Silent Hold 已選擇 · 本次使用':'實驗模式 · 本次使用');ptRLog('設定模式');if(ptRMode==='experimental')ptRKeep();});
   }
   ptRStatus(ptRMode==='smart'?'智慧恢復已啟用':'標準模式');
-  $('ptRecoveryCopy')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText('PineTree 4.5.2 Hotfix H3 Duration Restore\n'+ptRHistory.join('\n'));toast('診斷已複製');}catch(_){toast('無法使用剪貼簿，請手動選取紀錄');}});
+  $('ptRecoveryCopy')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText('PineTree 4.5.2 Hotfix H4 Staged Resume\n'+ptRHistory.join('\n'));toast('診斷已複製');}catch(_){toast('無法使用剪貼簿，請手動選取紀錄');}});
   $('ptRecoveryClear')?.addEventListener('click',()=>{ptRHistory=[];try{localStorage.removeItem(PT_R_LOG);}catch(_){}if($('ptRecoveryDiagnostic'))$('ptRecoveryDiagnostic').textContent='';});
   audio.addEventListener('pause',()=>{if(!audio.paused)return;ptRPausedAt=Date.now();ptRInvalidate('audio pause');ptRKeep();});
   audio.addEventListener('play',()=>{ptRBlocked=false;ptRStop('audio play');ptRLog('audio play');});

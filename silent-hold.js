@@ -38,7 +38,7 @@ function ptHProtectTruncated(raw){
   if(!ptHTruncated(raw.duration,w.duration))return false;
   ptHSnapshot={...w,phase:'failed'};ptHWatch=null;
   ptHTrace('BLOCK truncated chapter duration');
-  raw.pause();raw.muted=w.muted;ptHPublish();ptHSave();ptHStatus('音訊長度異常 · 已保護原章節及斷點，請按播放重試');
+  raw.pause();raw.muted=w.muted;ptHPublish();ptHSave();ptHStatus('音訊長度異常 · 已保護原章節及斷點，解鎖後按播放將使用安全續播');
   return true;
 }
 function ptHoldFacade(raw){
@@ -78,7 +78,7 @@ function ptHTrace(event){
     const r=ptRawAudio,s=ptHSnapshot;
     const kind=url=>!url?'empty':url===state.fileUrl?'chapter':s&&url===s.silence?'hold':'other';
     const n=v=>Number.isFinite(v)?v.toFixed(2):'-';
-    ptRLog('TRACE H3 '+event+' phase='+(s?.phase||'none')+' src='+kind(r.src)+' current='+kind(r.currentSrc)+' raw='+n(r.currentTime)+'/'+n(r.duration)+' saved='+n(s?.position)+'/'+n(s?.duration)+' rate='+n(r.playbackRate)+' seek='+Number(r.seeking)+' end='+Number(r.ended)+' paused='+Number(r.paused));
+    ptRLog('TRACE H4 '+event+' phase='+(s?.phase||'none')+' src='+kind(r.src)+' current='+kind(r.currentSrc)+' raw='+n(r.currentTime)+'/'+n(r.duration)+' saved='+n(s?.position)+'/'+n(s?.duration)+' rate='+n(r.playbackRate)+' seek='+Number(r.seeking)+' end='+Number(r.ended)+' paused='+Number(r.paused));
   }catch(_){}
 }
 function ptHStatus(s){const el=$('ptHoldStatus');if(el)el.textContent=s;ptRLog('Silent Hold: '+s);}
@@ -116,12 +116,12 @@ function ptHRestore(wantPlay,reason){
   if(state.current?.id!==s.id||state.fileUrl!==s.source){ptHDiscard('來源已變更');return Promise.resolve(false);}
   ptHClear();const gen=++ptHGeneration;s.phase='restore';ptHLastAction=Date.now();ptHTrace('restore begin play='+Number(wantPlay));
   let resolveResult;const result=new Promise(resolve=>{resolveResult=resolve;});
-  let settled=false,playOK=!wantPlay,metadata=false,seekIssued=false,seekConfirmed=false,rateApplied=false;
+  let settled=false,playOK=!wantPlay,metadata=false,seekIssued=false,seekConfirmed=false,rateApplied=false,rateAt=null;
   const target=wantPlay?Math.min(ptHClamp(s.position,s.duration),Math.max(0,s.duration-.6)):ptHClamp(s.position,s.duration);
   const events=['loadedmetadata','durationchange','seeked','canplay','playing','timeupdate','ended'];
   const valid=()=>ptHSnapshot===s&&gen===ptHGeneration;
   const cleanup=()=>{for(const ev of events)r.removeEventListener(ev,check);r.removeEventListener('error',fail);if(!settled){settled=true;resolveResult(false);}};
-  const fail=()=>{if(!valid())return;ptHTrace('restore failed / checkpoint retained');ptHClear();s.phase='failed';r.pause();r.muted=s.muted;ptHDispose(s);ptHPublish();ptHSave();ptHStatus('恢復受限 · 已保護原章節，請按播放重試');};
+  const fail=()=>{if(!valid())return;ptHTrace('restore failed / checkpoint retained');ptHClear();s.phase='failed';r.pause();r.muted=s.muted;ptHDispose(s);ptHPublish();ptHSave();ptHStatus('恢復受限 · 已保護原章節，解鎖後按播放將使用安全續播');};
   const finish=(ended=false)=>{
     if(!valid())return;ptHTrace('restore verified');settled=true;ptHClear();
     ptHWatch={...s,position:ptHClamp(r.currentTime,s.duration),silence:null,retired:[]};ptHSnapshot=null;
@@ -147,22 +147,30 @@ function ptHRestore(wantPlay,reason){
       if(Math.abs(r.currentTime-target)>.35){if(e?.type==='seeked')fail();return;}
       seekConfirmed=true;ptHTrace('seek verified');
     }
-    if(!rateApplied){rateApplied=true;try{r.defaultPlaybackRate=s.rate;r.playbackRate=s.rate;}catch(_){fail();return;}}
     if(!playOK||r.seeking)return;
-    if(!wantPlay){if(r.paused)finish();return;}
+    if(!wantPlay){if(r.paused){try{r.defaultPlaybackRate=s.rate;r.playbackRate=s.rate;}catch(_){fail();return;}finish();}return;}
     if(r.ended){if(e?.type==='ended'&&r.currentTime>=s.duration-.1&&target>=s.duration-1)finish(true);else fail();return;}
     if(r.paused)return;
     // Never release the snapshot merely because play() resolved at the seek position.
     // The H2 device log proved that an erroneous EOF can follow within 39ms.
     r.muted=s.muted;
-    if(r.currentTime>=target+Math.min(.12,Math.max(.03,(s.duration-target)/3)))finish();
+    // H3 device trace: 2x was applied at seeked, then EOF within 15–42ms.
+    // First observe actual 1x playback beyond the breakpoint; only then change rate.
+    if(!rateApplied){
+      const advance=Math.min(.25,Math.max(.04,(s.duration-target)/3));
+      if(r.currentTime<target+advance)return;
+      rateApplied=true;rateAt=r.currentTime;ptHTrace('1x progress verified; applying saved rate');
+      try{r.defaultPlaybackRate=s.rate;r.playbackRate=s.rate;}catch(_){fail();return;}
+      if(s.rate===1)finish();return;
+    }
+    if(r.currentTime>=rateAt+Math.min(.15,Math.max(.02,(s.duration-rateAt)/3)))finish();
   };
   ptHCleanup=cleanup;
   for(const ev of events)r.addEventListener(ev,check);
   r.addEventListener('error',fail);
   try{
     if(!wantPlay)r.pause();
-    r.muted=true;r.loop=false;r.defaultPlaybackRate=1;r.playbackRate=1;
+    r.muted=s.muted;r.loop=false;r.defaultPlaybackRate=1;r.playbackRate=1;
     if(ptHSourceBlob?.url===s.source&&ptHSourceBlob.blob){
       const blob=ptHSourceBlob.blob;
       const fresh=URL.createObjectURL(blob.slice(0,blob.size,blob.type));
@@ -176,11 +184,12 @@ function ptHRestore(wantPlay,reason){
   if(valid()&&s.phase==='restore')ptHStatus(reason+' · 正在驗證原 MP3');
   return result;
 }
-function ptHHardStop(reason){if(ptHSnapshot){ptHRestore(false,reason);return true;}return false;}
+function ptHHardStop(reason){if(ptHSnapshot){if(ptHSnapshot.phase!=='failed')ptHRestore(false,reason);return true;}return false;}
 function ptHPauseFromUI(){if(!ptHEnter())audio.pause();}
 function ptHMediaAction(kind){
   ptHTrace('system '+kind);
   if(ptHSnapshot){
+    if(ptHSnapshot.phase==='failed'){if(kind==='play'){if(!document.hidden)startPlayback();else ptHStatus('恢復受限 · 請解鎖後按播放，使用安全續播');}return true;}
     if(Date.now()-ptHLastAction<700)return true;
     if(kind==='pause'&&ptHSnapshot.phase!=='hold')return true;
     ptHRestore(true,'系統 '+kind+' → 恢復');return true;
@@ -191,7 +200,7 @@ function ptHMediaAction(kind){
 }
 function ptHInstall(){
   ptAmbientInstall();
-  ptHTrace('diagnostic build H3 installed');
+  ptHTrace('diagnostic build H4 installed');
   ptRawAudio.addEventListener('durationchange',()=>ptHProtectTruncated(ptRawAudio));
   for(const e of ['loadstart','loadedmetadata','durationchange','canplay','play','playing','pause','seeking','seeked','ended','error','emptied'])ptRawAudio.addEventListener(e,()=>{if(ptRMode==='silent'||ptHSnapshot)ptHTrace('raw '+e);});
   const select=$('ptHoldMinutes');try{const n=Number(localStorage.getItem('pinetree-hold-minutes-v1'));if([1,5,10,30].includes(n))ptHMinutes=n;}catch(_){}
