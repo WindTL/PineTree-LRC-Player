@@ -69,10 +69,82 @@ ctx.state={fileUrl:'blob:private-chapter'};
 ctx.ptRLog=x=>traceLines.push(x);
 ctx.snap({source:'blob:private-chapter',silence:'blob:private-hold',position:37,duration:500,phase:'restore'});
 ctx.trace('raw seeked');
-assert(traceLines[0].includes('TRACE H2 raw seeked phase=restore src=chapter current=hold'));
+assert(traceLines[0].includes('TRACE H3 raw seeked phase=restore src=chapter current=hold'));
 assert(traceLines[0].includes('saved=37.00/500.00'));
 assert(!traceLines[0].includes('blob:'));
 ctx.snap(null);
 assert(app.includes("ptHTrace('system nexttrack')"));
 assert(app.includes("ptHTrace('chapter ended handler')"));
 console.log('PASS local H2 source and chapter transition diagnostics');
+
+/* H3: reproduce the device trace, not merely isolated facade properties.
+ * The mock dispatches native events in the observed order. This is not WebKit. */
+function h3Setup(){
+  let mediaTime=0,serial=0,earlySeeks=0,playCalls=0;
+  const handlers=new Map(),records=[],revoked=[],logs=[];
+  const raw={
+    src:'blob:hold',currentSrc:'blob:hold',duration:600,readyState:4,paused:false,ended:false,seeking:false,playbackRate:1,defaultPlaybackRate:1,muted:false,
+    addEventListener(type,fn){if(!handlers.has(type))handlers.set(type,new Set());handlers.get(type).add(fn);},
+    removeEventListener(type,fn){handlers.get(type)?.delete(fn);},
+    dispatchEvent(e){for(const fn of [...(handlers.get(e.type)||[])])fn(e);},
+    load(){this.currentSrc=this.src;this.duration=NaN;this.readyState=0;this.ended=false;this.paused=true;mediaTime=0;},
+    play(){playCalls++;this.paused=false;return Promise.resolve();},pause(){this.paused=true;},
+    get currentTime(){return mediaTime;},set currentTime(v){if(this.readyState<1)earlySeeks++;mediaTime=v;this.seeking=true;}
+  };
+  const el={textContent:''},noop=()=>{};
+  const c={
+    ptRawAudio:raw,state:{current:{id:'chapter'},fileUrl:'blob:original',suppressProgressWrites:false},
+    URL:{createObjectURL:()=> 'blob:fresh-'+(++serial),revokeObjectURL:x=>revoked.push(x)},
+    Event:class{constructor(type){this.type=type;}},setTimeout:()=>1,clearTimeout:noop,
+    $:()=>el,navigator:{mediaSession:{}},ptRLog:x=>logs.push(x),ptLast:null,ptFlush:noop,ptBehavior:noop,
+    setPlayButtonVisual:noop,updateProgressDisplay:noop,updateLyrics:noop,updateImmersiveUI:noop,updateMediaPosition:noop,updateMediaSession:noop,
+    requestPlaybackAudioSession:noop,queuePauseSyncExport:noop,
+    saveProgress:()=>{records.push({position:c.audio.currentTime,duration:c.audio.duration,ended:c.audio.ended});return Promise.resolve();}
+  };
+  vm.createContext(c);vm.runInContext(engine+'\nthis.snap=x=>ptHSnapshot=x;this.getSnapshot=()=>ptHSnapshot;this.restore=ptHRestore;this.remember=ptHRememberSource;this.facade=ptHoldFacade;',c);
+  c.audio=c.facade(raw);
+  c.remember({size:100,type:'audio/mpeg',slice(){return this;}},'blob:original');
+  c.snap({id:'chapter',source:'blob:original',silence:'blob:hold',position:2.59,duration:421.68,rate:2,muted:false,phase:'hold'});
+  let endings=0,pauses=0;c.audio.addEventListener('ended',()=>endings++);c.audio.addEventListener('pause',()=>pauses++);
+  return {c,raw,records,revoked,logs,emit:type=>raw.dispatchEvent(new c.Event(type)),time:v=>{mediaTime=v;},counts:()=>({earlySeeks,playCalls,endings,pauses})};
+}
+async function h3Begin(wantPlay=true){
+  const x=h3Setup(),result=x.c.restore(wantPlay,'test');
+  assert.equal(x.raw.src,'blob:fresh-1');assert.equal(x.c.state.fileUrl,'blob:fresh-1');
+  assert.equal(x.counts().playCalls,wantPlay?1:0,'play issued synchronously within activation');
+  assert.equal(x.counts().earlySeeks,0);
+  await Promise.resolve();
+  x.raw.duration=421.68;x.raw.readyState=1;x.emit('loadedmetadata');
+  assert.equal(x.raw.currentTime,2.59);assert.equal(x.counts().earlySeeks,0);
+  x.raw.readyState=4;x.raw.seeking=false;x.emit('seeked');
+  await Promise.resolve();
+  assert.equal(x.raw.playbackRate,2);
+  return {...x,result};
+}
+(async()=>{
+  let x=await h3Begin();
+  assert(x.c.getSnapshot(),'not released at seeked / play resolution');
+  x.raw.duration=2.59;x.raw.ended=true;x.raw.paused=true;x.emit('pause');x.emit('ended');
+  assert.equal(await x.result,false);
+  assert.equal(x.counts().endings,0);assert.equal(x.counts().pauses,0);
+  assert.equal(x.c.audio.currentTime,2.59);assert.equal(x.c.audio.duration,421.68);assert.equal(x.c.audio.ended,false);
+  assert(x.records.some(p=>p.position===2.59&&!p.ended&&p.duration===421.68));
+  assert(x.c.getSnapshot().phase==='failed');
+
+  x=await h3Begin();x.time(2.8);x.emit('timeupdate');assert.equal(await x.result,true);
+  assert.equal(x.c.getSnapshot(),null);assert.equal(x.raw.muted,false);
+  assert(x.revoked.includes('blob:original')&&x.revoked.includes('blob:hold'));assert(!x.revoked.includes('blob:fresh-1'));
+  x.raw.duration=2.8;x.raw.ended=true;x.raw.paused=true;x.emit('pause');x.emit('ended');
+  assert.equal(x.counts().endings,0);assert.equal(x.counts().pauses,0);
+  assert.equal(x.c.audio.duration,421.68);assert.equal(x.c.audio.ended,false);
+  assert(x.records.some(p=>!p.ended&&p.duration===421.68));
+  assert(x.logs.some(l=>l.includes('BLOCK truncated chapter duration')));
+
+  x=await h3Begin();x.time(2.8);x.emit('timeupdate');assert.equal(await x.result,true);
+  x.time(421.68);x.raw.ended=true;x.raw.paused=true;x.emit('pause');x.emit('ended');
+  assert.equal(x.counts().endings,1);assert.equal(x.counts().pauses,1,'real EOF still reaches ordinary handlers');
+
+  x=await h3Begin(false);assert.equal(await x.result,true);assert.equal(x.raw.paused,true);assert.equal(x.counts().playCalls,0);
+  assert.equal(x.c.getSnapshot(),null);assert.equal(x.raw.currentTime,2.59);
+  console.log('PASS H3: real H2 duration-collapse trace, fresh source, deferred seek, verified progress, post-resume protection, genuine EOF, paused restore');
+})().catch(e=>{console.error(e);process.exitCode=1;});

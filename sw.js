@@ -1,4 +1,4 @@
-/* PineTree 4.5.2 resume-trace hotfix H2 - verified, scope-specific shell. Never touches IndexedDB. */
+/* PineTree 4.5.2 duration-restore hotfix H3 - verified, scope-specific shell. Never touches IndexedDB. */
 'use strict';
 const VERSION='4502', SCOPE=new URL(self.registration.scope), PREFIX='pinetree-shell-'+encodeURIComponent(SCOPE.pathname)+'-', CACHE=PREFIX+VERSION;
 const absolute=p=>new URL(p,SCOPE).href;
