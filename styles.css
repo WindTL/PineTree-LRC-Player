@@ -1272,3 +1272,27 @@ body[data-ui-theme="forest-reading"] #bookSelect {
 @media(max-width:850px){.pt-play-mode{min-height:38px;font-size:12px}.im-speed .pt-play-mode{min-height:38px}}
 
 .pt-living-stats{border:1px solid #b79b6177;border-radius:12px;padding:12px;margin:8px 0}.pt-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.pt-stat-grid>div{padding:8px;border:1px solid #a6926250;border-radius:8px}.pt-stat-grid strong,.pt-stat-grid small{display:block;overflow-wrap:anywhere}.pt-stat-grid strong{color:var(--accent);margin-top:5px}.pt-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:10px}.pt-week>div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:65px;gap:3px}.pt-week i{display:block;width:60%;background:var(--accent);border-radius:4px}.pt-week small{font-size:10px}
+
+/* Audio Control Center · theme-native, compact home shortcuts.
+   The transport, lyric area, theme assets and audio elements stay untouched. */
+.pt-audio-center .dialog-inner{padding-bottom:calc(32px + env(safe-area-inset-bottom));}
+.pt-audio-center fieldset{min-width:0;}
+.pt-audio-center .sync-guide{scroll-margin-top:12px;}
+.pt-audio-center .theme-field{flex-wrap:wrap;}
+.pt-audio-center .theme-field select{min-width:0;max-width:100%;}
+.pt-audio-center .theme-field input[type=range]{min-width:0;max-width:100%;accent-color:var(--accent);}
+.pt-audio-center #ptAudioAdvanced,#lockScreenDialog #ptAudioBack{width:100%;white-space:normal;margin-top:10px;min-height:44px;}
+.pt-audio-fold{border:1px solid var(--border);border-radius:12px;margin:12px 0;padding:10px;background:var(--panel-alt);}
+.pt-audio-fold>summary{cursor:pointer;line-height:1.5;color:var(--accent);font-weight:700;font-size:13px;min-height:28px;overflow-wrap:anywhere;}
+.pt-audio-fold .lockscreen-choice{margin-top:8px;}
+.pt-audio-fold>.sync-guide{margin:8px 0;}
+.pt-audio-quick-parent>.pt-audio-quick{white-space:nowrap;flex:0 0 auto;max-width:100%;overflow:hidden;text-overflow:ellipsis;}
+.pt-audio-quick[data-active=true]{border-color:var(--accent);}
+.pt-audio-quick:focus-visible,#lockScreenOpen:focus-visible,.pt-audio-fold>summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+@media(max-width:850px){
+  .listen-extras.pt-audio-quick-parent{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;}
+  .listen-extras.pt-audio-quick-parent>*{flex-shrink:0;}
+}
+@media(orientation:landscape) and (max-height:500px){
+  .pt-audio-quick-parent>.pt-audio-quick{display:none;}
+}
