@@ -2323,7 +2323,7 @@ window.PineTreeBeforeResourceReload=async function(manual){
 async function start(){
   syncRestoreTask=restoreSyncFolder().catch(error=>console.warn("恢復同步資料夾授權失敗",error));
   const oneButton=$('iosSingleButtonCompatibility');if(oneButton)oneButton.checked=state.iosSingleButtonCompatibility;
-  ptAudioCenterInstall();setupEvents();setupImmersiveEvents();ptRInstall();ptHInstall();ptAudioCenterRefresh();ptInstall();requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setCalibrationStyle(state.calibrationStyle,{persist:false});setFireflyTrails(state.fireflyTrails,{persist:false});setPlayButtonVisual(false);
+  ptAudioCenterInstall();setupEvents();setupImmersiveEvents();ptRInstall();ptHInstall();ptAudioCenterRefresh();ptPrivateCampfireInstall();ptInstall();requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setCalibrationStyle(state.calibrationStyle,{persist:false});setFireflyTrails(state.fireflyTrails,{persist:false});setPlayButtonVisual(false);
   setMobileTab(localStorage.getItem('lyra-mobile-tab')==='chapters'?'chapters':'player');
   setImmersiveMode(state.immersive,{persist:false});
   setLineSpacing(state.lineSpacing,false);setKeepAwake(state.keepAwake,false);setFocusMode(state.focusMode,false);setLyricsCentered(state.lyricsCentered,false);updateSleepUI();
