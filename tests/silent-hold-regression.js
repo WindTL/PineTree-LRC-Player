@@ -248,6 +248,7 @@ async function h3Begin(wantPlay=true){
     before(...nodes){const p=this.parentElement;for(const n of nodes){n.detach();n.parentElement=p;p.children.splice(p.children.indexOf(this),0,n);}}
     after(...nodes){const p=this.parentElement;let i=p.children.indexOf(this)+1;for(const n of nodes){n.detach();n.parentElement=p;p.children.splice(i++,0,n);}}
     setAttribute(k,v){this.attrs[k]=v;}
+    getAttribute(k){return this.attrs[k]??null;}
     addEventListener(t,fn){(this.events[t]??=[]).push(fn);}
     click(){for(const fn of this.events.click||[])fn({target:this,preventDefault(){},stopPropagation(){}});}
     matches(sel){
@@ -271,6 +272,8 @@ async function h3Begin(wantPlay=true){
   for(const id of ['fontMinus','fontPlus','offsetMinus','offsetLabel','offsetPlus','lyricsCenterToggle','toggleLyricsMax','focusToggle'])node('button',tools,id);
   const extras=node('div',reader,'','listen-extras'),entry=node('button',extras,'lockScreenOpen');
   const sleep=node('button',extras,'sleepOpen'),del=node('button',extras,'forestDeleteShortcut');
+  const speedHost=node('div',reader,'','speed-settings'),speedLabel=node('label',speedHost);node('output',speedLabel,'speedLabel');
+  const speedRange=node('input',speedHost,'speedRange'),preset=node('div',speedHost,'','forest-speed-presets'),modeButton=node('button',speedHost,'playModeBtn');
   const original=node('dialog',body,'lockScreenDialog'),inner=node('div',original,'','dialog-inner'),head=node('div',inner,'','dialog-head');node('h2',head);
   const compat=node('div',inner,'','sync-guide');node('input',compat,'iosSingleButtonCompatibility');
   const field=node('fieldset',inner);node('legend',field);
@@ -286,11 +289,11 @@ async function h3Begin(wantPlay=true){
   node('p',field,'ptHoldStatus');const status=node('p',field,'ptRecoveryStatus');
   const diag=node('div',inner,'','sync-guide');node('pre',diag,'ptRecoveryDiagnostic');node('button',diag,'ptRecoveryCopy');node('button',diag,'ptRecoveryClear');
   const hp=node('div',inner,'','sync-guide');node('pre',hp,'headphoneDiagnostic');node('button',hp,'copyHeadphoneDiagnostic');
-  const get=id=>body.querySelector('#'+id),dialogs=[],storage=new Map(),state={immersive:false,lyricsMax:false,focusMode:false};let wide=true,reflows=0,sleepClicks=0,deleteClicks=0;
+  const get=id=>body.querySelector('#'+id),dialogs=[],storage=new Map(),state={immersive:false,lyricsMax:false,focusMode:false,lockScreenMode:'lyrics',speed:2,playMode:'sequence'};let wide=true,reflows=0,sleepClicks=0,deleteClicks=0;
   sleep.addEventListener('click',()=>sleepClicks++);del.addEventListener('click',()=>deleteClicks++);
-  const c={document:{body,createElement:tag=>new El(tag),querySelector:s=>body.querySelector(s)},$:get,ptAmbientName:s=>({campfire:'森林篝火',rain:'松林細雨',silent:'完全無聲'})[s]||s,refreshLockScreenControls:()=>{},requestAnimationFrame:fn=>fn(),openDialog:id=>{get(id).show();dialogs.push(['open',id]);},closeDialog:id=>{get(id).close();dialogs.push(['close',id]);},state,window:{matchMedia:()=>({matches:wide}),addEventListener(){}},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},syncLyricsViewportPadding:()=>{},updateLyrics:()=>reflows++};
+  const c={document:{body,createElement:tag=>new El(tag),querySelector:s=>body.querySelector(s)},$:get,ptAmbientName:s=>({campfire:'森林篝火',rain:'松林細雨',silent:'完全無聲'})[s]||s,refreshLockScreenControls:()=>{},requestAnimationFrame:fn=>fn(),openDialog:id=>{get(id).show();dialogs.push(['open',id]);},closeDialog:id=>{get(id).close();dialogs.push(['close',id]);},state,window:{matchMedia:()=>({matches:wide}),addEventListener(){}},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},syncLyricsViewportPadding:()=>{},updateLyrics:()=>reflows++,PLAY_MODES:[{id:'sequence',label:'順序播放'},{id:'repeat-one',label:'單章循環'},{id:'repeat-all',label:'整本循環'}],setPlayMode:id=>{state.playMode=id;}};
   const start=app.indexOf('function ptAudioCenterElement('),end=app.indexOf('function refreshLockScreenControls()',start);
-  assert(start>=0&&end>start);vm.createContext(c);vm.runInContext(app.slice(start,end)+'\nthis.install=ptAudioCenterInstall;this.refresh=ptAudioCenterRefresh;this.open=ptAudioCenterOpen;this.ui=ptUiInstall;this.checkDock=ptUiCheckDock;this.normalize=ptUiNormalize;',c);
+  assert(start>=0&&end>start);vm.createContext(c);vm.runInContext(app.slice(start,end)+'\nthis.install=ptAudioCenterInstall;this.refresh=ptAudioCenterRefresh;this.open=ptAudioCenterOpen;this.ui=ptUiInstall;this.checkDock=ptUiCheckDock;this.normalize=ptUiNormalize;this.speedRefresh=ptUiSpeedRefresh;this.lockRefresh=ptUiLockScreenRefresh;',c);
   assert(c.install());assert(c.install(),'installation is idempotent');
   const panel=get('ptAudioCenter');assert(panel);assert.equal(field.closest('dialog'),panel);assert.equal(get('ptAmbientHold'),holdSelect);assert.equal(get('ptAmbientMix'),mixSelect);assert.equal(get('ptRecoveryStatus'),status);
   assert.equal(body.querySelectorAll('#ptAudioCenter').length,1);assert.equal(body.querySelectorAll('#ptAudioHoldQuick').length,1);
@@ -312,6 +315,18 @@ async function h3Begin(wantPlay=true){
   assert(body.classList.contains('pt-ui-hide-library'));assert(!body.classList.contains('pt-ui-hide-tools'));
   assert.equal(get('ptUiToggle-library').attrs['aria-expanded'],'false');assert.equal(get('ptUiToggle-library').attrs['aria-controls'],library.id);
   assert.equal(body.querySelectorAll('#ptUiToggle-header').length,1);
+  assert.equal(entry.textContent,'音效控制 ♪');assert.equal(get('ptUiTopEngine').textContent,'音效控制 ♪');
+  assert(get('ptAudioHoldQuick').classList.contains('pt-ui-merged-sound'));assert(get('ptAudioMixQuick').classList.contains('pt-ui-merged-sound'));
+  const lock=get('ptUiLockScreen');assert(lock&&lock.dataset.active==='true');lock.click();assert(original.open&&!panel.open);c.closeDialog('lockScreenDialog');
+  state.lockScreenMode='standard';c.lockRefresh();assert.equal(lock.dataset.active,'false');
+  const speedToggle=get('ptUiSpeedToggle'),playSelect=get('ptUiPlayModeSelect');
+  assert(speedHost.classList.contains('pt-ui-speed-compact'));assert.equal(speedToggle.textContent,'倍速 2.00× ▾');
+  assert.equal(speedToggle.attrs['aria-expanded'],'false');assert(speedRange.classList.contains('pt-ui-speed-detail'));assert.equal(modeButton.parentElement,speedHost);
+  speedToggle.click();assert(speedHost.classList.contains('pt-ui-speed-expanded'));assert.equal(speedToggle.attrs['aria-expanded'],'true');
+  speedToggle.click();assert(!speedHost.classList.contains('pt-ui-speed-expanded'));
+  assert.deepEqual(playSelect.children.map(o=>o.value),['sequence','repeat-one','repeat-all']);
+  playSelect.value='repeat-one';playSelect.events.change[0]();assert.equal(state.playMode,'repeat-one');
+  state.speed=1.25;state.playMode='repeat-all';c.speedRefresh();assert.equal(speedToggle.textContent,'倍速 1.25× ▾');assert.equal(playSelect.value,'repeat-all');
   const right=top.querySelector('.pt-ui-header-right');
   assert(right&&right.parentElement===top);
   assert.equal(header.parentElement,right);
@@ -322,6 +337,9 @@ async function h3Begin(wantPlay=true){
   assert(style.includes('.pt-ui-header>.pt-ui-header-right'));
   assert(style.includes('grid-column:3;grid-row:1;width:100%'));
   assert(style.includes('.pt-ui-header-right{display:contents;}'));
+  assert(style.includes('.pt-ui-speed-compact:not(.pt-ui-speed-expanded)>.pt-ui-speed-detail'));
+  assert(style.includes("url('./themes/forest-reading/assets/forest-mobile.webp')"));
+  assert(style.includes('.app-shell #forestDeleteShortcut.pt-ui-relocated{display:none!important;}'));
 
   assert.equal(get('fontMinus'),originalFont);assert.equal(originalFont.parentElement.id,'ptUiFontGroup');
   assert.equal(get('ptUiViewGroup').querySelector('#toggleLyricsMax'),get('toggleLyricsMax'));
