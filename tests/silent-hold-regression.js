@@ -312,6 +312,17 @@ async function h3Begin(wantPlay=true){
   assert(body.classList.contains('pt-ui-hide-library'));assert(!body.classList.contains('pt-ui-hide-tools'));
   assert.equal(get('ptUiToggle-library').attrs['aria-expanded'],'false');assert.equal(get('ptUiToggle-library').attrs['aria-controls'],library.id);
   assert.equal(body.querySelectorAll('#ptUiToggle-header').length,1);
+  const right=top.querySelector('.pt-ui-header-right');
+  assert(right&&right.parentElement===top);
+  assert.equal(header.parentElement,right);
+  assert.equal(get('ptUiToggle-header').parentElement.parentElement,right);
+  assert.equal(get('ptUiToggle-library').parentElement.parentElement,right);
+  const style=fs.readFileSync('styles.css','utf8');
+  assert(style.includes('grid-template-columns:minmax(0,1fr) 180px minmax(0,1fr)'));
+  assert(style.includes('.pt-ui-header>.pt-ui-header-right'));
+  assert(style.includes('grid-column:3;grid-row:1;width:100%'));
+  assert(style.includes('.pt-ui-header-right{display:contents;}'));
+
   assert.equal(get('fontMinus'),originalFont);assert.equal(originalFont.parentElement.id,'ptUiFontGroup');
   assert.equal(get('ptUiViewGroup').querySelector('#toggleLyricsMax'),get('toggleLyricsMax'));
   assert.equal(get('ptUiToggle-context').parentElement,extras.parentElement);assert.equal(get('ptUiToggle-tools').parentElement,toolbar);
