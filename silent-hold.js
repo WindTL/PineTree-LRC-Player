@@ -144,7 +144,7 @@ function ptHRestore(wantPlay,reason){
     }
     if(!seekConfirmed){
       if(r.seeking)return;
-      if(e?.type!=='seeked'&&Math.abs(r.currentTime-target)>.35)return;
+      if(Math.abs(r.currentTime-target)>.35){if(e?.type==='seeked')fail();return;}
       seekConfirmed=true;ptHTrace('seek verified');
     }
     if(!rateApplied){rateApplied=true;try{r.defaultPlaybackRate=s.rate;r.playbackRate=s.rate;}catch(_){fail();return;}}
