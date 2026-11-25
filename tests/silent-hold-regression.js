@@ -308,7 +308,7 @@ async function h3Begin(wantPlay=true){
   sleep.addEventListener('click',()=>sleepClicks++);del.addEventListener('click',()=>deleteClicks++);
   const c={document:{body,createElement:tag=>new El(tag),querySelector:s=>body.querySelector(s)},$:get,ptAmbientName:s=>({campfire:'森林篝火',rain:'松林細雨',silent:'完全無聲'})[s]||s,refreshLockScreenControls:()=>{},requestAnimationFrame:fn=>fn(),openDialog:id=>{get(id).show();dialogs.push(['open',id]);},closeDialog:id=>{get(id).close();dialogs.push(['close',id]);},state,window:{matchMedia:()=>({matches:wide}),addEventListener(){}},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},syncLyricsViewportPadding:()=>{},updateLyrics:()=>reflows++,PLAY_MODES:[{id:'sequence',label:'順序播放'},{id:'repeat-one',label:'單章循環'},{id:'repeat-all',label:'整本循環'}],setPlayMode:id=>{state.playMode=id;}};
   const start=app.indexOf('function ptAudioCenterElement('),end=app.indexOf('function refreshLockScreenControls()',start);
-  assert(start>=0&&end>start);vm.createContext(c);vm.runInContext(app.slice(start,end)+'\nthis.install=ptAudioCenterInstall;this.refresh=ptAudioCenterRefresh;this.open=ptAudioCenterOpen;this.ui=ptUiInstall;this.checkDock=ptUiCheckDock;this.normalize=ptUiNormalize;this.speedRefresh=ptUiSpeedRefresh;this.lockRefresh=ptUiLockScreenRefresh;',c);
+  assert(start>=0&&end>start);vm.createContext(c);vm.runInContext(app.slice(start,end)+'\nthis.install=ptAudioCenterInstall;this.refresh=ptAudioCenterRefresh;this.open=ptAudioCenterOpen;this.ui=ptUiInstall;this.checkDock=ptUiCheckDock;this.normalize=ptUiNormalize;this.speedRefresh=ptUiSpeedRefresh;this.lockRefresh=ptUiLockScreenRefresh;this.ptImLyricsInstall=()=>{};',c);
   assert(c.install());assert(c.install(),'installation is idempotent');
   const panel=get('ptAudioCenter');assert(panel);assert.equal(field.closest('dialog'),panel);assert.equal(get('ptAmbientHold'),holdSelect);assert.equal(get('ptAmbientMix'),mixSelect);assert.equal(get('ptRecoveryStatus'),status);
   assert.equal(body.querySelectorAll('#ptAudioCenter').length,1);assert.equal(body.querySelectorAll('#ptAudioHoldQuick').length,1);
@@ -421,4 +421,30 @@ console.log('PASS hide only home bookmark shortcuts');
   assert(app.includes('ptPrivateCampfireInstall();ptInstall();'));
   assert(engine.includes('PT_H_RATE_ADVANCE=.12,PT_H_PROBE_MS=20'));
   console.log('PASS private campfire PCM validation, loop source shared by Hold/Mix, unchanged other soundscapes and H7 threshold');
+})();
+
+/* v4.5.3 immersive lyrics regression: bounded context and font bounds. */
+(()=>{
+  const begin=app.indexOf("const PT_IM_FONT_KEY="),end=app.indexOf("function updateImmersiveUI(",begin);
+  assert(begin>=0&&end>begin);
+  const nodes=[],values=new Map(),style=new Map();
+  const target={clientHeight:350,scrollHeight:1000,scrollTop:0,children:[],replaceChildren(){this.children=[];},append(n){this.children.push(n);},querySelector(s){return this.children.find(n=>s==='.im-lyric.active'?n.className?.includes(' active'):n.className?.includes('im-lyric'))||null;},getBoundingClientRect(){return {top:0,height:350};}};
+  const root={style:{setProperty:(k,v)=>style.set(k,v)}},label={},minus={},plus={};
+  const get=id=>({imLyrics:target,immersiveMode:root,ptImFontValue:label,ptImFontMinus:minus,ptImFontPlus:plus})[id];
+  const state={immersive:true,lines:Array.from({length:100},(_,i)=>({time:i*5,text:'第'+i+'行'})),current:{id:'book:1'},delay:0,immersiveLastLyricKey:''};
+  const audio={currentTime:0};
+  const doc={createElement:()=>({dataset:{},setAttribute(){},getBoundingClientRect(){return {top:Number(this.dataset.index)*30-target.scrollTop,height:30};}})};
+  const sandbox={state,audio,$:get,document:doc,localStorage:{setItem:(k,v)=>values.set(k,v)},lyricIndex:t=>Math.floor(t/5),formatTime:t=>String(t)};
+  vm.createContext(sandbox);vm.runInContext(app.slice(begin,end)+'\nthis.range=ptImLyricRange;this.render=renderImmersiveLyrics;this.change=ptImFontChange;',sandbox);
+  sandbox.render(true);assert.equal(target.children.length,41);assert.equal(target.children[0].dataset.index,'0');assert.equal(target.scrollTop,0);
+  assert.equal(target.children[0].className,'im-lyric active');assert.equal(target.children[40].dataset.index,'40');
+  audio.currentTime=250;sandbox.render(true);assert.equal(target.children.length,41);assert.equal(target.children[0].dataset.index,'30');assert.equal(target.children[20].dataset.index,'50');assert(target.children[20].className.includes(' active'));
+  audio.currentTime=495;sandbox.render(true);assert.equal(target.children[0].dataset.index,'59');assert.equal(target.children[40].dataset.index,'99');
+  state.lines=state.lines.slice(0,2);audio.currentTime=0;sandbox.render(true);assert.equal(target.children.length,2);
+  sandbox.change(2);assert.equal(label.textContent,'20px');assert.equal(style.get('--pt-im-font-size'),'20px');assert.equal(values.get('pinetree-immersive-font-v453'),'20');
+  for(let i=0;i<30;i++)sandbox.change(2);assert.equal(label.textContent,'38px');assert(plus.disabled);
+  for(let i=0;i<30;i++)sandbox.change(-2);assert.equal(label.textContent,'14px');assert(minus.disabled);
+  assert.equal(audio.currentTime,0);
+  const css=fs.readFileSync('styles.css','utf8');assert(css.includes('#immersiveMode #imLyrics>.im-lyric{'));assert(css.includes('display:block!important;flex:0 0 auto'));assert(css.includes('font-size:var(--pt-im-font-size,18px)!important'));
+  console.log('PASS immersive lyric context, bounded window, font persistence and no playback mutation');
 })();
