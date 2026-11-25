@@ -1296,3 +1296,6 @@ body[data-ui-theme="forest-reading"] #bookSelect {
 @media(orientation:landscape) and (max-height:500px){
   .pt-audio-quick-parent>.pt-audio-quick{display:none;}
 }
+
+/* Keep bookmark data and handlers; hide only the two home-player shortcuts. */
+#bookmarkAdd,#bookmarkOpen{display:none!important;}
