@@ -1228,7 +1228,7 @@ body[data-ui-theme="forest-reading"] #bookSelect {
   }
 }
 
-:root{--pt-base-release:4501;}
+:root{--pt-base-release:4502;}
 
 /* Featured theme cards span the picker without changing the classic grid. */
 .flagship-options{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
@@ -1252,7 +1252,7 @@ body[data-ui-theme="forest-reading"] #bookSelect {
   border-radius:8px;color:var(--text);font:inherit;line-height:1.7}
 .chapter-sync .btn{width:100%;min-height:44px;white-space:normal}
 
-/* v4.5.1 · Playback-mode control: same state in standard and immersive layouts. */
+/* v4.5.2 · Playback-mode control: same state in standard and immersive layouts. */
 .pt-play-mode{
   display:flex;justify-content:center;align-items:center;gap:7px;
   width:100%;min-height:33px;margin-top:7px;padding:5px 8px;
