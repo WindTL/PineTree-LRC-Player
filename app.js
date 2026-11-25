@@ -718,6 +718,9 @@ function ptAudioCenterRefresh(){
   if(holdQuick){holdQuick.textContent='暫停音效 · '+holdName;holdQuick.title=mode==='silent'?'暫停時的音效：'+holdName:'暫停音效待命；選擇單音軌保活後生效';holdQuick.dataset.active=String(mode==='silent');}
   if(mixQuick){mixQuick.textContent='說書背景音 · '+mixName;mixQuick.title='說書背景音：'+mixName;mixQuick.dataset.active=String(!!enabled?.checked&&mix?.value!=='silent');}
   const summary=$('ptAudioCenterSummary');if(summary)summary.textContent=modeName+' · 暫停：'+holdName+' · 背景：'+mixName;
+  const topEngine=$('ptUiTopEngine'),topHold=$('ptUiTopHold');
+  if(topEngine){topEngine.title='播放引擎：'+modeName;topEngine.setAttribute('aria-label',topEngine.title);}
+  if(topHold){topHold.title='暫停音效：'+holdName;topHold.setAttribute('aria-label',topHold.title);}
 }
 function ptAudioCenterOpen(section='engine'){
   const dlg=$('ptAudioCenter');
@@ -839,6 +842,8 @@ function ptUiCheckDock(){
 function ptUiToggleButton(key,host,placement='after'){
   if(!host)return;
   const b=ptAudioCenterButton('ptUiToggle-'+key,'','tiny-action pt-ui-toggle');
+  const target=key==='library'?document.querySelector('.app-shell .library'):host;
+  if(target){if(!target.id)target.id='ptUiRegion-'+key;b.setAttribute('aria-controls',target.id);}
   b.addEventListener('click',()=>ptUiToggle(key));
   if(placement==='before')host.before(b);else host.after(b);
   return b;
@@ -940,7 +945,11 @@ function ptUiInstall(){
     if(library){const b=ptUiToggleButton('library',toggle,'before');if(b)b.classList.add('pt-ui-library-toggle');}
     // Top shortcuts stay distinct from the current-state controls in the lower row.
     header.classList.add('pt-ui-header-actions');
-    if(header.parentElement)header.parentElement.classList.add('pt-ui-header');
+    if(header.parentElement){
+      header.parentElement.classList.add('pt-ui-header');
+      const switches=ptAudioCenterElement('div',{className:'pt-ui-header-switches'});
+      header.after(switches);const librarySwitch=$('ptUiToggle-library');if(librarySwitch)switches.append(librarySwitch);switches.append(toggle);
+    }
   }
   if(tools){
     ptUiGroup(tools,'ptUiFontGroup','字級',['fontMinus','fontPlus']);
@@ -948,11 +957,19 @@ function ptUiInstall(){
     ptUiGroup(tools,'ptUiViewGroup','字幕版面',['lyricsCenterToggle','toggleLyricsMax']);
     ptUiToggleButton('tools',tools);
   }
-  if(context){ptUiChapterMenu(context);ptUiToggleButton('context',context,'before');}
-  const d=$('ptAudioCenter');if(d)d.addEventListener('close',()=>{if(!d.open)ptUiReleaseDock();});
+  if(context){
+    ptUiChapterMenu(context);const b=ptUiToggleButton('context',context,'before');
+    const row=ptAudioCenterElement('div',{className:'pt-ui-context-row'});b.before(row);row.append(b,context);
+  }
+  const d=$('ptAudioCenter');if(d){
+    d.addEventListener('close',()=>{if(!d.open)ptUiReleaseDock();});
+    const close=$('ptAudioCenterClose');if(close){close.title='收起播放控制中心';close.setAttribute('aria-label',close.title);}
+    const advanced=$('ptAudioAdvanced'),sleep=$('sleepOpen');
+    if(advanced&&sleep){const b=ptAudioCenterButton('ptUiCenterSleep','☾ 睡眠與定時','btn btn-quiet pt-ui-center-sleep');b.addEventListener('click',()=>{closeDialog('ptAudioCenter');sleep.click();});advanced.before(b);}
+  }
   window.addEventListener('resize',ptUiCheckDock);
   if(typeof MutationObserver!=='undefined')new MutationObserver(ptUiCheckDock).observe(document.body,{attributes:true,attributeFilter:['class']});
-  ptUiCompactInfo();ptUiApply();
+  ptUiCompactInfo();ptUiApply();ptAudioCenterRefresh();
 }
 function refreshLockScreenControls(){
   const experimental=state.lockScreenMode==='lyrics';
