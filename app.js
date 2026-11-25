@@ -68,8 +68,8 @@ const DELETED_BOOKS_KEY='pinetree-deleted-books-v33';
 const IMPORT_CHECKPOINT_KEY='pinetree-import-checkpoint-v33';
 const SETTINGS_UPDATED_KEY='pinetree-settings-updated-v33';
 const BOOKMARKS_KEY='pinetree-bookmarks-v36';
-const RELEASE_SEEN_KEY='pinetree-release-seen-v4502';
-window.PineTreeAppRelease='4502';
+const RELEASE_SEEN_KEY='pinetree-release-seen-v4503';
+window.PineTreeAppRelease='4503';
 function readBookmarks(){try{return (JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]')||[]).filter(x=>x&&typeof x.id==='string').slice(0,2000);}catch{return [];}}
 function writeBookmarks(items){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(items.slice(0,2000)));return true;}catch(error){console.warn('書籤儲存失敗',error);toast('書籤儲存失敗：本機空間可能不足');return false;}}
 
@@ -718,6 +718,7 @@ function ptAudioCenterRefresh(){
   if(holdQuick){holdQuick.textContent='暫停音效 · '+holdName;holdQuick.title=mode==='silent'?'暫停時的音效：'+holdName:'暫停音效待命；選擇單音軌保活後生效';holdQuick.dataset.active=String(mode==='silent');}
   if(mixQuick){mixQuick.textContent='說書背景音 · '+mixName;mixQuick.title='說書背景音：'+mixName;mixQuick.dataset.active=String(!!enabled?.checked&&mix?.value!=='silent');}
   const summary=$('ptAudioCenterSummary');if(summary)summary.textContent=modeName+' · 暫停：'+holdName+' · 背景：'+mixName;
+  const imSound=$('ptImSound');if(imSound){imSound.title=modeName+'｜暫停：'+holdName+'｜背景：'+mixName;imSound.setAttribute('aria-label','音效控制 ♪，'+imSound.title);}
   const topEngine=$('ptUiTopEngine'),topHold=$('ptUiTopHold');
   if(topEngine){topEngine.title=modeName+'｜暫停：'+holdName+'｜背景：'+mixName;topEngine.setAttribute('aria-label','音效控制 ♪，'+topEngine.title);}
   if(topHold){topHold.title='暫停音效：'+holdName;topHold.setAttribute('aria-label',topHold.title);}
@@ -932,9 +933,11 @@ function ptUiCompactInfo(){
 }
 // Regular-player UI only: keep original speed controls and playback modes intact.
 function ptUiSpeedRefresh(){
-  const toggle=$('ptUiSpeedToggle'),select=$('ptUiPlayModeSelect');
-  if(toggle)toggle.textContent='倍速 '+Number(state.speed||1).toFixed(2)+'× '+(toggle.getAttribute('aria-expanded')==='true'?'▴':'▾');
-  if(select){select.value=state.playMode||'sequence';select.title='播放模式：'+(PLAY_MODES.find(x=>x.id===select.value)?.label||'順序播放');}
+  for(const [toggleId,selectId] of [['ptUiSpeedToggle','ptUiPlayModeSelect'],['ptImSpeedToggle','ptImPlayModeSelect']]){
+    const toggle=$(toggleId),select=$(selectId);
+    if(toggle){const label='倍速 '+Number(state.speed||1).toFixed(2)+'× '+(toggle.getAttribute('aria-expanded')==='true'?'▴':'▾');if(toggle.textContent!==label)toggle.textContent=label;}
+    if(select){const mode=state.playMode||'sequence';if(select.value!==mode)select.value=mode;select.title='播放模式：'+(PLAY_MODES.find(x=>x.id===mode)?.label||'順序播放');}
+  }
 }
 function ptUiSpeedInstall(){
   if($('ptUiSpeedToggle'))return;
@@ -973,11 +976,71 @@ function ptUiSoundShortcuts(context){
   ptUiLockScreenRefresh();
 }
 function ptUiLockScreenRefresh(){
-  const b=$('ptUiLockScreen');if(!b)return;
   const enabled=state.lockScreenMode==='lyrics';
-  b.textContent='鎖屏字幕';b.dataset.active=String(enabled);
-  b.title=enabled?'鎖屏字幕：已啟用':'鎖屏字幕：標準章節資訊';
-  b.setAttribute('aria-label',b.title+'；點擊設定');
+  for(const id of ['ptUiLockScreen','ptImLockScreen']){
+    const b=$(id);if(!b)continue;
+    b.textContent='鎖屏字幕';b.dataset.active=String(enabled);
+    b.title=enabled?'鎖屏字幕：已啟用':'鎖屏字幕：標準章節資訊';
+    b.setAttribute('aria-label',b.title+'；點擊設定');
+  }
+}
+/* Immersive reading-first UI, independent of regular player collapse state. */
+function ptImCompactInstall(){
+  const root=$('immersiveMode'),mode=$('imPlayMode'),host=mode?.closest('.im-speed');
+  if(!root||!host||$('ptImSpeedToggle'))return;
+  const row=ptAudioCenterElement('div',{className:'pt-im-speed-row'});
+  const toggle=ptAudioCenterButton('ptImSpeedToggle','倍速 1.00× ▾','im-glass');
+  toggle.setAttribute('aria-expanded','false');
+  const select=ptAudioCenterElement('select',{id:'ptImPlayModeSelect',className:'pt-im-play-mode-select'});
+  select.setAttribute('aria-label','播放模式');
+  for(const item of PLAY_MODES){
+    const opt=ptAudioCenterElement('option',{text:item.label});opt.value=item.id;select.append(opt);
+  }
+  select.addEventListener('change',()=>{setPlayMode(select.value);ptUiSpeedRefresh();});
+  for(const el of [...host.children])if(el!==mode)el.classList.add('pt-im-speed-detail');
+  host.classList.add('pt-im-speed-compact');host.prepend(row);row.append(toggle,select);
+  toggle.addEventListener('click',()=>{
+    const open=!host.classList.contains('pt-im-speed-expanded');
+    host.classList.toggle('pt-im-speed-expanded',open);toggle.setAttribute('aria-expanded',String(open));ptUiSpeedRefresh();
+  });
+  const footer=root.querySelector('.im-footer'),sleep=$('imSleep'),cloud=$('imCloud'),text=$('imText');
+  if(footer&&sleep&&cloud&&text&&$('ptAudioCenter')&&$('lockScreenDialog')){
+    const bar=ptAudioCenterElement('div',{id:'ptImQuickActions',className:'pt-im-quick-actions'});
+    const fold=ptAudioCenterButton('ptImQuickToggle','＋ 快捷設定','im-glass pt-im-quick-toggle');
+    fold.setAttribute('aria-controls',bar.id);
+    const sound=ptAudioCenterButton('ptImSound','音效控制 ♪','im-glass');
+    const lock=ptAudioCenterButton('ptImLockScreen','鎖屏字幕','im-glass');
+    const more=ptAudioCenterButton('ptImMore','更多 ▾','im-glass');
+    sound.addEventListener('click',()=>ptAudioCenterOpen());
+    lock.addEventListener('click',()=>{refreshLockScreenControls();openDialog('lockScreenDialog');});
+    // Bookmark buttons remain accessible in a separate drawer; no data or listeners are removed.
+    const book=$('imBookmark'),list=$('imBookmarkList');
+    const drawer=ptAudioCenterElement('dialog',{id:'ptImMoreDialog',className:'drawer-dialog'});
+    drawer.setAttribute('aria-label','沉浸模式更多功能');
+    const inner=ptAudioCenterElement('div',{className:'dialog-inner'}),head=ptAudioCenterElement('div',{className:'dialog-head'});
+    const close=ptAudioCenterButton('ptImMoreClose','×','close-action');
+    close.setAttribute('aria-label','關閉更多功能');
+    head.append(ptAudioCenterElement('h2',{text:'更多功能'}),close);
+    const options=ptAudioCenterElement('div',{className:'pt-ui-more-grid'});
+    for(const [original,label,id] of [[book,'收藏此句','ptImBookmarkAction'],[list,'我的書籤','ptImBookmarkListAction']]){
+      if(!original)continue;
+      original.classList.add('pt-im-relocated');
+      const action=ptAudioCenterButton(id,label);
+      action.addEventListener('click',()=>{closeDialog('ptImMoreDialog');original.click();});
+      options.append(action);
+    }
+    inner.append(head,options);drawer.append(inner);document.body.append(drawer);
+    close.addEventListener('click',()=>closeDialog('ptImMoreDialog'));
+    drawer.addEventListener('click',e=>{if(e.target===drawer)closeDialog('ptImMoreDialog');});
+    more.addEventListener('click',()=>openDialog('ptImMoreDialog'));
+    footer.prepend(fold,bar);bar.append(sleep,lock,sound,cloud,text,more);
+    const key='pinetree-immersive-quick-collapsed-v453';
+    let collapsed=true;try{collapsed=localStorage.getItem(key)!=='0';}catch(_){}
+    const apply=()=>{bar.hidden=collapsed;fold.setAttribute('aria-expanded',String(!collapsed));fold.textContent=(collapsed?'＋':'−')+' 快捷設定';};
+    fold.addEventListener('click',()=>{collapsed=!collapsed;try{localStorage.setItem(key,collapsed?'1':'0');}catch(_){}apply();});
+    apply();ptUiLockScreenRefresh();
+  }
+  ptUiSpeedRefresh();
 }
 function ptUiInstall(){
   if($('ptUiToggle-header'))return;
@@ -1021,7 +1084,7 @@ function ptUiInstall(){
   }
   window.addEventListener('resize',ptUiCheckDock);
   if(typeof MutationObserver!=='undefined')new MutationObserver(ptUiCheckDock).observe(document.body,{attributes:true,attributeFilter:['class']});
-  ptUiSpeedInstall();ptUiCompactInfo();ptUiApply();ptAudioCenterRefresh();
+  ptUiSpeedInstall();ptImCompactInstall();ptUiCompactInfo();ptUiApply();ptAudioCenterRefresh();
 }
 function refreshLockScreenControls(){
   const experimental=state.lockScreenMode==='lyrics';
@@ -1076,7 +1139,7 @@ function updateMediaSession(force=false){
   try{
     navigator.mediaSession.metadata=new MediaMetadata({
       title:info.title,artist:info.artist,album:info.album,
-      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4502',document.baseURI).href,sizes:'512x512',type:'image/png'}]
+      artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4503',document.baseURI).href,sizes:'512x512',type:'image/png'}]
     });
     state.lockScreenMetaKey=info.key;
     state.lockScreenLastText=info.title;
@@ -1086,7 +1149,7 @@ function updateMediaSession(force=false){
       try{
         navigator.mediaSession.metadata=new MediaMetadata({title:state.current.name,
           artist:'PineTree 有聲書',album:info.album,
-          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4502',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
+          artwork:url?[{src:url,type:'image/jpeg'}]:[{src:new URL('./icon-512.png?v=4503',document.baseURI).href,sizes:'512x512',type:'image/png'}]});
         state.lockScreenMetaKey=info.key;
         state.lockScreenLastAt=now;
         return;
@@ -1335,6 +1398,7 @@ function setPlayMode(value,{persist=true}={}){
     if(label)label.textContent=mode.label;
   }
   if(persist)localStorage.setItem('pinetree-play-mode-v1',mode.id);
+  ptUiSpeedRefresh();
 }
 function cyclePlayMode(){
   const idx=PLAY_MODES.findIndex(item=>item.id===state.playMode);
@@ -1391,7 +1455,7 @@ function updateChristmasSpeedFill(slider){
     slider.style.setProperty('--vip-speed-fill',((state.speed-.5)/2.5*100)+'%');
   }
 }
-function setSpeed(value){state.speed=Math.round(bounded(Number(value),.5,3,1)*20)/20;audio.defaultPlaybackRate=state.speed;audio.playbackRate=state.speed;localStorage.setItem('lyra-speed',state.speed);$('speedRange').value=state.speed;$('speedLabel').textContent=`${state.speed.toFixed(2)}×`;updateChristmasSpeedFill($('speedRange'));for(const p of document.querySelectorAll('[data-speed-preset]'))p.setAttribute('aria-pressed',String(Math.abs(Number(p.dataset.speedPreset)-state.speed)<.026));updateMediaPosition();}
+function setSpeed(value){state.speed=Math.round(bounded(Number(value),.5,3,1)*20)/20;audio.defaultPlaybackRate=state.speed;audio.playbackRate=state.speed;localStorage.setItem('lyra-speed',state.speed);$('speedRange').value=state.speed;$('speedLabel').textContent=`${state.speed.toFixed(2)}×`;updateChristmasSpeedFill($('speedRange'));for(const p of document.querySelectorAll('[data-speed-preset]'))p.setAttribute('aria-pressed',String(Math.abs(Number(p.dataset.speedPreset)-state.speed)<.026));updateMediaPosition();ptUiSpeedRefresh();}
 const isHex=x=>/^#[0-9a-f]{6}$/i.test(x);
 function rgb(hex){return [1,3,5].map(p=>parseInt(hex.slice(p,p+2),16));}
 function mixColor(a,b,weight){const x=rgb(a),y=rgb(b);return '#'+x.map((v,i)=>Math.round(v*(1-weight)+y[i]*weight).toString(16).padStart(2,'0')).join('');}
@@ -2587,7 +2651,7 @@ async function start(){
     state.db=await openDatabase();await migrateLegacyBooks();await refreshLibrary();
     await restoreChapterIndex();
     await syncRestoreTask;await activateLinkedSyncAfterStartup();
-    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.5.2：鎖屏播放恢復',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
+    if(localStorage.getItem(RELEASE_SEEN_KEY)!=='1'){toast('PineTree v4.5.3：閱讀優先 · H7',6500);localStorage.setItem(RELEASE_SEEN_KEY,'1');}
     const interrupted=localStorage.getItem(IMPORT_CHECKPOINT_KEY);
     if(interrupted){try{const p=JSON.parse(interrupted);toast(`上次匯入可能中斷（${p.done||0}/${p.total||'?'} 組）；重新選相同文件可接續並略過已有章節`,8000);}catch{}localStorage.removeItem(IMPORT_CHECKPOINT_KEY);}
     if(pendingSyncedResumeId()){
@@ -2697,7 +2761,7 @@ function ptRInstall(){
     input.checked=input.value===ptRMode;input.addEventListener('change',()=>{if(!input.checked)return;ptHHardStop('切換模式');ptRInvalidate('切換模式');ptRStop('切換模式',true);ptRMode=input.value;ptRBlocked=false;try{localStorage.setItem(PT_R_MODE,ptRMode==='standard'?'standard':'smart');}catch(_){}ptRStatus(ptRMode==='standard'?'標準模式':ptRMode==='smart'?'智慧恢復已啟用':ptRMode==='silent'?'Silent Hold 已選擇 · 本次使用':'實驗模式 · 本次使用');ptRLog('設定模式');if(ptRMode==='experimental')ptRKeep();});
   }
   ptRStatus(ptRMode==='smart'?'智慧恢復已啟用':'標準模式');
-  $('ptRecoveryCopy')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText('PineTree 4.5.2 H7 Audio Control Center\n'+ptRHistory.join('\n'));toast('診斷已複製');}catch(_){toast('無法使用剪貼簿，請手動選取紀錄');}});
+  $('ptRecoveryCopy')?.addEventListener('click',async()=>{try{await navigator.clipboard.writeText('PineTree 4.5.3 H7 Reading First\n'+ptRHistory.join('\n'));toast('診斷已複製');}catch(_){toast('無法使用剪貼簿，請手動選取紀錄');}});
   $('ptRecoveryClear')?.addEventListener('click',()=>{ptRHistory=[];try{localStorage.removeItem(PT_R_LOG);}catch(_){}if($('ptRecoveryDiagnostic'))$('ptRecoveryDiagnostic').textContent='';});
   audio.addEventListener('pause',()=>{if(!audio.paused)return;ptRPausedAt=Date.now();ptRInvalidate('audio pause');ptRKeep();});
   audio.addEventListener('play',()=>{ptRBlocked=false;ptRStop('audio play');ptRLog('audio play');});
