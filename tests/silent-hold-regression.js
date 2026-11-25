@@ -293,3 +293,11 @@ async function h3Begin(wantPlay=true){
   for(const id of ['lockScreenOpen','lockScreenDialog','ptAmbientHold','ptAmbientMix','ptRecoveryStatus','iosSingleButtonCompatibility','ptRecoveryDiagnostic','headphoneDiagnostic'])assert(html.includes('id="'+id+'"'),'original source anchor '+id);
   console.log('PASS Audio Control Center: original node identity, unique controls, navigation, legacy folding, state preservation');
 })();
+
+/* Home bookmark shortcuts hidden; existing immersive access and handlers retained. */
+assert(/#bookmarkAdd,#bookmarkOpen\{display:none!important;\}/.test(require('fs').readFileSync(require('path').join(__dirname,'../styles.css'),'utf8')));
+assert(app.includes("$('bookmarkAdd').addEventListener('click',addBookmark)"));
+assert(app.includes("$('bookmarkOpen').addEventListener('click'"));
+assert(app.includes("$('imBookmark').addEventListener('click',addBookmark)"));
+assert(app.includes("$('imBookmarkList').addEventListener('click'"));
+console.log('PASS hide only home bookmark shortcuts');
