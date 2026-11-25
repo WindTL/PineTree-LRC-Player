@@ -1385,3 +1385,35 @@ body.pt-ui-hide-context .app-shell .listen-extras{display:none!important;}
   .app-shell .pt-ui-header-actions .top-action span:last-child{display:inline;}
   body.lyrics-maximized .app-shell .pt-ui-header{display:none!important;}
 }
+
+/* Header hotfix: reserve a real central track for the absolute theme masthead.
+   The action list and its collapse buttons occupy one right-aligned region. */
+.app-shell .pt-ui-header-right{
+  display:flex;align-items:center;justify-content:flex-end;
+  gap:7px;min-width:0;max-width:100%;margin-inline-start:auto;flex:0 1 auto;
+}
+.app-shell .pt-ui-header-right .header-actions{
+  flex:0 1 auto;min-width:0;max-width:100%;margin-inline-start:0;
+  justify-content:flex-start;overflow-x:auto;scrollbar-width:none;
+}
+.app-shell .pt-ui-header-right .header-actions>*{flex-shrink:0;}
+.app-shell .pt-ui-header-right .pt-ui-header-switches{flex:0 0 auto;}
+@media(min-width:1500px){
+  body:is([data-ui-theme="forest-reading"],[data-ui-theme="christmas-season"]) .app-shell .pt-ui-header{
+    display:grid;grid-template-columns:minmax(0,1fr) 180px minmax(0,1fr);
+    align-items:center;column-gap:10px;
+  }
+  body:is([data-ui-theme="forest-reading"],[data-ui-theme="christmas-season"]) .app-shell .pt-ui-header>.brand{
+    grid-column:1;grid-row:1;justify-self:start;min-width:0;max-width:100%;
+  }
+  body:is([data-ui-theme="forest-reading"],[data-ui-theme="christmas-season"]) .app-shell .pt-ui-header>.pt-ui-header-right{
+    grid-column:3;grid-row:1;width:100%;justify-self:end;margin:0;
+  }
+  body[data-ui-theme="forest-reading"] .app-shell .pt-ui-header .forest-top-title{width:180px;max-width:180px;}
+  body[data-ui-theme="christmas-season"] .app-shell .pt-ui-header .christmas-masthead{width:180px;max-width:180px;}
+  body.lyrics-maximized .app-shell .pt-ui-header{display:none!important;}
+}
+@media(max-width:850px) and (orientation:portrait){
+  .app-shell .pt-ui-header-right{display:contents;}
+  .app-shell .pt-ui-header-right .header-actions{flex:1 0 100%;max-width:100%;}
+}
