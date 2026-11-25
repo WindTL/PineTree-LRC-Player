@@ -231,7 +231,84 @@ const PT_AMBIENT_SOUNDS=['silent','campfire','rain','stream','onsen','brown','au
 function ptAmbientName(s){return ({silent:'完全無聲',campfire:'森林篝火',rain:'松林細雨',stream:'月下溪流',onsen:'柚香溫泉',brown:'棕噪音',auto:'主題匹配'})[s]||'完全無聲';}
 function ptAmbientResolve(s,theme=state.uiTheme){return s==='auto'?(theme==='capybara-onsen'?'onsen':'campfire'):s;}
 function ptAmbientVolume(n){return Math.max(0,Math.min(30,Number(n)||0));}
+/* Private, device-local campfire override. Canonical PCM only; no upload,
+ * fetch, audio decoding context or asynchronous work inside the Hold action. */
+const PT_CAMPFIRE_DB='pinetree-private-sounds-v1',PT_CAMPFIRE_LIMIT=44+8000*2*180;
+let ptPrivateCampfire=null;
+function ptPrivateCampfireDecode(bytes){
+  if(!bytes||bytes.byteLength<44+16000||bytes.byteLength>PT_CAMPFIRE_LIMIT)throw Error('音效長度必須為 1–180 秒');
+  const v=new DataView(bytes),tag=(off,s)=>[...s].every((ch,i)=>v.getUint8(off+i)===ch.charCodeAt(0));
+  const n=v.getUint32(40,true);
+  if(!tag(0,'RIFF')||!tag(8,'WAVE')||!tag(12,'fmt ')||!tag(36,'data')||
+     v.getUint32(4,true)!==bytes.byteLength-8||v.getUint32(16,true)!==16||
+     v.getUint16(20,true)!==1||v.getUint16(22,true)!==1||v.getUint32(24,true)!==8000||
+     v.getUint32(28,true)!==16000||v.getUint16(32,true)!==2||v.getUint16(34,true)!==16||
+     n!==bytes.byteLength-44||n%2)throw Error('請選擇 PineTree 專用 8 kHz 單聲道 PCM16 WAV');
+  const out=new Float32Array(n/2);
+  for(let i=0;i<out.length;i++)out[i]=v.getInt16(44+i*2,true)/32768;
+  return out;
+}
+function ptPrivateCampfireStore(action,bytes){
+  return new Promise((resolve,reject)=>{
+    let req,blocked=false;
+    try{req=indexedDB.open(PT_CAMPFIRE_DB,1);}catch(e){reject(e);return;}
+    req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('sounds'))req.result.createObjectStore('sounds');};
+    req.onblocked=()=>{blocked=true;reject(Error('私人音效資料庫被其他頁面鎖定'));};
+    req.onerror=()=>reject(req.error);
+    req.onsuccess=()=>{
+      const db=req.result;if(blocked){db.close();return;}
+      let tx,q;
+      try{
+        tx=db.transaction('sounds',action==='get'?'readonly':'readwrite');
+        const store=tx.objectStore('sounds');
+        q=action==='get'?store.get('campfire'):action==='put'?store.put(bytes,'campfire'):store.delete('campfire');
+      }catch(e){db.close();reject(e);return;}
+      tx.oncomplete=()=>{db.close();resolve(action==='get'?q.result:undefined);};
+      tx.onabort=()=>{db.close();reject(tx.error||Error('私人音效儲存失敗'));};
+      tx.onerror=()=>{}; // abort event handles transactional failure
+    };
+  });
+}
+function ptPrivateCampfireApply(samples){
+  ptPrivateCampfire=samples;
+  // Never replace an active Hold source or alter the chapter playback state.
+  // Refresh an existing foreground campfire mix only; H6 guards still apply.
+  if(ptMixContext&&ptAmbientResolve(ptAmbientMix)==='campfire'){
+    ptMixStop('森林篝火音源更新');ptMixStart();
+  }
+}
+function ptPrivateCampfireInstall(){
+  const host=$('ptAmbientHold')?.closest('.sync-guide');
+  if(!host||$('ptPrivateCampfireStatus'))return;
+  const wrap=document.createElement('div');wrap.className='sync-guide';
+  const title=document.createElement('strong');title.textContent='私人森林篝火';
+  const status=document.createElement('p');status.id='ptPrivateCampfireStatus';status.setAttribute('role','status');status.textContent='讀取本機音效…';
+  const help=document.createElement('p');help.textContent='匯入 PineTree 專用 WAV 後，「森林篝火」會在暫停音效及說書背景音共用此錄音。只存在此裝置；下一次暫停時生效，不影響正在播放的章節。';
+  const file=document.createElement('input');file.type='file';file.accept='.wav,audio/wav,audio/x-wav';file.hidden=true;
+  const choose=document.createElement('button');choose.type='button';choose.className='btn btn-quiet';choose.textContent='匯入私人篝火 WAV';
+  const reset=document.createElement('button');reset.type='button';reset.className='btn btn-quiet';reset.textContent='還原內建篝火';
+  const update=(message='')=>{status.textContent=message||(ptPrivateCampfire?'已使用私人錄音 · '+(ptPrivateCampfire.length/8000).toFixed(1)+' 秒循環':'使用內建合成篝火');};
+  const busy=(v)=>{choose.disabled=v;reset.disabled=v||!ptPrivateCampfire;};
+  choose.addEventListener('click',()=>file.click());
+  file.addEventListener('change',async()=>{
+    const item=file.files?.[0];file.value='';if(!item)return;
+    busy(true);try{
+      if(item.size>PT_CAMPFIRE_LIMIT)throw Error('音效檔案過大');
+      const bytes=await item.arrayBuffer(),samples=ptPrivateCampfireDecode(bytes);
+      await ptPrivateCampfireStore('put',bytes);ptPrivateCampfireApply(samples);update();
+    }catch(e){update('匯入失敗，保留原音效 · '+String(e?.message||e));}finally{busy(false);}
+  });
+  reset.addEventListener('click',async()=>{
+    busy(true);try{await ptPrivateCampfireStore('delete');ptPrivateCampfireApply(null);update();}
+    catch(e){update('還原失敗，保留原音效');}finally{busy(false);}
+  });
+  wrap.append(title,status,help,choose,reset,file);host.append(wrap);busy(true);
+  ptPrivateCampfireStore('get').then(bytes=>{
+    if(bytes)ptPrivateCampfireApply(ptPrivateCampfireDecode(bytes));update();
+  }).catch(()=>update('私人音效讀取失敗 · 使用內建篝火')).finally(()=>busy(false));
+}
 function ptAmbientSamples(sound,rate=8000){
+  if(sound==='campfire'&&rate===8000&&ptPrivateCampfire)return ptPrivateCampfire;
   const size=rate*12,out=new Float32Array(size);
   if(sound==='silent')return out;
   let seed=19349663,lo=0,slow=0,crackle=0,peak=0;

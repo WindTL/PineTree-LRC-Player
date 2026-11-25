@@ -301,3 +301,24 @@ assert(app.includes("$('bookmarkOpen').addEventListener('click'"));
 assert(app.includes("$('imBookmark').addEventListener('click',addBookmark)"));
 assert(app.includes("$('imBookmarkList').addEventListener('click'"));
 console.log('PASS hide only home bookmark shortcuts');
+
+/* Private campfire uses the exact same local samples for Hold and Mix.
+ * Reject invalid PCM, leave other soundscapes unchanged and preserve H7. */
+(()=>{
+  vm.runInContext('this.decodeCampfire=ptPrivateCampfireDecode;this.applyCampfire=ptPrivateCampfireApply;this.samplesCampfire=ptAmbientSamples;',ctx);
+  const original=ctx.samplesCampfire('campfire'),rain=ctx.samplesCampfire('rain');
+  const bytes=new ArrayBuffer(44+16000),v=new DataView(bytes);
+  for(const [off,s] of [[0,'RIFF'],[8,'WAVE'],[12,'fmt '],[36,'data']])for(let i=0;i<s.length;i++)v.setUint8(off+i,s.charCodeAt(i));
+  v.setUint32(4,bytes.byteLength-8,true);v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,8000,true);v.setUint32(28,16000,true);v.setUint16(32,2,true);v.setUint16(34,16,true);v.setUint32(40,16000,true);
+  for(let i=0;i<8000;i++)v.setInt16(44+i*2,i%2?8192:-8192,true);
+  const samples=ctx.decodeCampfire(bytes);assert.equal(samples.length,8000);assert.equal(samples[0],-.25);assert.equal(samples[1],.25);
+  ctx.applyCampfire(samples);assert.equal(ctx.samplesCampfire('campfire'),samples);assert.deepEqual(ctx.samplesCampfire('rain'),rain);
+  const wav=ctx.wav(1,'campfire',.2);assert.equal(wav[44],122);assert.equal(wav[45],134);assert.equal(wav[8044],122);
+  const bad=bytes.slice(0);new DataView(bad).setUint32(24,48000,true);
+  assert.throws(()=>ctx.decodeCampfire(bad));assert.throws(()=>ctx.decodeCampfire(new ArrayBuffer(44)));
+  assert.equal(ctx.samplesCampfire('campfire'),samples,'bad input cannot replace existing samples');
+  ctx.applyCampfire(null);assert.deepEqual(ctx.samplesCampfire('campfire'),original);
+  assert(app.includes('ptPrivateCampfireInstall();ptInstall();'));
+  assert(engine.includes('PT_H_RATE_ADVANCE=.12,PT_H_PROBE_MS=20'));
+  console.log('PASS private campfire PCM validation, loop source shared by Hold/Mix, unchanged other soundscapes and H7 threshold');
+})();
