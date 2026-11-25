@@ -69,7 +69,7 @@ ctx.state={fileUrl:'blob:private-chapter'};
 ctx.ptRLog=x=>traceLines.push(x);
 ctx.snap({source:'blob:private-chapter',silence:'blob:private-hold',position:37,duration:500,phase:'restore'});
 ctx.trace('raw seeked');
-assert(traceLines[0].includes('TRACE H4 raw seeked phase=restore src=chapter current=hold'));
+assert(traceLines[0].includes('TRACE H5 raw seeked phase=restore src=chapter current=hold'));
 assert(traceLines[0].includes('saved=37.00/500.00'));
 assert(!traceLines[0].includes('blob:'));
 ctx.snap(null);
@@ -80,7 +80,8 @@ console.log('PASS local H2 source and chapter transition diagnostics');
 /* H3: reproduce the device trace, not merely isolated facade properties.
  * The mock dispatches native events in the observed order. This is not WebKit. */
 function h3Setup(){
-  let mediaTime=0,serial=0,earlySeeks=0,playCalls=0;
+  let mediaTime=0,serial=0,earlySeeks=0,playCalls=0,timerId=0;
+  const timers=new Map();
   const handlers=new Map(),records=[],revoked=[],logs=[];
   const raw={
     src:'blob:hold',currentSrc:'blob:hold',duration:600,readyState:4,paused:false,ended:false,seeking:false,playbackRate:1,defaultPlaybackRate:1,muted:false,
@@ -95,7 +96,7 @@ function h3Setup(){
   const c={
     ptRawAudio:raw,state:{current:{id:'chapter'},fileUrl:'blob:original',suppressProgressWrites:false},
     URL:{createObjectURL:()=> 'blob:fresh-'+(++serial),revokeObjectURL:x=>revoked.push(x)},
-    Event:class{constructor(type){this.type=type;}},setTimeout:()=>1,clearTimeout:noop,
+    Event:class{constructor(type){this.type=type;}},setTimeout:(fn,ms)=>{const id=++timerId;timers.set(id,{fn,ms});return id;},clearTimeout:id=>timers.delete(id),
     $:()=>el,navigator:{mediaSession:{}},ptRLog:x=>logs.push(x),ptLast:null,ptFlush:noop,ptBehavior:noop,
     setPlayButtonVisual:noop,updateProgressDisplay:noop,updateLyrics:noop,updateImmersiveUI:noop,updateMediaPosition:noop,updateMediaSession:noop,
     requestPlaybackAudioSession:noop,queuePauseSyncExport:noop,
@@ -106,7 +107,7 @@ function h3Setup(){
   c.remember({size:100,type:'audio/mpeg',slice(){return this;}},'blob:original');
   c.snap({id:'chapter',source:'blob:original',silence:'blob:hold',position:2.59,duration:421.68,rate:2,muted:false,phase:'hold'});
   let endings=0,pauses=0;c.audio.addEventListener('ended',()=>endings++);c.audio.addEventListener('pause',()=>pauses++);
-  return {c,raw,records,revoked,logs,emit:type=>raw.dispatchEvent(new c.Event(type)),time:v=>{mediaTime=v;},counts:()=>({earlySeeks,playCalls,endings,pauses})};
+  return {c,raw,records,revoked,logs,emit:type=>raw.dispatchEvent(new c.Event(type)),time:v=>{mediaTime=v;},counts:()=>({earlySeeks,playCalls,endings,pauses}),probes:()=>[...timers.values()].filter(t=>t.ms===40).length,tickProbe:()=>{const next=[...timers.entries()].find(([,t])=>t.ms===40);assert(next,'expected scheduled 40ms probe');timers.delete(next[0]);next[1].fn();},timerCount:()=>timers.size};
 }
 async function h3Begin(wantPlay=true){
   const x=h3Setup(),result=x.c.restore(wantPlay,'test');
@@ -167,4 +168,31 @@ async function h3Begin(wantPlay=true){
   assert.equal(await c.recover(),false,'no fallback recursion');
   assert(app.includes("if(ptHSnapshot?.phase==='failed')return ptHSafeRecovery()"));
   console.log('PASS H4 foreground fallback saves original checkpoint and reloads same chapter once');
+})().catch(e=>{console.error(e);process.exitCode=1;});
+
+/* H5: sparse or throttled native timeupdate must not shorten the safety threshold.
+ * Only the real media clock unlocks the rate change. Timer delays are simulated. */
+(async()=>{
+  let x=await h3Begin();
+  assert.equal(x.probes(),1);
+  x.emit('playing');x.emit('canplay');assert.equal(x.probes(),1,'no duplicate polling timers');
+  x.time(2.69);x.tickProbe();assert.equal(x.raw.playbackRate,1);
+  assert.equal(x.probes(),1);assert(x.c.getSnapshot());
+  x.time(2.85);x.tickProbe();assert.equal(x.raw.playbackRate,2,'clock probe can apply rate before native timeupdate');
+  assert.equal(x.probes(),0);assert(x.c.getSnapshot(),'second-stage validation remains mandatory');
+  x.time(3.02);x.emit('timeupdate');assert.equal(await x.result,true);assert.equal(x.timerCount(),0);
+
+  x=await h3Begin();
+  x.time(2.9);x.emit('timeupdate');assert.equal(x.raw.playbackRate,2,'native fallback when probe is throttled');
+  assert.equal(x.probes(),0);x.time(3.1);x.emit('timeupdate');assert.equal(await x.result,true);
+  assert.equal(x.timerCount(),0);
+
+  x=await h3Begin();
+  x.raw.duration=2.59;x.raw.ended=true;x.raw.paused=true;x.emit('durationchange');
+  assert.equal(await x.result,false);assert.equal(x.timerCount(),0,'failure cleans pending probe and deadline');
+  assert.equal(x.c.getSnapshot().phase,'failed');
+  assert.equal(x.counts().endings,0);
+
+  x=await h3Begin(false);assert.equal(await x.result,true);assert.equal(x.timerCount(),0,'paused restore starts no probe');
+  console.log('PASS H5: clock-based early rate switch, no duplicate timers, unchanged safety thresholds, event fallback and cleanup');
 })().catch(e=>{console.error(e);process.exitCode=1;});
