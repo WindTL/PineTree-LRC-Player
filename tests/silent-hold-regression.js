@@ -60,3 +60,19 @@ chapterRaw.currentTime=500;fireEnded();assert.equal(advances,1);assert.equal(com
 assert(!ctx.originalReady({...chapterRaw,readyState:0},saved));
 assert(!ctx.originalReady({...chapterRaw,duration:NaN},saved));
 console.log('PASS late WAV ended isolation, original-source readiness and genuine chapter end');
+
+/* The H2 trace is local and categorizes sources without exposing Blob URLs. */
+vm.runInContext('this.trace=ptHTrace;',ctx);
+const traceLines=[];
+ctx.ptRawAudio={src:'blob:private-chapter',currentSrc:'blob:private-hold',currentTime:5,duration:300,playbackRate:1,seeking:false,ended:false,paused:false};
+ctx.state={fileUrl:'blob:private-chapter'};
+ctx.ptRLog=x=>traceLines.push(x);
+ctx.snap({source:'blob:private-chapter',silence:'blob:private-hold',position:37,duration:500,phase:'restore'});
+ctx.trace('raw seeked');
+assert(traceLines[0].includes('TRACE H2 raw seeked phase=restore src=chapter current=hold'));
+assert(traceLines[0].includes('saved=37.00/500.00'));
+assert(!traceLines[0].includes('blob:'));
+ctx.snap(null);
+assert(app.includes("ptHTrace('system nexttrack')"));
+assert(app.includes("ptHTrace('chapter ended handler')"));
+console.log('PASS local H2 source and chapter transition diagnostics');
