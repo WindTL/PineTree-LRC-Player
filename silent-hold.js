@@ -233,10 +233,10 @@ function ptAmbientResolve(s,theme=state.uiTheme){return s==='auto'?(theme==='cap
 function ptAmbientVolume(n){return Math.max(0,Math.min(30,Number(n)||0));}
 /* Private, device-local campfire override. Canonical PCM only; no upload,
  * fetch, audio decoding context or asynchronous work inside the Hold action. */
-const PT_CAMPFIRE_DB='pinetree-private-sounds-v1',PT_CAMPFIRE_LIMIT=44+8000*2*180;
+const PT_CAMPFIRE_DB='pinetree-private-sounds-v1',PT_CAMPFIRE_MAX_SECONDS=600,PT_CAMPFIRE_LIMIT=44+8000*2*PT_CAMPFIRE_MAX_SECONDS;
 let ptPrivateCampfire=null;
 function ptPrivateCampfireDecode(bytes){
-  if(!bytes||bytes.byteLength<44+16000||bytes.byteLength>PT_CAMPFIRE_LIMIT)throw Error('音效長度必須為 1–180 秒');
+  if(!bytes||bytes.byteLength<44+16000||bytes.byteLength>PT_CAMPFIRE_LIMIT)throw Error('音效長度必須為 1–'+PT_CAMPFIRE_MAX_SECONDS+' 秒（最多 10 分鐘）');
   const v=new DataView(bytes),tag=(off,s)=>[...s].every((ch,i)=>v.getUint8(off+i)===ch.charCodeAt(0));
   const n=v.getUint32(40,true);
   if(!tag(0,'RIFF')||!tag(8,'WAVE')||!tag(12,'fmt ')||!tag(36,'data')||
@@ -283,7 +283,7 @@ function ptPrivateCampfireInstall(){
   const wrap=document.createElement('div');wrap.className='sync-guide';
   const title=document.createElement('strong');title.textContent='私人森林篝火';
   const status=document.createElement('p');status.id='ptPrivateCampfireStatus';status.setAttribute('role','status');status.textContent='讀取本機音效…';
-  const help=document.createElement('p');help.textContent='匯入 PineTree 專用 WAV 後，「森林篝火」會在暫停音效及說書背景音共用此錄音。只存在此裝置；下一次暫停時生效，不影響正在播放的章節。';
+  const help=document.createElement('p');help.textContent='匯入 PineTree 專用 WAV 後，「森林篝火」會在暫停音效及說書背景音共用此錄音。格式：8 kHz 單聲道 PCM16 WAV，1–600 秒，最多 9,600,044 Bytes（約 9.6 MB）。只存在此裝置；下一次暫停時生效，不影響正在播放的章節。';
   const file=document.createElement('input');file.type='file';file.accept='.wav,audio/wav,audio/x-wav';file.hidden=true;
   const choose=document.createElement('button');choose.type='button';choose.className='btn btn-quiet';choose.textContent='匯入私人篝火 WAV';
   const reset=document.createElement('button');reset.type='button';reset.className='btn btn-quiet';reset.textContent='還原內建篝火';
@@ -293,7 +293,7 @@ function ptPrivateCampfireInstall(){
   file.addEventListener('change',async()=>{
     const item=file.files?.[0];file.value='';if(!item)return;
     busy(true);try{
-      if(item.size>PT_CAMPFIRE_LIMIT)throw Error('音效檔案過大');
+      if(item.size>PT_CAMPFIRE_LIMIT)throw Error('音效檔案過大：最多 10 分鐘、9,600,044 Bytes（8 kHz 單聲道 PCM16 WAV）');
       const bytes=await item.arrayBuffer(),samples=ptPrivateCampfireDecode(bytes);
       await ptPrivateCampfireStore('put',bytes);ptPrivateCampfireApply(samples);update();
     }catch(e){update('匯入失敗，保留原音效 · '+String(e?.message||e));}finally{busy(false);}
