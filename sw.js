@@ -1,4 +1,4 @@
-/* PineTree 4.5.3 H7 immersive lyrics and 10-minute private campfire - verified, scope-specific shell. Never touches IndexedDB. */
+/* PineTree 4.5.3 H7 smart book import and 10-minute private campfire - verified, scope-specific shell. Never touches IndexedDB. */
 'use strict';
 const VERSION='4503', SCOPE=new URL(self.registration.scope), PREFIX='pinetree-shell-'+encodeURIComponent(SCOPE.pathname)+'-', CACHE=PREFIX+VERSION;
 const absolute=p=>new URL(p,SCOPE).href;
