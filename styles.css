@@ -1537,3 +1537,11 @@ body.pt-ui-hide-context .app-shell .listen-extras{display:none!important;}
   #immersiveMode .im-footer{flex-wrap:wrap;justify-content:center;}
   #immersiveMode .pt-im-quick-actions:not([hidden]){flex:1 0 100%;justify-content:flex-start;}
 }
+
+/* Smart book import is a separate, read-only source preview. */
+.app-shell .import-row>.pt-smart-import{grid-column:1/-1;flex:1 0 100%;width:100%;min-height:38px;margin-bottom:3px;border-color:var(--accent);font-weight:700;}
+.pt-smart-dialog .dialog-inner{display:flex;flex-direction:column;gap:10px;min-width:0;}
+.pt-smart-dialog #ptSmartFolder{width:100%;min-height:42px;max-width:100%;font:inherit;color:var(--text);background:var(--panel-alt);border:1px solid var(--border);border-radius:10px;padding:8px;}
+.pt-smart-dialog .btn{width:100%;min-height:42px;white-space:normal;}
+.pt-smart-dialog .pt-smart-report{white-space:pre-wrap;overflow-wrap:anywhere;overflow:auto;max-height:42vh;min-height:3em;font:inherit;font-size:12px;line-height:1.6;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--panel-alt);}
+.pt-smart-dialog [hidden]{display:none!important;}
