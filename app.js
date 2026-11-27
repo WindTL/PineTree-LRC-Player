@@ -140,7 +140,7 @@ function updateBookControls(){
   const has=!!state.selectedBook;
   $('activeBookName').textContent=has?bookTitle(state.selectedBook):'请先创建一本小说';
   for(const id of ['importBtn','folderBtn','coverBtn','deleteBookBtn','renameBookBtn'])$(id).disabled=!has;
-  updateBookSwitcher();
+  updateBookSwitcher();ptSmartRefresh();
 }
 async function selectBook(book){
   if(!getBook(book))return;
@@ -417,7 +417,219 @@ async function showStorageEstimate(){
     el.textContent=usage?.quota?`瀏覽器儲存：已用約 ${displayBytes(usage.usage||0)} / 系統估計配額 ${displayBytes(usage.quota)}（並非保證可用容量）`:'iPhone 儲存容量由系統管理，請留意剩餘空間';
   }catch{el.textContent='無法查詢瀏覽器容量；原始 iCloud 檔案不會刪除';}
 }
-async function importFiles(fileList,{chapterPlan=null, targetBook=state.selectedBook}={}){
+/* Smart Book Import: read-only directory access; existing importer owns all writes. */
+let ptSmartRoot=null,ptSmartBusy=false,ptSmartSession=null,ptSmartRootTask=null;
+// Conservative common-character equivalences; unmatched names require manual confirmation.
+const PT_SMART_VARIANTS={
+  終:'终',書:'书',錄:'录',門:'门',風:'风',雲:'云',龍:'龙',靈:'灵',詭:'诡',異:'异',規:'规',則:'则',體:'体',萬:'万',與:'与',為:'为',來:'来',開:'开',綁:'绑',報:'报',
+  統:'统',級:'级',車:'车',隊:'队',資:'资',雙:'双',賦:'赋',禮:'礼',贈:'赠',還:'还',師:'师',擇:'择',個:'个',國:'国',說:'说',劍:'剑',聖:'圣',孫:'孙',寶:'宝',實:'实',
+  現:'现',時:'时',間:'间',長:'长',戰:'战',殺:'杀',屍:'尸',別:'别',亂:'乱',會:'会',這:'这',給:'给',傳:'传',無:'无',學:'学',華:'华',後:'后',復:'复',歸:'归',覺:'觉',
+  獨:'独',讓:'让',處:'处',點:'点',變:'变',進:'进',遠:'远',難:'难',對:'对',頭:'头',幾:'几',機:'机',關:'关',係:'系',戲:'戏',夢:'梦',愛:'爱',戀:'恋',寵:'宠',嬌:'娇',
+  嫵:'妩',廢:'废',廳:'厅',聽:'听',聲:'声',驚:'惊',險:'险',惡:'恶',樂:'乐',氣:'气',運:'运',轉:'转',輪:'轮',陰:'阴',陽:'阳',術:'术',醫:'医',藥:'药',練:'练',煉:'炼',
+  塵:'尘',歎:'叹',嘆:'叹',淚:'泪',魚:'鱼',鳥:'鸟',獸:'兽',貓:'猫',馬:'马',島:'岛',樹:'树',葉:'叶',紅:'红',綠:'绿',藍:'蓝',銀:'银',錢:'钱',鐵:'铁',鋼:'钢',總:'总',
+  線:'线',網:'网',電:'电',腦:'脑',庫:'库',劃:'划',數:'数',據:'据',盡:'尽',見:'见',觀:'观',獲:'获',斷:'断',懷:'怀',憶:'忆',億:'亿',蠻:'蛮',爭:'争',殘:'残',顧:'顾',
+  絕:'绝',隨:'随',護:'护',擁:'拥',擋:'挡',撿:'捡',搶:'抢',擊:'击',響:'响',勝:'胜',敗:'败',敵:'敌',強:'强',輕:'轻',驅:'驱',趕:'赶',請:'请',認:'认',識:'识',測:'测',
+  試:'试',臉:'脸',鬥:'斗',鬧:'闹',飄:'飘',飛:'飞',騎:'骑',騙:'骗',駭:'骇',鬱:'郁',曆:'历',歷:'历',劉:'刘',張:'张',陳:'陈',楊:'杨',趙:'赵',鋒:'锋',隱:'隐',顯:'显',
+  顏:'颜',顆:'颗',題:'题',類:'类',選:'选',項:'项',離:'离',隻:'只',夠:'够',倉:'仓',場:'场',塊:'块',鐘:'钟',貴:'贵',買:'买',賣:'卖',貝:'贝',賊:'贼',準:'准',遞:'递',
+  遺:'遗',過:'过',達:'达',邊:'边',遙:'遥',遲:'迟',迴:'回',遊:'游',週:'周',層:'层',屬:'属',從:'从',徑:'径',徹:'彻',徵:'征',衝:'冲',衆:'众',眾:'众',養:'养',餘:'余',
+  飽:'饱',飯:'饭',餓:'饿',飲:'饮',餅:'饼',麵:'面',湯:'汤',溫:'温',濕:'湿',濃:'浓',煙:'烟',燈:'灯',燒:'烧',滅:'灭',災:'灾',曉:'晓',曬:'晒',曠:'旷',曖:'暧',朧:'胧',
+  極:'极',標:'标',權:'权',構:'构',橋:'桥',欄:'栏',檔:'档',檢:'检',櫃:'柜',樓:'楼',棟:'栋',園:'园',圍:'围',圓:'圆',圖:'图',壓:'压',壞:'坏',壯:'壮',壽:'寿',夾:'夹',
+  奪:'夺',奮:'奋',婦:'妇',媽:'妈',嬰:'婴',尋:'寻',導:'导',將:'将',專:'专',嘗:'尝',嚴:'严',屆:'届',歲:'岁',峽:'峡',崗:'岗',嶺:'岭',幣:'币',幫:'帮',廣:'广',廟:'庙',
+  彈:'弹',彎:'弯',彌:'弥',彥:'彦',憐:'怜',憤:'愤',慘:'惨',憂:'忧',慮:'虑',懶:'懒',懸:'悬',懼:'惧',戶:'户',擺:'摆',攔:'拦',攜:'携',攤:'摊',擴:'扩',擾:'扰',擱:'搁',
+  攢:'攒',敘:'叙',斬:'斩',舊:'旧',暫:'暂',榮:'荣',毀:'毁',漢:'汉',滾:'滚',潔:'洁',潛:'潜',澤:'泽',濤:'涛',濫:'滥',瀾:'澜',灣:'湾',漁:'渔',潤:'润',瀟:'潇',灑:'洒',
+  灘:'滩',瀕:'濒',爐:'炉',燭:'烛',獅:'狮',獵:'猎',獎:'奖',獄:'狱',獻:'献',環:'环',瑤:'瑶',璣:'玑',瓊:'琼',畫:'画',療:'疗',瘋:'疯',監:'监',盜:'盗',盞:'盏',睜:'睁',
+  瞞:'瞒',礎:'础',禍:'祸',禪:'禅',禦:'御',稅:'税',種:'种',稱:'称',穩:'稳',穎:'颖',竅:'窍',競:'竞',筆:'笔',築:'筑',節:'节',簡:'简',籠:'笼',簽:'签',籤:'签',籌:'筹',
+  籃:'篮',糧:'粮',糾:'纠',紀:'纪',約:'约',納:'纳',純:'纯',紛:'纷',紋:'纹',結:'结',絨:'绒',絆:'绊',經:'经',絞:'绞',維:'维',綱:'纲',綿:'绵',緊:'紧',緒:'绪',續:'续',
+  編:'编',緣:'缘',緩:'缓',縱:'纵',縫:'缝',織:'织',繞:'绕',繩:'绳',繫:'系',繪:'绘',纏:'缠',纖:'纤',纜:'缆',罰:'罚',罷:'罢',羅:'罗',職:'职',聯:'联',聰:'聪',肅:'肃',
+  腸:'肠',腎:'肾',膽:'胆',臟:'脏',臨:'临',臺:'台',舉:'举',艱:'艰',艦:'舰',藝:'艺',莊:'庄',莖:'茎',蘇:'苏',蘭:'兰',蘿:'萝',蘊:'蕴',蘋:'苹',螢:'萤',蟲:'虫',蠍:'蝎',
+  蠟:'蜡',蠱:'蛊',衛:'卫',衞:'卫',襲:'袭',裝:'装',複:'复',補:'补',褲:'裤',覓:'觅',覽:'览',觸:'触',訂:'订',計:'计',討:'讨',訓:'训',託:'托',訴:'诉',診:'诊',註:'注',
+  評:'评',詞:'词',詩:'诗',誠:'诚',話:'话',該:'该',詳:'详',誇:'夸',誤:'误',誕:'诞',誌:'志',誅:'诛',誦:'诵',課:'课',誰:'谁',調:'调',談:'谈',謀:'谋',謎:'谜',諜:'谍',
+  諸:'诸',諾:'诺',謊:'谎',謂:'谓',謙:'谦',講:'讲',謝:'谢',謠:'谣',謹:'谨',證:'证',譜:'谱',譯:'译',議:'议',讀:'读',讚:'赞',豈:'岂',豐:'丰',豬:'猪',貢:'贡',財:'财',
+  責:'责',賢:'贤',賤:'贱',賜:'赐',賞:'赏',賠:'赔',質:'质',賭:'赌',賴:'赖',賺:'赚',購:'购',贏:'赢',蹤:'踪',踐:'践',蹺:'跷',蹣:'蹒',軀:'躯',軌:'轨',軒:'轩',軟:'软',
+  軸:'轴',較:'较',載:'载',輔:'辅',輛:'辆',輝:'辉',輩:'辈',輸:'输',轄:'辖',轟:'轰',辦:'办',辭:'辞',辯:'辩',農:'农',遷:'迁',遼:'辽',邁:'迈',郵:'邮',鄉:'乡',鄭:'郑',
+  鄰:'邻',釋:'释',針:'针',鈍:'钝',鈴:'铃',銅:'铜',銘:'铭',銳:'锐',錦:'锦',錘:'锤',錯:'错',鍋:'锅',鍵:'键',鎖:'锁',鎮:'镇',鏡:'镜',鑑:'鉴',鑽:'钻',鑰:'钥',鑄:'铸',
+  閃:'闪',閉:'闭',問:'问',閣:'阁',閥:'阀',閒:'闲',閻:'阎',闊:'阔',闖:'闯',闢:'辟',階:'阶',際:'际',陸:'陆',隕:'陨',隸:'隶',雜:'杂',雞:'鸡',霧:'雾',霽:'霁',靜:'静',
+  韓:'韩',頁:'页',頂:'顶',頃:'顷',順:'顺',須:'须',頑:'顽',頓:'顿',頌:'颂',頗:'颇',領:'领',頻:'频',額:'额',顫:'颤',颱:'台',颳:'刮',飆:'飙',飢:'饥',飾:'饰',館:'馆',
+  駐:'驻',駕:'驾',駛:'驶',騰:'腾',驗:'验',驟:'骤',驢:'驴',髮:'发',鬍:'胡',鬚:'须',魘:'魇',魯:'鲁',鮮:'鲜',鯨:'鲸',鯊:'鲨',鴉:'鸦',鴨:'鸭',鴻:'鸿',鵬:'鹏',鶴:'鹤',
+  鷹:'鹰',麥:'麦',黃:'黄',黴:'霉',齊:'齐',齒:'齿',齡:'龄',龜:'龟',發:'发'
+};
+function ptSmartName(value){return [...String(value||'').normalize('NFKC').toLocaleLowerCase()].map(ch=>PT_SMART_VARIANTS[ch]||ch).join('').replace(/[\s\p{P}\p{S}]/gu,'');}
+function ptSmartMatches(title,dirs){const key=ptSmartName(title);return key?dirs.filter(d=>ptSmartName(d.name)===key):[];}
+async function ptSmartDirs(root){
+  const out=[];for await(const entry of root.values()){
+    if(entry.kind==='directory'&&!/^(?:read|tools|ambient library|a小说书库input|a小說書庫input|\.trash)$/i.test(entry.name))out.push(entry);
+    if(out.length>2000)throw Error('根目錄資料夾過多，請確認選擇 Audiobooks');
+  }return out.sort((a,b)=>a.name.localeCompare(b.name,'zh'));
+}
+async function ptSmartScanFiles(folder){
+  const output=[];for await(const entry of folder.values())if(entry.kind==='directory'&&/^output_mp3$/i.test(entry.name))output.push(entry);
+  if(output.length>1)throw Error('有多個 output_mp3，請整理後再掃描');
+  const out=[];let seen=0;
+  async function walk(dir,depth,path){
+    for await(const entry of dir.values()){
+      if(++seen>30000)throw Error('檔案數過多，已安全停止掃描');
+      if(entry.kind==='file'&&/\.(mp3|lrc)$/i.test(entry.name)){
+        out.push({handle:entry,path:path+'/'+entry.name});
+      }else if(entry.kind==='directory'&&depth<4&&output.length&&!/^(?:read|input_txt|input|backup|備份|备份|\.trash)$/i.test(entry.name)&&!entry.name.startsWith('.')){
+        await walk(entry,depth+1,path+'/'+entry.name);
+      }
+    }
+  }
+  await walk(output[0]||folder,0,folder.name+(output.length?'/'+output[0].name:''));
+  return out;
+}
+async function ptSmartPreview(book,entries,onProgress=()=>{},isCurrent=()=>true){
+  const groups=new Map(),files=[],rows=[];let unchanged=0,orphan=0,uncertain=0,checked=0;
+  for(const entry of entries){
+    if(!isCurrent())throw Error('掃描已取消');
+    const id=trackId(book,entry.handle.name),kind=/\.mp3$/i.test(entry.handle.name)?'mp3':'lrc';
+    const group=groups.get(id)||{id,name:readableStem(entry.handle.name)};
+    if(group[kind])throw Error('發現重複章節檔名：'+entry.handle.name+'；請先整理來源資料夾，避免匯入錯誤版本');
+    group[kind]=entry.handle;groups.set(id,group);
+  }
+  for(const group of groups.values()){
+    if(!isCurrent())throw Error('掃描已取消');
+    const old=await getStore('tracks',group.id);
+    const hasAudio=!!old&&old.audioPresent!==false&&await hasAudioKey(group.id);
+    const mp3=group.mp3?await group.mp3.getFile():null,lrc=group.lrc?await group.lrc.getFile():null;
+    if(!hasAudio&&!mp3){orphan++;}
+    else{
+      let audioChanged=false,lyricsChanged=false,unverified=false;
+      if(mp3){
+        audioChanged=!hasAudio||old.bytes!==mp3.size;
+        if(!audioChanged){
+          const digest=await digestChapterAudio(mp3);
+          const stored=old.mp3Digest||await digestChapterAudio((await getStore('audio',group.id))?.blob);
+          if(digest&&stored)audioChanged=digest!==stored;
+          else{audioChanged=true;unverified=true;}
+        }
+      }
+      if(lrc)lyricsChanged=(await lrc.text())!==(old?.lrcText||'');
+      if(audioChanged||lyricsChanged){
+        if(audioChanged)files.push(mp3);
+        if(lyricsChanged||!old&&lrc)files.push(lrc);
+        if(unverified)uncertain++;
+        rows.push({name:group.name,kind:!old?'新增':!hasAudio?'補齊 MP3':'更新',detail:[audioChanged?'MP3':'',lyricsChanged?'LRC':'',unverified?'無法核對雜湊，保守更新':''].filter(Boolean).join(' + ')});
+      }else unchanged++;
+    }
+    if(++checked%8===0){onProgress(checked,groups.size);await nextUIFrame();}
+  }
+  onProgress(checked,groups.size);
+  return {files:files.filter(Boolean),rows,unchanged,orphan,uncertain,total:groups.size};
+}
+function ptSmartSetBusy(busy){
+  ptSmartBusy=busy;for(const id of ['ptSmartRootPick','ptSmartScan','ptSmartFolder','ptSmartCommit']){const el=$(id);if(el)el.disabled=busy;}
+  ptSmartRefresh();
+}
+function ptSmartRefresh(){const b=$('ptSmartImport');if(b)b.disabled=ptSmartBusy||!state.selectedBook||!!state.importJob?.running||syncImportRunning;}
+function ptSmartActive(session){return ptSmartSession===session&&$('ptSmartDialog')?.open&&state.selectedBook===session.book&&!!getBook(session.book);}
+function ptSmartClearPreview(){if(ptSmartSession)ptSmartSession.preview=null;$('ptSmartCommit').hidden=true;$('ptSmartReport').textContent='';}
+async function ptSmartUseRoot(session,root){
+  if(!ptSmartActive(session))return;
+  ptSmartClearPreview();session.root=root;session.dirs=await ptSmartDirs(root);
+  if(!ptSmartActive(session))return;
+  const select=$('ptSmartFolder');select.replaceChildren();
+  const add=(value,label)=>{const o=document.createElement('option');o.value=value;o.textContent=label;select.append(o);};
+  add('','請選擇這本小說的資料夾');
+  for(const dir of session.dirs)add(dir.name,dir.name);
+  let saved=null;try{saved=await syncHandleStore('get',null,'smart-book:'+session.book);}catch(_){}
+  if(!ptSmartActive(session))return;
+  const matches=ptSmartMatches(session.title,session.dirs);
+  let remembered=false;try{remembered=!!saved?.root&&await root.isSameEntry(saved.root)&&session.dirs.some(d=>d.name===saved.folder);}catch(_){}
+  if(!ptSmartActive(session))return;
+  select.value=remembered?saved.folder:matches.length===1?matches[0].name:'';
+  $('ptSmartLocation').textContent=root.name+' / '+(select.value||'（未選擇小說資料夾）');
+  $('ptSmartStatus').textContent=select.value?(remembered?'已找到先前指定的資料夾。':'已找到唯一書名匹配。')+( ' 正在準備掃描。'):matches.length>1?'找到多個相同書名，請手動選擇正確資料夾。':'找不到唯一書名，請手動選擇對應資料夾。';
+  if(select.value)await ptSmartRunScan(session);
+}
+async function ptSmartRunScan(session=ptSmartSession){
+  if(!session||!ptSmartActive(session)||!session.root)return;
+  const name=$('ptSmartFolder').value,folder=session.dirs.find(d=>d.name===name);
+  ptSmartClearPreview();if(!folder){$('ptSmartStatus').textContent='請先選擇小說資料夾。';return;}
+  $('ptSmartLocation').textContent=session.root.name+' / '+folder.name;
+  $('ptSmartStatus').textContent='正在讀取 MP3 / LRC 清單…';
+  const entries=await ptSmartScanFiles(folder);
+  if(!ptSmartActive(session))return;
+  if(!entries.length){$('ptSmartStatus').textContent='此資料夾沒有可匯入的 MP3 / LRC，請選擇正確小說資料夾。';return;}
+  const preview=await ptSmartPreview(session.book,entries,(n,total)=>{if(ptSmartActive(session))$('ptSmartStatus').textContent='正在核對章節 '+n+' / '+total+'（iCloud 可能下載原件）…';},()=>ptSmartActive(session));
+  if(!ptSmartActive(session))return;
+  session.preview=preview;session.folder=folder.name;
+  $('ptSmartStatus').textContent='待匯入 '+preview.rows.length+' 章 · 未變更 '+preview.unchanged+' · 缺 MP3 '+preview.orphan+(preview.uncertain?' · 無法核對雜湊 '+preview.uncertain:'');
+  $('ptSmartReport').textContent=preview.rows.map(row=>row.kind+'｜'+row.name+'｜'+row.detail).join('\n')||'沒有需要匯入的章節。';
+  $('ptSmartCommit').hidden=false;$('ptSmartCommit').textContent=preview.files.length?'確認匯入 '+preview.rows.length+' 章':'記住此資料夾並關閉';
+}
+async function ptSmartTask(action){
+  if(ptSmartBusy)return;
+  ptSmartSetBusy(true);
+  try{await action();}catch(error){if(ptSmartSession&&$('ptSmartDialog')?.open){ptSmartClearPreview();$('ptSmartStatus').textContent=error?.name==='AbortError'?'已取消選擇資料夾。':'無法完成掃描：'+(error?.message||error);}}
+  finally{ptSmartSetBusy(false);}
+}
+async function ptSmartPickRoot(session){
+  // Direct click, before any asynchronous database work, preserves browser activation.
+  const root=await window.showDirectoryPicker({id:'pinetree-smart-import-root',mode:'read'});
+  if(!ptSmartActive(session))return;
+  if(root.name.toLocaleLowerCase()!=='audiobooks'&&!confirm('選擇的是「'+root.name+'」，確定是存放各小說的根資料夾嗎？'))return;
+  ptSmartRoot=root;try{await syncHandleStore('put',root,'smart-import-root');}catch(_){}
+  await ptSmartUseRoot(session,root);
+}
+function ptSmartOpen(){
+  if(!state.selectedBook||ptSmartBusy||state.importJob?.running||syncImportRunning||state.episodeDeleteRunning)return;
+  const session={book:state.selectedBook,title:bookTitle(state.selectedBook),root:null,dirs:[],preview:null};ptSmartSession=session;
+  $('ptSmartTitle').textContent='智慧匯入 · '+session.title;
+  $('ptSmartLocation').textContent='Audiobooks';$('ptSmartFolder').replaceChildren();ptSmartClearPreview();$('ptSmartStatus').textContent='正在尋找已授權的資料夾…';openDialog('ptSmartDialog');
+  const availableRoot=()=>ptSmartRoot||(syncFolderHandle?.name.toLocaleLowerCase()==='audiobooks'?syncFolderHandle:null);
+  const initialRoot=availableRoot();
+  void ptSmartTask(async()=>{
+    if(!initialRoot)await Promise.all([ptSmartRootTask,syncRestoreTask]);
+    if(!ptSmartActive(session))return;
+    const root=availableRoot();
+    if(!root){$('ptSmartStatus').textContent='請選擇 Audiobooks 根資料夾（只讀）。';return;}
+    const opts={mode:'read'};let permission=await root.queryPermission(opts);
+    if(permission!=='granted'&&initialRoot)permission=await root.requestPermission(opts);
+    if(!ptSmartActive(session))return;
+    if(permission!=='granted'){$('ptSmartStatus').textContent='讀取權限未授予，請重新選擇 Audiobooks。';return;}
+    await ptSmartUseRoot(session,root);
+  });
+}
+function ptSmartInstall(){
+  if(typeof window.showDirectoryPicker!=='function'||$('ptSmartImport'))return;
+  const host=$('importBtn')?.closest('.import-row');if(!host)return;
+  const b=ptAudioCenterButton('ptSmartImport','⌕ 按書名智慧匯入','btn btn-quiet pt-smart-import');
+  host.prepend(b);b.addEventListener('click',ptSmartOpen);
+  const dialog=ptAudioCenterElement('dialog',{id:'ptSmartDialog',className:'drawer-dialog pt-smart-dialog'});
+  dialog.setAttribute('aria-labelledby','ptSmartTitle');
+  const inner=ptAudioCenterElement('div',{className:'dialog-inner'}),head=ptAudioCenterElement('div',{className:'dialog-head'});
+  const close=ptAudioCenterButton('ptSmartClose','×','close-action');close.setAttribute('aria-label','取消智慧匯入');
+  head.append(ptAudioCenterElement('h2',{id:'ptSmartTitle',text:'智慧匯入'}),close);
+  const location=ptAudioCenterElement('p',{id:'ptSmartLocation',className:'dialog-note'});
+  const pick=ptAudioCenterButton('ptSmartRootPick','選擇／更換 Audiobooks 根資料夾');
+  const label=ptAudioCenterElement('label',{text:'小說資料夾（手動指定）'});label.htmlFor='ptSmartFolder';
+  const select=ptAudioCenterElement('select',{id:'ptSmartFolder'}),scan=ptAudioCenterButton('ptSmartScan','掃描新增及更新章節');
+  const status=ptAudioCenterElement('p',{id:'ptSmartStatus',className:'dialog-note'});status.setAttribute('role','status');
+  const report=ptAudioCenterElement('pre',{id:'ptSmartReport',className:'pt-smart-report'});
+  const commit=ptAudioCenterButton('ptSmartCommit','確認匯入','btn btn-accent');commit.hidden=true;
+  inner.append(head,location,pick,label,select,scan,status,report,commit,ptAudioCenterElement('p',{className:'dialog-note',text:'只讀取來源檔案；優先掃描 output_mp3，沒有此資料夾則只掃描小說目錄內的 MP3/LRC。相似書名不自動選擇。現有進度及未變更章節保留。'}));dialog.append(inner);document.body.append(dialog);
+  close.addEventListener('click',()=>{ptSmartSession=null;closeDialog('ptSmartDialog');});
+  dialog.addEventListener('close',()=>{if(!dialog.open)ptSmartSession=null;});
+  pick.addEventListener('click',()=>{const s=ptSmartSession;if(s)void ptSmartTask(()=>ptSmartPickRoot(s));});
+  select.addEventListener('change',()=>{ptSmartClearPreview();$('ptSmartLocation').textContent=(ptSmartSession?.root?.name||'Audiobooks')+' / '+select.value;$('ptSmartStatus').textContent='請按掃描核對此資料夾。';});
+  scan.addEventListener('click',()=>void ptSmartTask(()=>ptSmartRunScan()));
+  commit.addEventListener('click',async()=>{
+    const s=ptSmartSession;if(!s?.preview||!ptSmartActive(s)||ptSmartBusy||state.importJob?.running||syncImportRunning||state.episodeDeleteRunning)return;
+    ptSmartSetBusy(true);
+    try{
+      try{await syncHandleStore('put',{root:s.root,folder:s.folder},'smart-book:'+s.book);}catch(_){}
+      if(!ptSmartActive(s)||state.importJob?.running||syncImportRunning||state.episodeDeleteRunning)return;
+      const files=s.preview.files;ptSmartSession=null;closeDialog('ptSmartDialog');
+      if(files.length){pendingChapterTap=null;await importFiles(files,{targetBook:s.book,forceReplace:true});}
+      else toast('已記住資料夾，沒有需要更新的章節');
+    }finally{ptSmartSetBusy(false);}
+  });
+  ptSmartRootTask=syncHandleStore('get',null,'smart-import-root').then(handle=>{if(handle&&!ptSmartRoot)ptSmartRoot=handle;}).catch(()=>{});
+  ptSmartRefresh();
+}
+
+async function importFiles(fileList,{chapterPlan=null, targetBook=state.selectedBook, forceReplace=null}={}){
   setImportPickerHint(false);
   if(state.importJob?.running){toast('另一批檔案正在匯入中');return;}
   if(syncImportRunning){toast('正在匯入同步檔，請稍候');return;}
@@ -429,7 +641,7 @@ async function importFiles(fileList,{chapterPlan=null, targetBook=state.selected
   $('cancelImport').disabled=false;$('closeImport').disabled=true;$('downloadImportReport').disabled=true;
   $('closeImport').textContent=job.guided?'返回章節同步':'完成 / 關閉';
   for(const id of ['importBtn','folderBtn','deleteBookBtn'])$(id).disabled=true;
-  openDialog('importDialog');
+  ptSmartRefresh();openDialog('importDialog');
   reportImportStatus(job,'正在讀取檔案清單…','此階段不會修改任何原始 iCloud 檔案。');
   await nextUIFrame();
   let reloadTrack=null;
@@ -460,7 +672,7 @@ async function importFiles(fileList,{chapterPlan=null, targetBook=state.selected
       if(!go){job.cancelled=true;job.report.push('使用者取消大量匯入；尚未寫入本批音訊。');}
     }
     // Individual transactions keep completed chapters durable if iOS suspends the PWA.
-    const force=$('forceImportReplace').checked;
+    const force=forceReplace??$('forceImportReplace').checked;
     let processed=0;
     for(const group of groups.values()){
       if(job.cancelled)break;
@@ -556,7 +768,7 @@ async function importFiles(fileList,{chapterPlan=null, targetBook=state.selected
     job.running=false;
     $('closeImport').disabled=false;$('downloadImportReport').disabled=false;
     for(const id of ['importBtn','folderBtn','deleteBookBtn'])$(id).disabled=!state.selectedBook;
-    showStorageEstimate();
+    ptSmartRefresh();showStorageEstimate();
     toast(`匯入${job.cancelled?'已停止':'完成'}：新增 ${job.added}，更新 ${job.updated}，略過 ${job.skipped}，失敗 ${job.failed}`,6500);
   }
 }
@@ -2071,7 +2283,7 @@ async function importICloudState(file,{autoConfirm=false,quiet=false,fromPickedF
   if(file.size>MAX_SYNC_BYTES){toast('同步檔超過 35MB，請檢查檔案');return false;}
   if(syncImportRunning||state.importJob?.running||state.episodeDeleteRunning){toast('另一項匯入或刪除作業正在進行，請稍候');return false;}
   const button=$('syncImport');button.disabled=true;
-  syncImportRunning=true;
+  syncImportRunning=true;ptSmartRefresh();
   try{
     const snapshot=validateSyncSnapshot(JSON.parse(await file.text()));
     if(state.current&&!audio.paused){toast('請先暫停播放再匯入，避免正在播放的進度覆蓋另一台裝置',6200);return false;}
@@ -2183,7 +2395,7 @@ async function importICloudState(file,{autoConfirm=false,quiet=false,fromPickedF
       return true;
     }finally{state.suppressProgressWrites=false;}
   }catch(error){console.error('同步匯入失敗',error);toast('匯入失敗：'+(error?.message||error),6000);return false;}
-  finally{syncImportRunning=false;button.disabled=false;$('syncFile').value='';}
+  finally{syncImportRunning=false;button.disabled=false;$('syncFile').value='';ptSmartRefresh();}
 }
 
 
@@ -2678,7 +2890,7 @@ window.PineTreeBeforeResourceReload=async function(manual){
 async function start(){
   syncRestoreTask=restoreSyncFolder().catch(error=>console.warn("恢復同步資料夾授權失敗",error));
   const oneButton=$('iosSingleButtonCompatibility');if(oneButton)oneButton.checked=state.iosSingleButtonCompatibility;
-  ptAudioCenterInstall();setupEvents();setupImmersiveEvents();ptRInstall();ptHInstall();ptAudioCenterRefresh();ptPrivateCampfireInstall();ptInstall();try{ptUiInstall();}catch(error){console.warn('PineTree UI layout enhancement unavailable',error);}requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setCalibrationStyle(state.calibrationStyle,{persist:false});setFireflyTrails(state.fireflyTrails,{persist:false});setPlayButtonVisual(false);
+  ptAudioCenterInstall();setupEvents();setupImmersiveEvents();ptRInstall();ptHInstall();ptAudioCenterRefresh();ptPrivateCampfireInstall();ptInstall();try{ptUiInstall();}catch(error){console.warn('PineTree UI layout enhancement unavailable',error);}try{ptSmartInstall();}catch(error){console.warn('智慧匯入介面初始化失敗',error);}requestPlaybackAudioSession();setupMediaSession();updateNetwork();installThemeParticles();setThemeMotion(state.themeMotion,{persist:false});setFireflyIntensity(state.fireflyIntensity,{persist:false});setCalibrationStyle(state.calibrationStyle,{persist:false});setFireflyTrails(state.fireflyTrails,{persist:false});setPlayButtonVisual(false);
   setMobileTab(localStorage.getItem('lyra-mobile-tab')==='chapters'?'chapters':'player');
   setImmersiveMode(state.immersive,{persist:false});
   setLineSpacing(state.lineSpacing,false);setKeepAwake(state.keepAwake,false);setFocusMode(state.focusMode,false);setLyricsCentered(state.lyricsCentered,false);updateSleepUI();

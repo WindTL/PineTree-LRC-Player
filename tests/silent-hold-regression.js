@@ -468,3 +468,65 @@ console.log('PASS hide only home bookmark shortcuts');
   const css=fs.readFileSync('styles.css','utf8');assert(css.includes('#immersiveMode #imLyrics>.im-lyric{'));assert(css.includes('display:block!important;flex:0 0 auto'));assert(css.includes('font-size:var(--pt-im-font-size,18px)!important'));
   console.log('PASS immersive lyric context, bounded window, font persistence and no playback mutation');
 })();
+
+/* Smart book import: source directory read-only and only selected differences written. */
+(async()=>{
+  const begin=app.indexOf("/* Smart Book Import:"),end=app.indexOf("async function importFiles(",begin);
+  assert(begin>=0&&end>begin);
+  const files=new Map(),audioKeys=new Set(),writes=[];
+  const id=(book,name)=>book+'\u0000'+name.replace(/\.(mp3|lrc)$/i,'').normalize('NFC').trim().toLowerCase();
+  const file=(name,body,lastModified=100)=>({name,size:body.length,lastModified,body,text:async()=>body});
+  const handle=f=>({kind:'file',name:f.name,getFile:async()=>f});
+  const dir=(name,entries)=>({kind:'directory',name,async *values(){yield* entries;}});
+  const ctx={trackId:id,readableStem:s=>s.replace(/\.(mp3|lrc)$/i,''),getStore:async(store,k)=>store==='tracks'?files.get(k):null,hasAudioKey:async k=>audioKeys.has(k),digestChapterAudio:async f=>f?.body||null,nextUIFrame:async()=>{}};
+  vm.createContext(ctx);vm.runInContext(app.slice(begin,end)+'\nthis.match=ptSmartMatches;this.dirs=ptSmartDirs;this.scan=ptSmartScanFiles;this.preview=ptSmartPreview;',ctx);
+  const ten=dir('十日终焉',[]),variants=dir('十日終焉',[]),other=dir('十日終焉續集',[]);
+  assert.equal(ctx.match('十日終焉',[ten,other]).length,1);
+  assert.equal(ctx.match('十日終焉',[ten,variants,other]).length,2);
+  assert.equal(ctx.match('十日終焉',[other]).length,0);
+  const title=dir('序列公路求生，开局绑定情报系统',[]);
+  assert.equal(ctx.match('序列公路求生，開局綁定情報系統',[title]).length,1);
+  const root=dir('Audiobooks',[ten,variants,other,dir('Tools',[]),dir('Ambient Library',[]),handle(file('sync.json','x'))]);
+  assert.equal((await ctx.dirs(root)).length,3);
+  const book='test-book';
+  for(const [name,body,lyrics,has] of [['001','same','old',true],['002','old!','old',true],['003','same','old',true],['004','same','old',false],['005','same','old',true]]){
+    files.set(id(book,name+'.mp3'),{id:id(book,name+'.mp3'),bytes:body.length,mp3Digest:body,lrcText:lyrics,audioPresent:has,mp3Signature:body.length+':100'});
+    if(has)audioKeys.add(id(book,name+'.mp3'));
+  }
+  const output=dir('output_mp3',[
+    handle(file('001.mp3','same',200)),handle(file('001.lrc','old')),
+    handle(file('002.mp3','new!')),handle(file('002.lrc','old')),
+    handle(file('003.mp3','same')),handle(file('003.lrc','changed')),
+    handle(file('004.mp3','same')),handle(file('005.lrc','old')),
+    handle(file('006.mp3','fresh')),handle(file('006.lrc','fresh lyrics')),
+    handle(file('007.lrc','orphan')),
+    dir('Read',[handle(file('999.mp3','ignore'))]),
+    dir('backup',[handle(file('888.mp3','ignore'))]),
+    dir('nested',[handle(file('008.mp3','nested'))])
+  ]);
+  const selected=dir('十日終焉',[output,handle(file('900.mp3','not output')),dir('input_txt',[handle(file('901.mp3','ignore'))])]);
+  const entries=await ctx.scan(selected);
+  assert.equal(entries.length,12);
+  assert(!entries.some(e=>/900|901|999|888/.test(e.path)));
+  const result=await ctx.preview(book,entries);
+  assert.deepEqual(Array.from(result.files,f=>f.name).sort(),['002.mp3','003.lrc','004.mp3','006.lrc','006.mp3','008.mp3']);
+  assert.equal(result.unchanged,2);assert.equal(result.orphan,1);assert.equal(result.rows.length,5);
+  assert.equal(result.rows.find(r=>r.name==='004').kind,'補齊 MP3');
+  assert.equal(result.rows.find(r=>r.name==='003').detail,'LRC');
+  assert.equal(result.uncertain,0);
+  assert.equal(files.size,5);assert.equal(writes.length,0);
+  const flat=await ctx.scan(dir('other',[handle(file('001.mp3','a')),dir('input_txt',[handle(file('002.mp3','b'))])]));
+  assert.equal(flat.length,1);
+  await assert.rejects(()=>ctx.preview(book,[...entries,entries[0]]),/重複章節檔名/);
+  await assert.rejects(()=>ctx.preview(book,entries,()=>{},()=>false),/掃描已取消/);
+  const noDigest={...ctx,digestChapterAudio:async()=>null};
+  vm.createContext(noDigest);vm.runInContext(app.slice(begin,end)+'\nthis.preview=ptSmartPreview;',noDigest);
+  const uncertain=await noDigest.preview(book,[{handle:handle(file('001.mp3','same'))}]);
+  assert.equal(uncertain.uncertain,1);assert.equal(uncertain.rows.length,1);
+  assert(app.includes("importFiles(files,{targetBook:s.book,forceReplace:true})"));
+  assert(app.includes("const force=forceReplace??$('forceImportReplace').checked;"));
+  assert(app.includes("mode:'read'")&&app.includes("'smart-import-root'"));
+  const smart=app.slice(begin,end);
+  assert(!/createWritable|removeEntry|create:true|putTrackAndAudio|putStore\(/.test(smart),'smart scanning must not mutate the source or chapter store');
+  console.log('PASS smart book matching, ambiguity, output/read exclusion, content hash, LRC-only changes, missing MP3, cancellation, read-only preview');
+})().catch(e=>{console.error(e);process.exitCode=1;});
